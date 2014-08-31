@@ -1,0 +1,15 @@
+*.swp
+*.pyc
+.DS_Store
+/config.mk
+/build
+/debug
+/release
+/relwithdebinfo
+*.d
+*.prog
+*.dSYM
+/microscopes/**/*.cpp
+/microscopes/**/*.so
+/microscopes_lda.egg-info
+/microscopes/lda/githash.txt
