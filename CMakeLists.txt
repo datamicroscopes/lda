@@ -73,3 +73,9 @@ set(MICROSCOPES_LDA_SOURCE_FILES src/lda/model.cpp)
 add_library(microscopes_lda SHARED ${MICROSCOPES_LDA_SOURCE_FILES})
 target_link_libraries(microscopes_lda ${PROTOBUF_LIBRARIES} distributions_shared microscopes_common)
 install(TARGETS microscopes_lda LIBRARY DESTINATION lib)
+
+# test executables
+enable_testing()
+add_executable(test_state test/cxx/test_state.cpp)
+add_test(test_state test_state)
+target_link_libraries(test_state ${PROTOBUF_LIBRARIES} distributions_shared microscopes_common microscopes_lda)
