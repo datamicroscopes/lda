@@ -3,7 +3,7 @@
 #include <microscopes/common/macros.hpp>
 #include <microscopes/common/typedefs.hpp>
 #include <microscopes/common/util.hpp>
-#include <microscopes/common/recarray/dataview.hpp>
+#include <microscopes/common/variadic/dataview.hpp>
 #include <distributions/io/protobuf.hpp>
 
 #include <memory>
@@ -46,16 +46,11 @@ public:
 
   fixed_state() = default;
 
-  /**
-   * XXX(stephentu): we use dataview, which forces all documents to have
-   * the same # of words for the time being. We'll switch to a variable length
-   * dataview which allows each row to have a different # of features.
-   */
   static std::shared_ptr<fixed_state>
   initialize(const fixed_model_definition &def,
              const common::hyperparam_bag_t &topic_init,
              const common::hyperparam_bag_t &word_init,
-             common::recarray::dataview &data,
+             const common::variadic::dataview &data,
              common::rng_t &rng)
   {
     auto px = std::make_shared<fixed_state>();
@@ -87,12 +82,11 @@ public:
     std::uniform_int_distribution<unsigned> topic_dist(0, def.k() - 1);
 
     MICROSCOPES_DCHECK(data.size() == def.n(), "data mismatch");
-    data.reset();
-    for (size_t i = 0; i < def.n(); i++, data.next()) {
-      auto acc = data.get();
-      px->doc_word_topics_[i].resize(acc.nfeatures());
-      for (size_t j = 0; j < acc.nfeatures(); j++) {
-        const size_t w = acc.get().get<uint32_t>(j);
+    for (size_t i = 0; i < def.n(); i++) {
+      auto acc = data.get(i);
+      px->doc_word_topics_[i].resize(acc.n());
+      for (size_t j = 0; j < acc.n(); j++) {
+        const size_t w = acc.get(j).get<uint32_t>();
         MICROSCOPES_DCHECK(w < def.v(), "invalid entry");
 
         // pick a random topic blindly
@@ -128,16 +122,15 @@ public:
   inline size_t
   remove_value(size_t eid,
                size_t vid,
-               common::recarray::row_accessor &acc,
+               const common::value_accessor &value,
                common::rng_t &rng)
   {
     MICROSCOPES_DCHECK(eid < nentities(), "invalid entity");
     MICROSCOPES_DCHECK(vid < nvariables(eid), "invalid vid");
     MICROSCOPES_DCHECK(
       doc_word_topics_[eid][vid] != -1, "(eid, vid) not assigned");
-    MICROSCOPES_DCHECK(vid < acc.nfeatures(), "vid is invalid for acc");
 
-    const size_t w = acc.get().get<uint32_t>(vid);
+    const size_t w = value.get<uint32_t>();
     const size_t old_topic = doc_word_topics_[eid][vid];
     doc_word_topics_[eid][vid] = -1;
     MICROSCOPES_ASSERT(doc_topic_counts_(eid, old_topic));
@@ -152,29 +145,31 @@ public:
   add_value(size_t eid,
             size_t vid,
             size_t tid,
-            common::recarray::row_accessor &acc,
+            const common::value_accessor &value,
             common::rng_t &rng)
   {
     MICROSCOPES_DCHECK(eid < nentities(), "invalid entity");
     MICROSCOPES_DCHECK(vid < nvariables(eid), "invalid vid");
     MICROSCOPES_DCHECK(
       doc_word_topics_[eid][vid] == -1, "(eid, vid) assigned");
-    MICROSCOPES_DCHECK(vid < acc.nfeatures(), "vid is invalid for acc");
     MICROSCOPES_DCHECK(tid < ntopics(), "invalid tid");
 
-    const size_t w = acc.get().get<uint32_t>(vid);
+    const size_t w = value.get<uint32_t>();
     doc_word_topics_[eid][vid] = tid;
     doc_topic_counts_(eid, tid) += 1;
     topic_word_counts_(tid, w) += 1;
   }
 
   inline std::pair<std::vector<size_t>, std::vector<float>>
-  score_value(size_t eid, size_t vid, common::recarray::row_accessor &acc, common::rng_t &rng) const
+  score_value(size_t eid,
+              size_t vid,
+              const common::value_accessor &value,
+              common::rng_t &rng) const
   {
     std::pair<std::vector<size_t>, std::vector<float>> ret;
     ret.first.reserve(ntopics());
     ret.second.reserve(ntopics());
-    inplace_score_value(ret, eid, vid, acc, rng);
+    inplace_score_value(ret, eid, vid, value, rng);
     return ret;
   }
 
@@ -183,7 +178,7 @@ public:
     std::pair<std::vector<size_t>, std::vector<float>> &scores,
     size_t eid,
     size_t vid,
-    common::recarray::row_accessor &acc,
+    const common::value_accessor &value,
     common::rng_t &rng) const
   {
     scores.first.clear();
@@ -191,8 +186,7 @@ public:
 
     using distributions::fast_log;
 
-    MICROSCOPES_DCHECK(vid < acc.nfeatures(), "vid is invalid for acc");
-    const size_t w = acc.get().get<uint32_t>(vid);
+    const size_t w = value.get<uint32_t>();
 
     float term1_sum = 0.;
     for (size_t topic = 0; topic < ntopics(); topic++) {
@@ -248,6 +242,48 @@ private:
 
   // the total # of words in every document
   unsigned words_;
+};
+
+class fixed_model {
+public:
+  fixed_model(const std::shared_ptr<fixed_state> &impl,
+              const std::shared_ptr<common::variadic::dataview> &data)
+    : impl_(impl), data_(data)
+  {}
+
+  inline size_t nentities() const { return impl_->nentities(); }
+  inline size_t ntopics() const { return impl_->ntopics(); }
+  inline size_t nvariables(size_t i) const { return impl_->nvariables(i); }
+  inline const std::vector<std::vector<ssize_t>> & assignments() { return impl_->assignments(); }
+
+  inline size_t
+  remove_value(size_t eid, size_t vid, common::rng_t &rng)
+  {
+    const auto &value = data_->get(eid).get(vid);
+    return impl_->remove_value(eid, vid, value, rng);
+  }
+
+  inline void
+  add_value(size_t eid, size_t vid, size_t tid, common::rng_t &rng)
+  {
+    const auto &value = data_->get(eid).get(vid);
+    impl_->add_value(eid, vid, tid, value, rng);
+  }
+
+  inline void
+  inplace_score_value(
+    std::pair<std::vector<size_t>, std::vector<float>> &scores,
+    size_t eid,
+    size_t vid,
+    common::rng_t &rng) const
+  {
+    const auto &value = data_->get(eid).get(vid);
+    impl_->inplace_score_value(scores, eid, vid, value, rng);
+  }
+
+private:
+  std::shared_ptr<fixed_state> impl_;
+  std::shared_ptr<common::variadic::dataview> data_;
 };
 
 } // namespace lda
