@@ -118,9 +118,10 @@ public:
 
   inline size_t nentities() const { return doc_word_topics_.size(); }
   inline size_t ntopics() const { return topic_counts_.size(); }
+  inline size_t nwords() const { return word_alphas_.size(); }
 
   inline size_t
-  nvariables(size_t i) const
+  nterms(size_t i) const
   {
     MICROSCOPES_DCHECK(i < nentities(), "invalid entity");
     return doc_word_topics_[i].size();
@@ -139,7 +140,7 @@ public:
                common::rng_t &rng)
   {
     MICROSCOPES_DCHECK(eid < nentities(), "invalid entity");
-    MICROSCOPES_DCHECK(vid < nvariables(eid), "invalid vid");
+    MICROSCOPES_DCHECK(vid < nterms(eid), "invalid vid");
     MICROSCOPES_DCHECK(
       doc_word_topics_[eid][vid] != -1, "(eid, vid) not assigned");
 
@@ -162,7 +163,7 @@ public:
             common::rng_t &rng)
   {
     MICROSCOPES_DCHECK(eid < nentities(), "invalid entity");
-    MICROSCOPES_DCHECK(vid < nvariables(eid), "invalid vid");
+    MICROSCOPES_DCHECK(vid < nterms(eid), "invalid vid");
     MICROSCOPES_DCHECK(
       doc_word_topics_[eid][vid] == -1, "(eid, vid) assigned");
     MICROSCOPES_DCHECK(tid < ntopics(), "invalid tid");
@@ -266,7 +267,8 @@ public:
 
   inline size_t nentities() const { return impl_->nentities(); }
   inline size_t ntopics() const { return impl_->ntopics(); }
-  inline size_t nvariables(size_t i) const { return impl_->nvariables(i); }
+  inline size_t nterms(size_t i) const { return impl_->nterms(i); }
+  inline size_t nwords() const { return impl_->nwords(); }
   inline const std::vector<std::vector<ssize_t>> & assignments() { return impl_->assignments(); }
 
   inline size_t
@@ -328,6 +330,7 @@ private:
  *  Teh et. al. 2006
  *  http://www.cs.berkeley.edu/~jordan/papers/hdp.pdf
  *
+ * This implementation is especially designed for collapsed gibbs sampling.
  */
 class state {
 public:
@@ -338,9 +341,6 @@ public:
   typedef io::CRP dish_message_type;
   typedef distributions::protobuf::DirichletDiscrete_Shared vocab_message_type;
 
-  /**
-   * XXX(stephentu): currently no way to specify # of dishes to start with
-   */
   state(const model_definition &def,
         const common::hyperparam_bag_t &topic_init,
         const common::hyperparam_bag_t &word_init,
@@ -362,6 +362,7 @@ public:
     common::util::protobuf_from_string(word_m, word_init);
     MICROSCOPES_DCHECK((size_t)word_m.alphas_size() == def.v(),
         "word mismatch");
+    shared_.dim = def.v();
     for (size_t i = 0; i < def.v(); i++) {
       MICROSCOPES_DCHECK(word_m.alphas(i) > 0., "invalid alpha found");
       shared_.alphas[i] = word_m.alphas(i);
@@ -394,6 +395,7 @@ public:
     }
     std::uniform_int_distribution<unsigned> dish_dist(0, k - 1);
 
+    restaurants_.resize(def.n());
     for (size_t i = 0; i < def.n(); i++) {
       auto acc = data.get(i);
       MICROSCOPES_DCHECK(acc.n() > 0,
@@ -404,17 +406,19 @@ public:
       const size_t ntables = *std::max_element(
           actual_assignments[i].begin(),
           actual_assignments[i].end()) + 1;
-      for (size_t i = 0; i < ntables; i++) {
+      for (size_t j = 0; j < ntables; j++) {
         auto p = restaurants_[i].create_group();
+        MICROSCOPES_ASSERT(p.second.dish_ == -1);
         p.second.group_.init(shared_, rng);
         // XXX(stephentu): better dish assignment
         // randomly pick the dish
         p.second.dish_ = dish_dist(rng);
       }
+      MICROSCOPES_ASSERT(restaurants_[i].ngroups() == ntables);
       for (size_t j = 0; j < acc.n(); j++) {
         const size_t w = acc.get(j).get<uint32_t>();
         MICROSCOPES_DCHECK(w < def.v(), "invalid entry");
-        auto &table_ref = restaurants_[i].add_value(j, actual_assignments[i][j]);
+        auto &table_ref = restaurants_[i].add_value(actual_assignments[i][j], j);
         table_ref.group_.add_value(shared_, w, rng);
         auto &dish = dishes_.group(table_ref.dish_);
         dish.group_.add_value(shared_, w, rng);
@@ -431,6 +435,46 @@ public:
   {
     MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
     return restaurants_[eid].nentities();
+  }
+
+  inline size_t
+  ntables(size_t eid) const
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    return restaurants_[eid].ngroups();
+  }
+
+  inline std::vector<size_t>
+  tables(size_t eid) const
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    return restaurants_[eid].groups();
+  }
+
+  /**
+   * NOTE: currently cannot distinguish between unassigned due
+   * to lack of table assignment, or unassigned due to lack of
+   * dish assignment. This shouldn't matter though, since we only
+   * care about assignments when things are fully assigned.
+   */
+  inline std::vector<std::vector<ssize_t>>
+  assignments() const
+  {
+    std::vector<std::vector<ssize_t>> ret;
+    ret.resize(nentities());
+    for (size_t i = 0; i < nentities(); i++) {
+      auto &r = restaurants_[i];
+      ret[i].resize(r.nentities());
+      for (size_t j = 0; j < r.nentities(); j++) {
+        const ssize_t tid = r.assignments()[j];
+        if (tid == -1) {
+          ret[i][j] = -1;
+          continue;
+        }
+        ret[i][j] = r.group(tid).data_.dish_;
+      }
+    }
+    return ret;
   }
 
   /**
@@ -460,6 +504,13 @@ public:
     return restaurants_[eid].groupsize(tid);
   }
 
+  inline const std::set<size_t> &
+  empty_tables(size_t eid) const
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    return restaurants_[eid].empty_groups();
+  }
+
   inline void
   delete_table(size_t eid, size_t tid)
   {
@@ -471,6 +522,20 @@ public:
   dishsize(size_t did) const
   {
     return dishes_.group(did).group_.count_sum;
+  }
+
+  inline std::set<size_t>
+  empty_dishes() const
+  {
+    // XXX(stephentu): optimize this later
+    // by merging the empty group code from group_manager to simple_group_manager
+    // (and having group_manager be a thin wrapper around simple_group_manager
+    // which also manages the CRP prior)
+    std::set<size_t> ret;
+    for (const auto &p : dishes_)
+      if (!p.second.group_.count_sum)
+        ret.insert(p.first);
+    return ret;
   }
 
   inline void
@@ -500,15 +565,8 @@ public:
     MICROSCOPES_DCHECK(w < nwords(), "invalid w");
     MICROSCOPES_DCHECK(restaurants_[eid].empty_groups().size(), "no empty tables");
 
-    // XXX(stephentu):
-    // we assume for now that exactly one dish is empty
-#ifdef DEBUG_MODE
-    size_t nempty_dishes = 0;
-    for (const auto &p : dishes_)
-      if (!p.second.group_.count_sum)
-        nempty_dishes++;
-    MICROSCOPES_ASSERT(nempty_dishes == 1);
-#endif /* DEBUG_MODE */
+    const size_t nempty_dishes = empty_dishes().size();
+    MICROSCOPES_DCHECK(nempty_dishes > 0, "no empty dishes");
 
     // compute Eq. 31
     float sum = 0.;
@@ -516,7 +574,7 @@ public:
     for (const auto &p : dishes_) {
       size_t pcount = p.second.group_.count_sum;
       if (!pcount)
-        pcount = alpha_;
+        pcount = alpha_ / float(nempty_dishes);
       sum += float(pcount) *
              (shared_.alphas[w] + p.second.group_.counts[w]) /
              (shared_alphas_sum_ + p.second.group_.count_sum);
@@ -560,14 +618,13 @@ public:
     MICROSCOPES_DCHECK(w < nwords(), "invalid w");
 
     auto &restaurant = restaurants_[eid];
-    auto &table = restaurant.group(tid);
-    auto &table_ref = restaurant.add_value(vid, tid);
-    table_ref.group_.add_value(shared_, w, rng);
+    auto &table = restaurant.add_value(tid, vid);
+    table.group_.add_value(shared_, w, rng);
 
-    if (table.count_) {
-      // easy case-- table already exists
-      MICROSCOPES_ASSERT(dishsize(table.data_.dish_));
-      auto &dish = dishes_.group(table.data_.dish_);
+    if (table.dish_ != -1) {
+      // easy case-- table is already assigned to a dish
+      MICROSCOPES_ASSERT(dishsize(table.dish_));
+      auto &dish = dishes_.group(table.dish_);
       dish.group_.add_value(shared_, w, rng);
     } else {
       // sample the dish for the table
@@ -588,9 +645,9 @@ public:
         s -= lgnorm;
 
       const size_t k = common::util::sample_discrete_log(scores, rng);
-      table.data_.dish_ = k;
+      table.dish_ = k;
 
-      auto &dish = dishes_.group(table.data_.dish_);
+      auto &dish = dishes_.group(table.dish_);
       dish.group_.add_value(shared_, w, rng);
     }
   }
@@ -601,9 +658,10 @@ public:
                common::rng_t &rng)
   {
     MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
-
     auto &table = restaurants_[eid].group(tid);
-    auto &dish = dishes_.group(table.data_.dish_);
+    const ssize_t did = table.data_.dish_;
+    MICROSCOPES_DCHECK(did != -1, "table has no dish assignment");
+    auto &dish = dishes_.group(did);
     for (int i = 0; i < table.data_.group_.dim; i++) {
       const size_t cnt = table.data_.group_.counts[i];
       MICROSCOPES_ASSERT((size_t)dish.group_.counts[i] >= cnt);
@@ -613,6 +671,7 @@ public:
     }
 
     table.data_.dish_ = -1;
+    return did;
   }
 
   inline void
@@ -633,15 +692,8 @@ public:
     MICROSCOPES_DCHECK(table.data_.dish_ == -1,
         "table assigned, cannot be scored");
 
-    // XXX(stephentu):
-    // we assume for now that exactly one dish is empty
-#ifdef DEBUG_MODE
-    size_t nempty_dishes = 0;
-    for (const auto &p : dishes_)
-      if (!p.second.group_.count_sum)
-        nempty_dishes++;
-    MICROSCOPES_ASSERT(nempty_dishes == 1);
-#endif /* DEBUG_MODE */
+    const size_t nempty_dishes = empty_dishes().size();
+    MICROSCOPES_DCHECK(nempty_dishes > 0, "no empty dishes");
 
     // sparsify the table suffstats
     //
@@ -660,8 +712,7 @@ public:
     for (const auto &p : dishes_) {
       size_t pcount = p.second.group_.count_sum;
       if (!pcount)
-        pcount = alpha_;
-
+        pcount = alpha_ / float(nempty_dishes);
       float sum = fast_log(pcount);
       DD::Scorer scorer;
       scorer.init(shared_, p.second.group_, rng);
@@ -718,6 +769,107 @@ private:
                            // a probability distribution
   common::simple_group_manager<dish_suffstat_t> dishes_;
   std::vector<common::group_manager<restaurant_suffstat_t>> restaurants_;
+};
+
+class document_model {
+public:
+  document_model(const std::shared_ptr<state> &impl,
+                 const std::shared_ptr<common::variadic::dataview> &data)
+    : impl_(impl), data_(data)
+  {}
+
+  inline size_t nentities() const { return impl_->nentities(); }
+  inline size_t ntopics() const { return impl_->ntopics(); }
+  inline size_t nterms(size_t i) const { return impl_->nterms(i); }
+  inline size_t nwords() const { return impl_->nwords(); }
+  inline std::vector<std::vector<ssize_t>> assignments() const { return impl_->assignments(); }
+
+  inline size_t dishsize(size_t did) const { return impl_->dishsize(did); }
+  inline size_t tablesize(size_t eid, size_t tid) const { return impl_->tablesize(eid, tid); }
+
+  inline void delete_dish(size_t did) { impl_->delete_dish(did); }
+  inline void delete_table(size_t eid, size_t tid) { impl_->delete_table(eid, tid); }
+
+  inline const std::set<size_t> & empty_tables(size_t eid) const { return impl_->empty_tables(eid); }
+  inline std::set<size_t> empty_dishes() const { return impl_->empty_dishes(); }
+
+  inline std::pair<size_t, size_t>
+  remove_value(size_t eid, size_t vid, common::rng_t &rng)
+  {
+    const auto &value = data_->get(eid).get(vid);
+    return impl_->remove_value(eid, vid, value, rng);
+  }
+
+  inline void
+  inplace_score_value(
+    std::pair<std::vector<size_t>, std::vector<float>> &scores,
+    size_t eid,
+    size_t vid,
+    common::rng_t &rng) const
+  {
+    const auto &value = data_->get(eid).get(vid);
+    impl_->inplace_score_value(scores, eid, vid, value, rng);
+  }
+
+  inline void
+  add_value(size_t eid,
+            size_t vid,
+            size_t tid,
+            common::rng_t &rng)
+  {
+    const auto &value = data_->get(eid).get(vid);
+    impl_->add_value(eid, vid, tid, value, rng);
+  }
+
+private:
+  std::shared_ptr<state> impl_;
+  std::shared_ptr<common::variadic::dataview> data_;
+};
+
+/**
+ * Presents an interface of tables being labelled 0 to ntables() - 1.
+ */
+class table_model {
+public:
+  table_model(const std::shared_ptr<state> &impl, size_t eid)
+    : impl_(impl), eid_(eid), tid_mapping_(impl_->tables(eid))
+  {
+  }
+
+  inline size_t ntopics() const { return impl_->ntopics(); }
+  inline size_t ntables() const { return tid_mapping_.size(); }
+  inline size_t dishsize(size_t did) const { return impl_->dishsize(did); }
+  inline void delete_dish(size_t did) { impl_->delete_dish(did); }
+  inline std::set<size_t> empty_dishes() const { return impl_->empty_dishes(); }
+
+  inline size_t
+  remove_table(size_t tid, common::rng_t &rng)
+  {
+    MICROSCOPES_DCHECK(tid < ntables(), "invalid tid");
+    return impl_->remove_table(eid_, tid_mapping_[tid], rng);
+  }
+
+  inline void
+  inplace_score_table(
+    std::pair<std::vector<size_t>, std::vector<float>> &scores,
+    size_t tid,
+    common::rng_t &rng) const
+  {
+    MICROSCOPES_DCHECK(tid < ntables(), "invalid tid");
+    impl_->inplace_score_table(scores, eid_, tid_mapping_[tid], rng);
+  }
+
+  inline void
+  add_table(size_t tid, size_t did, common::rng_t &rng)
+  {
+    MICROSCOPES_DCHECK(tid < ntables(), "invalid tid");
+    impl_->add_table(eid_, tid_mapping_[tid], did, rng);
+  }
+
+private:
+  std::shared_ptr<state> impl_;
+  size_t eid_;
+  std::vector<size_t> tid_mapping_;
 };
 
 } // namespace lda

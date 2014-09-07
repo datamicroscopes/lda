@@ -75,7 +75,7 @@ main(void)
   MICROSCOPES_CHECK(model.assignments().size() == N, "fail N");
 
   for (size_t i = 0; i < N; i++) {
-    MICROSCOPES_CHECK(model.nvariables(i) == (i + 1), "nvariables(i)");
+    MICROSCOPES_CHECK(model.nterms(i) == (i + 1), "nterms(i)");
     MICROSCOPES_CHECK(model.assignments()[i].size() == (i + 1), "fail inner");
   }
 
@@ -90,7 +90,14 @@ main(void)
       vector<vector<size_t>>(),
       r);
 
-  MICROSCOPES_CHECK(hs->nentities() == N, "nentities()");
+  document_model doc_model(hs, data);
+  MICROSCOPES_CHECK(doc_model.nentities() == N, "nentities()");
+  MICROSCOPES_CHECK(doc_model.assignments().size() == N, "fail N");
+
+  for (size_t i = 0; i < N; i++) {
+    table_model t_model(hs, i);
+    MICROSCOPES_CHECK(t_model.ntables() > 0, "ntables()");
+  }
 
   return 0;
 }
