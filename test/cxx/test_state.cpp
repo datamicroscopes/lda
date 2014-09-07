@@ -97,7 +97,7 @@ test1()
 
   for (size_t i = 0; i < N; i++) {
     table_model t_model(hs, i);
-    MICROSCOPES_CHECK(t_model.ntables() > 0, "ntables()");
+    MICROSCOPES_CHECK(t_model.nentities() > 0, "ntables()");
   }
 }
 

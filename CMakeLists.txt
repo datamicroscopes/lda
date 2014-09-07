@@ -69,7 +69,7 @@ endif()
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN "*.h*")
 install(DIRECTORY microscopes DESTINATION cython FILES_MATCHING PATTERN "*.pxd" PATTERN "__init__.py")
 
-set(MICROSCOPES_LDA_SOURCE_FILES src/lda/model.cpp)
+set(MICROSCOPES_LDA_SOURCE_FILES src/lda/model.cpp src/lda/kernels.cpp)
 add_library(microscopes_lda SHARED ${MICROSCOPES_LDA_SOURCE_FILES})
 target_link_libraries(microscopes_lda ${PROTOBUF_LIBRARIES} distributions_shared microscopes_common)
 install(TARGETS microscopes_lda LIBRARY DESTINATION lib)

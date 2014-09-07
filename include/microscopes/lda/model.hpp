@@ -527,6 +527,16 @@ public:
     return restaurants_[eid].empty_groups();
   }
 
+  inline size_t
+  create_table(size_t eid, common::rng_t &rng)
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    auto p = restaurants_[eid].create_group();
+    p.second.group_.init(shared_, rng);
+    MICROSCOPES_ASSERT(p.second.dish_ == -1);
+    return p.first;
+  }
+
   inline void
   delete_table(size_t eid, size_t tid)
   {
@@ -558,6 +568,14 @@ public:
       if (!p.second.group_.count_sum)
         ret.insert(p.first);
     return ret;
+  }
+
+  inline size_t
+  create_dish(common::rng_t &rng)
+  {
+    auto p = dishes_.create_group();
+    p.second.group_.init(shared_, rng);
+    return p.first;
   }
 
   inline void
@@ -624,7 +642,10 @@ public:
       s -= lgnorm;
   }
 
-  inline void
+  /**
+   * Returns the dish id the (eid, vid) pair was added to
+   */
+  inline size_t
   add_value(size_t eid,
             size_t vid,
             size_t tid,
@@ -648,6 +669,7 @@ public:
       MICROSCOPES_ASSERT(dishsize(table.dish_));
       auto &dish = dishes_.group(table.dish_);
       dish.group_.add_value(shared_, w, rng);
+      return table.dish_;
     } else {
       // sample the dish for the table
       std::vector<float> scores;
@@ -671,6 +693,7 @@ public:
 
       auto &dish = dishes_.group(table.dish_);
       dish.group_.add_value(shared_, w, rng);
+      return k;
     }
   }
 
@@ -751,7 +774,7 @@ public:
       s -= lgnorm;
   }
 
-  inline size_t
+  inline void
   add_table(size_t eid,
             size_t tid,
             size_t did,
@@ -816,6 +839,9 @@ private:
   std::vector<common::group_manager<restaurant_suffstat_t>> restaurants_;
 };
 
+/**
+ * Implements kernels::gibbsT::assign2 concept
+ */
 class document_model {
 public:
   document_model(const std::shared_ptr<state> &impl,
@@ -823,20 +849,19 @@ public:
     : impl_(impl), data_(data)
   {}
 
-  inline size_t nentities() const { return impl_->nentities(); }
-  inline size_t ntopics() const { return impl_->ntopics(); }
-  inline size_t nterms(size_t i) const { return impl_->nterms(i); }
-  inline size_t nwords() const { return impl_->nwords(); }
   inline std::vector<std::vector<ssize_t>> assignments() const { return impl_->assignments(); }
+  inline size_t nentities() const { return impl_->nentities(); }
+  inline size_t nterms(size_t i) const { return impl_->nterms(i); }
 
-  inline size_t dishsize(size_t did) const { return impl_->dishsize(did); }
-  inline size_t tablesize(size_t eid, size_t tid) const { return impl_->tablesize(eid, tid); }
-
+  inline std::set<size_t> empty_dishes() const { return impl_->empty_dishes(); }
+  inline size_t create_dish(common::rng_t &rng) { return impl_->create_dish(rng); }
   inline void delete_dish(size_t did) { impl_->delete_dish(did); }
-  inline void delete_table(size_t eid, size_t tid) { impl_->delete_table(eid, tid); }
+  inline size_t dishsize(size_t did) const { return impl_->dishsize(did); }
 
   inline const std::set<size_t> & empty_tables(size_t eid) const { return impl_->empty_tables(eid); }
-  inline std::set<size_t> empty_dishes() const { return impl_->empty_dishes(); }
+  inline size_t create_table(size_t eid, common::rng_t &rng) { return impl_->create_table(eid, rng); }
+  inline void delete_table(size_t eid, size_t tid) { impl_->delete_table(eid, tid); }
+  inline size_t tablesize(size_t eid, size_t tid) const { return impl_->tablesize(eid, tid); }
 
   inline std::pair<size_t, size_t>
   remove_value(size_t eid, size_t vid, common::rng_t &rng)
@@ -856,14 +881,14 @@ public:
     impl_->inplace_score_value(scores, eid, vid, value, rng);
   }
 
-  inline void
+  inline size_t
   add_value(size_t eid,
             size_t vid,
             size_t tid,
             common::rng_t &rng)
   {
     const auto &value = data_->get(eid).get(vid);
-    impl_->add_value(eid, vid, tid, value, rng);
+    return impl_->add_value(eid, vid, tid, value, rng);
   }
 
 private:
@@ -873,6 +898,8 @@ private:
 
 /**
  * Presents an interface of tables being labelled 0 to ntables() - 1.
+ *
+ * Implements kernels::gibbsT::assign concept
  */
 class table_model {
 public:
@@ -881,33 +908,35 @@ public:
   {
   }
 
-  inline size_t ntopics() const { return impl_->ntopics(); }
-  inline size_t ntables() const { return tid_mapping_.size(); }
-  inline size_t dishsize(size_t did) const { return impl_->dishsize(did); }
-  inline void delete_dish(size_t did) { impl_->delete_dish(did); }
-  inline std::set<size_t> empty_dishes() const { return impl_->empty_dishes(); }
+  inline std::vector<ssize_t> assignments() const { return impl_->table_assignments()[eid_]; }
+  inline size_t nentities() const { return tid_mapping_.size(); }
+
+  inline std::set<size_t> empty_groups() const { return impl_->empty_dishes(); }
+  inline size_t create_group(common::rng_t &rng) { return impl_->create_dish(rng); }
+  inline void delete_group(size_t did) { impl_->delete_dish(did); }
+  inline size_t groupsize(size_t did) const { return impl_->dishsize(did); }
 
   inline size_t
-  remove_table(size_t tid, common::rng_t &rng)
+  remove_value(size_t tid, common::rng_t &rng)
   {
-    MICROSCOPES_DCHECK(tid < ntables(), "invalid tid");
+    MICROSCOPES_DCHECK(tid < nentities(), "invalid tid");
     return impl_->remove_table(eid_, tid_mapping_[tid], rng);
   }
 
   inline void
-  inplace_score_table(
+  inplace_score_value(
     std::pair<std::vector<size_t>, std::vector<float>> &scores,
     size_t tid,
     common::rng_t &rng) const
   {
-    MICROSCOPES_DCHECK(tid < ntables(), "invalid tid");
+    MICROSCOPES_DCHECK(tid < nentities(), "invalid tid");
     impl_->inplace_score_table(scores, eid_, tid_mapping_[tid], rng);
   }
 
   inline void
-  add_table(size_t tid, size_t did, common::rng_t &rng)
+  add_value(size_t tid, size_t did, common::rng_t &rng)
   {
-    MICROSCOPES_DCHECK(tid < ntables(), "invalid tid");
+    MICROSCOPES_DCHECK(tid < nentities(), "invalid tid");
     impl_->add_table(eid_, tid_mapping_[tid], did, rng);
   }
 
