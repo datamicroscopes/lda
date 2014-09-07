@@ -4,6 +4,8 @@
 #include <microscopes/common/typedefs.hpp>
 #include <microscopes/common/util.hpp>
 #include <microscopes/common/variadic/dataview.hpp>
+#include <microscopes/common/group_manager.hpp>
+#include <distributions/models/dd.hpp>
 #include <distributions/io/protobuf.hpp>
 
 #include <memory>
@@ -44,63 +46,74 @@ public:
 
   typedef distributions::protobuf::DirichletDiscrete_Shared message_type;
 
-  fixed_state() = default;
-
-  static std::shared_ptr<fixed_state>
-  initialize(const fixed_model_definition &def,
-             const common::hyperparam_bag_t &topic_init,
-             const common::hyperparam_bag_t &word_init,
-             const common::variadic::dataview &data,
-             common::rng_t &rng)
+  fixed_state(const fixed_model_definition &def,
+              const common::hyperparam_bag_t &topic_init,
+              const common::hyperparam_bag_t &word_init,
+              const common::variadic::dataview &data,
+              const std::vector<std::vector<size_t>> &assignments,
+              common::rng_t &rng)
   {
-    auto px = std::make_shared<fixed_state>();
-
     message_type topic_m;
     common::util::protobuf_from_string(topic_m, topic_init);
     MICROSCOPES_DCHECK((size_t)topic_m.alphas_size() == def.k(),
         "topic mismatch");
+    topic_alphas_.reserve(def.k());
     for (size_t i = 0; i < def.k(); i++)
-      px->topic_alphas_.push_back(topic_m.alphas(i));
+      topic_alphas_.push_back(topic_m.alphas(i));
 
-    px->sum_word_alphas_ = 0.;
+    sum_word_alphas_ = 0.;
 
     message_type word_m;
     common::util::protobuf_from_string(word_m, word_init);
     MICROSCOPES_DCHECK((size_t)word_m.alphas_size() == def.v(),
         "word mismatch");
     for (size_t i = 0; i < def.k(); i++) {
-      px->word_alphas_.push_back(word_m.alphas(i));
-      px->sum_word_alphas_ += px->word_alphas_.back();
+      word_alphas_.push_back(word_m.alphas(i));
+      sum_word_alphas_ += word_alphas_.back();
     }
 
-    px->doc_word_topics_.resize(def.n());
-    px->doc_topic_counts_ = Eigen::MatrixXi::Zero(def.n(), def.k());
-    px->topic_word_counts_ = Eigen::MatrixXi::Zero(def.k(), def.v());
-    px->topic_counts_.resize(def.k());
-    px->words_ = 0;
-
-    std::uniform_int_distribution<unsigned> topic_dist(0, def.k() - 1);
+    doc_word_topics_.resize(def.n());
+    doc_topic_counts_ = Eigen::MatrixXi::Zero(def.n(), def.k());
+    topic_word_counts_ = Eigen::MatrixXi::Zero(def.k(), def.v());
+    topic_counts_.resize(def.k());
+    words_ = 0;
 
     MICROSCOPES_DCHECK(data.size() == def.n(), "data mismatch");
+    std::vector<std::vector<size_t>> actual_assignments(assignments);
+    if (actual_assignments.empty()) {
+      actual_assignments.resize(def.n());
+      std::uniform_int_distribution<unsigned> topic_dist(0, def.k() - 1);
+      // XXX(stephentu): better initialization strategy
+      for (size_t i = 0; i < def.n(); i++) {
+        auto acc = data.get(i);
+        actual_assignments[i].resize(acc.n());
+        for (size_t j = 0; j < acc.n(); j++) {
+          // pick a random topic blindly
+          const size_t k = topic_dist(rng);
+          actual_assignments[i][j] = k;
+        }
+      }
+    }
+    MICROSCOPES_DCHECK(actual_assignments.size() == def.n(),
+        "invalid size assignment vector");
+
     for (size_t i = 0; i < def.n(); i++) {
       auto acc = data.get(i);
-      px->doc_word_topics_[i].resize(acc.n());
+      doc_word_topics_[i].resize(acc.n());
+      MICROSCOPES_DCHECK(actual_assignments[i].size() == acc.n(),
+          "invalid size document assignment vector");
       for (size_t j = 0; j < acc.n(); j++) {
         const size_t w = acc.get(j).get<uint32_t>();
         MICROSCOPES_DCHECK(w < def.v(), "invalid entry");
-
-        // pick a random topic blindly
-        const size_t k = topic_dist(rng);
-        px->doc_word_topics_[i][j] = k;
-
-        px->doc_topic_counts_(i, k) += 1;
-        px->topic_word_counts_(k, w) += 1;
-        px->topic_counts_[k] += 1;
-        px->words_ += 1;
+        MICROSCOPES_DCHECK(actual_assignments[i][j] < def.k(), "invalid topic");
+        const size_t k = actual_assignments[i][j];
+        doc_word_topics_[i][j] = k;
+        doc_topic_counts_(i, k) += 1;
+        topic_word_counts_(k, w) += 1;
+        topic_counts_[k] += 1;
+        words_ += 1;
       }
     }
-
-    return px;
   }
 
   inline size_t nentities() const { return doc_word_topics_.size(); }
@@ -284,6 +297,427 @@ public:
 private:
   std::shared_ptr<fixed_state> impl_;
   std::shared_ptr<common::variadic::dataview> data_;
+};
+
+class model_definition {
+public:
+  /**
+   * n - number of documents
+   * v - vocabulary size
+   */
+  model_definition(size_t n, size_t v)
+    : n_(n), v_(v)
+  {
+    MICROSCOPES_DCHECK(n > 0, "no docs");
+    MICROSCOPES_DCHECK(v > 0, "no terms");
+  }
+
+  inline size_t n() const { return n_; }
+  inline size_t v() const { return v_; }
+
+private:
+  size_t n_;
+  size_t v_;
+};
+
+/**
+ * Implements the Chinese Restaurant Franchise (CRF) representation of
+ * HDP-LDA. See:
+ *
+ *  Hierarchical Dirichlet Processes
+ *  Teh et. al. 2006
+ *  http://www.cs.berkeley.edu/~jordan/papers/hdp.pdf
+ *
+ */
+class state {
+public:
+
+  static const size_t MaxVocabularySize = 0x10000;
+  typedef distributions::DirichletDiscrete<MaxVocabularySize> DD;
+
+  typedef io::CRP dish_message_type;
+  typedef distributions::protobuf::DirichletDiscrete_Shared vocab_message_type;
+
+  /**
+   * XXX(stephentu): currently no way to specify # of dishes to start with
+   */
+  state(const model_definition &def,
+        const common::hyperparam_bag_t &topic_init,
+        const common::hyperparam_bag_t &word_init,
+        const common::variadic::dataview &data,
+        size_t k,
+        const std::vector<std::vector<size_t>> &assignments,
+        common::rng_t &rng)
+  {
+    MICROSCOPES_DCHECK(def.v() <= MaxVocabularySize, "vocab too large");
+    MICROSCOPES_DCHECK(data.size() == def.n(), "data mismatch");
+    MICROSCOPES_DCHECK(k > 0, "cannot start with zero dishes");
+
+    dish_message_type topic_m;
+    common::util::protobuf_from_string(topic_m, topic_init);
+    MICROSCOPES_DCHECK(topic_m.alpha() > 0., "invalid alpha");
+    alpha_ = topic_m.alpha();
+
+    vocab_message_type word_m;
+    common::util::protobuf_from_string(word_m, word_init);
+    MICROSCOPES_DCHECK((size_t)word_m.alphas_size() == def.v(),
+        "word mismatch");
+    for (size_t i = 0; i < def.v(); i++) {
+      MICROSCOPES_DCHECK(word_m.alphas(i) > 0., "invalid alpha found");
+      shared_.alphas[i] = word_m.alphas(i);
+      shared_alphas_sum_ += word_m.alphas(i);
+    }
+
+    std::vector<std::vector<size_t>> actual_assignments(assignments);
+    if (actual_assignments.empty()) {
+      actual_assignments.resize(def.n());
+      // XXX(stephentu):
+      // arbitrarily start with 10 tables per document
+      std::uniform_int_distribution<unsigned> topic_dist(0, 9);
+      for (size_t i = 0; i < def.n(); i++) {
+        auto acc = data.get(i);
+        actual_assignments[i].resize(acc.n());
+        for (size_t j = 0; j < acc.n(); j++) {
+          // pick a random topic blindly
+          const size_t k = topic_dist(rng);
+          actual_assignments[i][j] = k;
+        }
+      }
+    }
+
+    MICROSCOPES_DCHECK(actual_assignments.size() == def.n(),
+        "invalid size assignment vector");
+
+    for (size_t i = 0; i < k; i++) {
+      auto p = dishes_.create_group();
+      p.second.group_.init(shared_, rng);
+    }
+    std::uniform_int_distribution<unsigned> dish_dist(0, k - 1);
+
+    for (size_t i = 0; i < def.n(); i++) {
+      auto acc = data.get(i);
+      MICROSCOPES_DCHECK(acc.n() > 0,
+          "empty documents are not allowed");
+      restaurants_[i] = common::group_manager<restaurant_suffstat_t>(acc.n());
+      MICROSCOPES_DCHECK(actual_assignments[i].size() == acc.n(),
+          "invalid size document assignment vector");
+      const size_t ntables = *std::max_element(
+          actual_assignments[i].begin(),
+          actual_assignments[i].end()) + 1;
+      for (size_t i = 0; i < ntables; i++) {
+        auto p = restaurants_[i].create_group();
+        p.second.group_.init(shared_, rng);
+        // XXX(stephentu): better dish assignment
+        // randomly pick the dish
+        p.second.dish_ = dish_dist(rng);
+      }
+      for (size_t j = 0; j < acc.n(); j++) {
+        const size_t w = acc.get(j).get<uint32_t>();
+        MICROSCOPES_DCHECK(w < def.v(), "invalid entry");
+        auto &table_ref = restaurants_[i].add_value(j, actual_assignments[i][j]);
+        table_ref.group_.add_value(shared_, w, rng);
+        auto &dish = dishes_.group(table_ref.dish_);
+        dish.group_.add_value(shared_, w, rng);
+      }
+    }
+  }
+
+  inline size_t nentities() const { return restaurants_.size(); }
+  inline size_t ntopics() const { return dishes_.ngroups(); }
+  inline size_t nwords() const { return shared_.dim; }
+
+  inline size_t
+  nterms(size_t eid) const
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    return restaurants_[eid].nentities();
+  }
+
+  /**
+   * Returns (top level, bottom level) ids removed
+   */
+  inline std::pair<size_t, size_t>
+  remove_value(size_t eid,
+               size_t vid,
+               const common::value_accessor &value,
+               common::rng_t &rng)
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    MICROSCOPES_DCHECK(vid < nterms(eid), "invalid vid");
+    const size_t w = value.get<uint32_t>();
+    MICROSCOPES_DCHECK(w < nwords(), "invalid w");
+    auto ptable = restaurants_[eid].remove_value(vid);
+    ptable.second.group_.remove_value(shared_, w, rng);
+    auto &dish = dishes_.group(ptable.second.dish_);
+    dish.group_.remove_value(shared_, w, rng);
+    return std::make_pair(ptable.second.dish_, ptable.first);
+  }
+
+  inline size_t
+  tablesize(size_t eid, size_t tid) const
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    return restaurants_[eid].groupsize(tid);
+  }
+
+  inline void
+  delete_table(size_t eid, size_t tid)
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    restaurants_[eid].delete_group(tid);
+  }
+
+  inline size_t
+  dishsize(size_t did) const
+  {
+    return dishes_.group(did).group_.count_sum;
+  }
+
+  inline void
+  delete_dish(size_t did)
+  {
+    MICROSCOPES_DCHECK(dishsize(did) == 0, "dish not empty");
+    dishes_.delete_group(did);
+  }
+
+  inline void
+  inplace_score_value(
+    std::pair<std::vector<size_t>, std::vector<float>> &scores,
+    size_t eid,
+    size_t vid,
+    const common::value_accessor &value,
+    common::rng_t &rng) const
+  {
+    using distributions::fast_log;
+
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    MICROSCOPES_DCHECK(vid < nterms(eid), "invalid vid");
+
+    scores.first.clear();
+    scores.second.clear();
+
+    const size_t w = value.get<uint32_t>();
+    MICROSCOPES_DCHECK(w < nwords(), "invalid w");
+    MICROSCOPES_DCHECK(restaurants_[eid].empty_groups().size(), "no empty tables");
+
+    // XXX(stephentu):
+    // we assume for now that exactly one dish is empty
+#ifdef DEBUG_MODE
+    size_t nempty_dishes = 0;
+    for (const auto &p : dishes_)
+      if (!p.second.group_.count_sum)
+        nempty_dishes++;
+    MICROSCOPES_ASSERT(nempty_dishes == 1);
+#endif /* DEBUG_MODE */
+
+    // compute Eq. 31
+    float sum = 0.;
+    float pseudocounts = 0.;
+    for (const auto &p : dishes_) {
+      size_t pcount = p.second.group_.count_sum;
+      if (!pcount)
+        pcount = alpha_;
+      sum += float(pcount) *
+             (shared_.alphas[w] + p.second.group_.counts[w]) /
+             (shared_alphas_sum_ + p.second.group_.count_sum);
+      pseudocounts += float(pcount);
+    }
+    const float lg_pr_word_new_table = fast_log(sum / pseudocounts);
+
+    pseudocounts = 0.;
+    for (const auto &p : restaurants_[eid]) {
+      scores.first.push_back(p.first);
+      const auto pcount = restaurants_[eid].pseudocount(p.first, p.second);
+      const float lg_pcount = fast_log(pcount);
+      if (!p.first) {
+        scores.second.push_back(
+          lg_pcount + lg_pr_word_new_table);
+      } else {
+        scores.second.push_back(
+          lg_pcount + p.second.data_.group_.score_value(shared_, w, rng));
+      }
+      pseudocounts += pcount;
+    }
+
+    const float lgnorm = fast_log(pseudocounts);
+    for (auto &s : scores.second)
+      s -= lgnorm;
+  }
+
+  inline void
+  add_value(size_t eid,
+            size_t vid,
+            size_t tid,
+            const common::value_accessor &value,
+            common::rng_t &rng)
+  {
+    using distributions::fast_log;
+
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    MICROSCOPES_DCHECK(vid < nterms(eid), "invalid vid");
+
+    const size_t w = value.get<uint32_t>();
+    MICROSCOPES_DCHECK(w < nwords(), "invalid w");
+
+    auto &restaurant = restaurants_[eid];
+    auto &table = restaurant.group(tid);
+    auto &table_ref = restaurant.add_value(vid, tid);
+    table_ref.group_.add_value(shared_, w, rng);
+
+    if (table.count_) {
+      // easy case-- table already exists
+      MICROSCOPES_ASSERT(dishsize(table.data_.dish_));
+      auto &dish = dishes_.group(table.data_.dish_);
+      dish.group_.add_value(shared_, w, rng);
+    } else {
+      // sample the dish for the table
+      std::vector<float> scores;
+      scores.reserve(ntopics());
+      float pseudocounts = 0.;
+      for (const auto &p : dishes_) {
+        size_t pcount = p.second.group_.count_sum;
+        if (!pcount)
+          pcount = alpha_;
+        const float likelihood = p.second.group_.score_value(shared_, w, rng);
+        scores.push_back(fast_log(float(pcount)) + likelihood);
+        pseudocounts += float(pcount);
+      }
+
+      const float lgnorm = fast_log(pseudocounts);
+      for (auto &s : scores)
+        s -= lgnorm;
+
+      const size_t k = common::util::sample_discrete_log(scores, rng);
+      table.data_.dish_ = k;
+
+      auto &dish = dishes_.group(table.data_.dish_);
+      dish.group_.add_value(shared_, w, rng);
+    }
+  }
+
+  inline size_t
+  remove_table(size_t eid,
+               size_t tid,
+               common::rng_t &rng)
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+
+    auto &table = restaurants_[eid].group(tid);
+    auto &dish = dishes_.group(table.data_.dish_);
+    for (int i = 0; i < table.data_.group_.dim; i++) {
+      const size_t cnt = table.data_.group_.counts[i];
+      MICROSCOPES_ASSERT((size_t)dish.group_.counts[i] >= cnt);
+      MICROSCOPES_ASSERT((size_t)dish.group_.count_sum >= cnt);
+      dish.group_.counts[i] -= cnt;
+      dish.group_.count_sum -= cnt;
+    }
+
+    table.data_.dish_ = -1;
+  }
+
+  inline void
+  inplace_score_table(
+    std::pair<std::vector<size_t>, std::vector<float>> &scores,
+    size_t eid,
+    size_t tid,
+    common::rng_t &rng) const
+  {
+    using distributions::fast_log;
+
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+
+    scores.first.clear();
+    scores.second.clear();
+
+    auto &table = restaurants_[eid].group(tid);
+    MICROSCOPES_DCHECK(table.data_.dish_ == -1,
+        "table assigned, cannot be scored");
+
+    // XXX(stephentu):
+    // we assume for now that exactly one dish is empty
+#ifdef DEBUG_MODE
+    size_t nempty_dishes = 0;
+    for (const auto &p : dishes_)
+      if (!p.second.group_.count_sum)
+        nempty_dishes++;
+    MICROSCOPES_ASSERT(nempty_dishes == 1);
+#endif /* DEBUG_MODE */
+
+    // sparsify the table suffstats
+    //
+    // XXX(stephentu): this is a horrible hack for now--
+    // we really want a sparse representation for the
+    // dirichlet suff stats.
+    std::map<size_t, size_t> table_suffstats;
+    for (size_t i = 0; i < nwords(); i++) {
+      const size_t cnt = table.data_.group_.counts[i];
+      if (!cnt)
+        continue;
+      table_suffstats[i] = cnt;
+    }
+
+    float pseudocounts = 0.;
+    for (const auto &p : dishes_) {
+      size_t pcount = p.second.group_.count_sum;
+      if (!pcount)
+        pcount = alpha_;
+
+      float sum = fast_log(pcount);
+      DD::Scorer scorer;
+      scorer.init(shared_, p.second.group_, rng);
+      for (const auto &pp : table_suffstats) {
+        const float score = scorer.eval(shared_, pp.first, rng);
+        sum += float(pp.second) * score;
+      }
+      scores.first.push_back(p.first);
+      scores.second.push_back(sum);
+    }
+
+    const float lgnorm = fast_log(pseudocounts);
+    for (auto &s : scores.second)
+      s -= lgnorm;
+  }
+
+  inline size_t
+  add_table(size_t eid,
+            size_t tid,
+            size_t did,
+            common::rng_t &rng)
+  {
+    MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+    auto &table = restaurants_[eid].group(tid);
+    MICROSCOPES_DCHECK(table.data_.dish_ == -1, "table assigned");
+
+    auto &dish = dishes_.group(did);
+    for (int i = 0; i < table.data_.group_.dim; i++) {
+      const size_t cnt = table.data_.group_.counts[i];
+      dish.group_.counts[i] += cnt;
+      dish.group_.count_sum += cnt;
+    }
+
+    table.data_.dish_ = did;
+  }
+
+private:
+
+  struct dish_suffstat_t {
+    DD::Group group_;
+  };
+
+  struct restaurant_suffstat_t {
+    restaurant_suffstat_t() : group_(), dish_(-1) {}
+
+    DD::Group group_;
+    ssize_t dish_;
+  };
+
+  float alpha_; // hyperparam for the top level DP
+  DD::Shared shared_; // hyperparam on the base measure of the individual DPs
+  float shared_alphas_sum_; // normalization constant to turn the
+                           // base measure dirichlet alphas into
+                           // a probability distribution
+  common::simple_group_manager<dish_suffstat_t> dishes_;
+  std::vector<common::group_manager<restaurant_suffstat_t>> restaurants_;
 };
 
 } // namespace lda

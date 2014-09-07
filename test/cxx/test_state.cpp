@@ -8,10 +8,19 @@
 #include <microscopes/lda/model.hpp>
 
 using namespace std;
+using namespace microscopes::io;
 using namespace microscopes::common;
 using namespace microscopes::lda;
 
 typedef fixed_state::message_type message_type;
+
+static inline string
+to_crp_message(float alpha)
+{
+  CRP m;
+  m.set_alpha(alpha);
+  return util::protobuf_to_string(m);
+}
 
 static inline string
 to_dirichlet_hp_message(const vector<float> &alphas)
@@ -52,14 +61,15 @@ main(void)
 
   rng_t r;
 
-  auto state = fixed_state::initialize(
+  auto s = make_shared<fixed_state>(
       defn,
       to_dirichlet_hp_message(vector<float>(K, 1.)),
       to_dirichlet_hp_message(vector<float>(V, 1.)),
       *data,
+      vector<vector<size_t>>(),
       r);
 
-  fixed_model model(state, data);
+  fixed_model model(s, data);
   MICROSCOPES_CHECK(model.nentities() == N, "nentities()");
   MICROSCOPES_CHECK(model.ntopics() == K, "ntopics()");
   MICROSCOPES_CHECK(model.assignments().size() == N, "fail N");
@@ -68,6 +78,19 @@ main(void)
     MICROSCOPES_CHECK(model.nvariables(i) == (i + 1), "nvariables(i)");
     MICROSCOPES_CHECK(model.assignments()[i].size() == (i + 1), "fail inner");
   }
+
+  model_definition hdp_defn(N, V);
+
+  auto hs = make_shared<state>(
+      hdp_defn,
+      to_crp_message(1.0),
+      to_dirichlet_hp_message(vector<float>(V, 1.)),
+      *data,
+      10,
+      vector<vector<size_t>>(),
+      r);
+
+  MICROSCOPES_CHECK(hs->nentities() == N, "nentities()");
 
   return 0;
 }
