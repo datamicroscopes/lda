@@ -102,6 +102,40 @@ test1()
 }
 
 static void
+VerifyTableSuffstats(
+    const vector<map<size_t, vector<size_t>>> &table_suffstats,
+    state &s)
+{
+  const size_t V = table_suffstats.front().begin()->second.size();
+  for (size_t i = 0; i < table_suffstats.size(); i++) {
+    for (const auto &p : table_suffstats[i]) {
+      const auto &g = s.table_group(i, p.first);
+      MICROSCOPES_CHECK((size_t)g.dim == V, "g.dim");
+      for (size_t k = 0; k < V; k++) {
+        MICROSCOPES_CHECK(g.counts[k] >= 0, "negative count");
+        MICROSCOPES_CHECK((size_t)g.counts[k] == p.second[k], "counts !=");
+      }
+    }
+  }
+}
+
+static void
+VerifyDishSuffstats(
+    const map<size_t, vector<size_t>> &dish_suffstats,
+    state &s)
+{
+  const size_t V = dish_suffstats.begin()->second.size();
+  for (const auto &p : dish_suffstats) {
+    const auto &g = s.dish_group(p.first);
+    MICROSCOPES_CHECK((size_t)g.dim == V, "g.dim");
+    for (size_t k = 0; k < V; k++) {
+      MICROSCOPES_CHECK(g.counts[k] >= 0, "negative count");
+      MICROSCOPES_CHECK((size_t)g.counts[k] == p.second[k], "counts !=");
+    }
+  }
+}
+
+static void
 test2()
 {
   const size_t N = 10, V = 10;
@@ -139,6 +173,22 @@ test2()
   for (size_t i = 0; i < V; i++)
     MICROSCOPES_CHECK(s->vocab_shared().alphas[i] == 1., "shared.alphas[i]");
 
+  // --- ensure empty dishes ---
+
+  const auto empty_dishes = s->empty_dishes();
+  if (empty_dishes.empty()) {
+    s->create_dish(r);
+  }
+
+  // --- ensure empty tables ---
+
+  for (size_t i = 0; i < N; i++) {
+    const auto empty_tables = s->empty_tables(i);
+    if (empty_tables.empty()) {
+      s->create_table(i, r);
+    }
+  }
+
   // --- verify table suffstats ---
 
   vector< map<size_t, vector<size_t>> > table_suffstats;
@@ -164,16 +214,7 @@ test2()
     }
   }
 
-  for (size_t i = 0; i < N; i++) {
-    for (const auto &p : table_suffstats[i]) {
-      const auto &g = s->table_group(i, p.first);
-      MICROSCOPES_CHECK((size_t)g.dim == V, "g.dim");
-      for (size_t k = 0; k < V; k++) {
-        MICROSCOPES_CHECK(g.counts[k] >= 0, "negative count");
-        MICROSCOPES_CHECK((size_t)g.counts[k] == p.second[k], "counts !=");
-      }
-    }
-  }
+  VerifyTableSuffstats(table_suffstats, *s);
 
   // --- verify dish suffstats ---
 
@@ -196,14 +237,46 @@ test2()
     }
   }
 
-  for (const auto &p : dish_suffstats) {
-    const auto &g = s->dish_group(p.first);
-    MICROSCOPES_CHECK((size_t)g.dim == V, "g.dim");
-    for (size_t k = 0; k < V; k++) {
-      MICROSCOPES_CHECK(g.counts[k] >= 0, "negative count");
-      MICROSCOPES_CHECK((size_t)g.counts[k] == p.second[k], "counts !=");
-    }
+  VerifyDishSuffstats(dish_suffstats, *s);
+
+  // --- test remove_value ---
+
+  auto acc0 = data->get(0);
+  for (size_t v = 0; v < acc0.n(); v++) {
+    const size_t w = acc0.get(v).get<uint32_t>();
+    const size_t did0 = dish_assignments[0][v];
+    const size_t tid0 = table_assignments[0][v];
+    const auto p = s->remove_value(0, v, acc0.get(v), r);
+    MICROSCOPES_CHECK(did0 == p.first, "wrong did");
+    MICROSCOPES_CHECK(tid0 == p.second, "wrong tid");
+    table_suffstats[0][tid0][w] -= 1;
+    dish_suffstats[did0][w] -= 1;
   }
+
+  VerifyTableSuffstats(table_suffstats, *s);
+  VerifyDishSuffstats(dish_suffstats, *s);
+
+  // --- test score_value ---
+
+  pair<vector<size_t>, vector<float>> scores;
+  for (size_t v = 0; v < acc0.n(); v++) {
+    s->inplace_score_value(scores, 0, v, acc0.get(v), r);
+    // XXX(stephentu): needs some actual testing
+  }
+
+  // --- test add_value ---
+
+  for (size_t v = 0; v < acc0.n(); v++) {
+    const size_t w = acc0.get(v).get<uint32_t>();
+    const size_t tid0 = 0;
+    const size_t did0 = s->add_value(0, v, tid0, acc0.get(v), r);
+    table_suffstats[0][tid0][w] += 1;
+    dish_suffstats[did0][w] += 1;
+  }
+
+  VerifyTableSuffstats(table_suffstats, *s);
+  VerifyDishSuffstats(dish_suffstats, *s);
+
 }
 
 int
