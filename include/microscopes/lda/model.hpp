@@ -477,6 +477,22 @@ public:
     return ret;
   }
 
+  inline std::vector<std::vector<ssize_t>>
+  table_assignments() const
+  {
+    std::vector<std::vector<ssize_t>> ret;
+    ret.resize(nentities());
+    for (size_t i = 0; i < nentities(); i++) {
+      auto &r = restaurants_[i];
+      ret[i].resize(r.nentities());
+      for (size_t j = 0; j < r.nentities(); j++) {
+        const ssize_t tid = r.assignments()[j];
+        ret[i][j] = tid;
+      }
+    }
+    return ret;
+  }
+
   /**
    * Returns (top level, bottom level) ids removed
    */
@@ -747,6 +763,29 @@ public:
     }
 
     table.data_.dish_ = did;
+  }
+
+  // --- the methods exposed below are for testing ---
+
+  inline float dish_alpha() const { return alpha_; }
+  inline const DD::Shared & vocab_shared() const { return shared_; }
+
+  inline const DD::Group &
+  dish_group(size_t did) const
+  {
+    return dishes_.group(did).group_;
+  }
+
+  inline ssize_t
+  table_dish(size_t eid, size_t tid) const
+  {
+    return restaurants_[eid].group(tid).data_.dish_;
+  }
+
+  inline const DD::Group &
+  table_group(size_t eid, size_t tid) const
+  {
+    return restaurants_[eid].group(tid).data_.group_;
   }
 
 private:
