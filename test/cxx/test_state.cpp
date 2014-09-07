@@ -139,10 +139,12 @@ test2()
   for (size_t i = 0; i < V; i++)
     MICROSCOPES_CHECK(s->vocab_shared().alphas[i] == 1., "shared.alphas[i]");
 
-  vector< map<size_t, vector<size_t>> > suffstats;
-  suffstats.resize(N);
+  // --- verify table suffstats ---
+
+  vector< map<size_t, vector<size_t>> > table_suffstats;
+  table_suffstats.resize(N);
   for (size_t i = 0; i < N; i++) {
-    auto &m = suffstats[i];
+    auto &m = table_suffstats[i];
     for (auto tid : s->tables(i))
       m[tid].resize(V);
   }
@@ -156,14 +158,14 @@ test2()
     for (size_t j = 0; j < W; j++) {
       MICROSCOPES_CHECK(table_assignments[i][j] != -1, "table_assignments[i][j] == -1");
       const size_t tid = table_assignments[i][j];
-      auto it = suffstats[i].find(tid);
-      MICROSCOPES_CHECK(it != suffstats[i].end(), "cant find tid");
+      auto it = table_suffstats[i].find(tid);
+      MICROSCOPES_CHECK(it != table_suffstats[i].end(), "cant find tid");
       it->second[acc.get(j).get<uint32_t>()]++;
     }
   }
 
   for (size_t i = 0; i < N; i++) {
-    for (const auto &p : suffstats[i]) {
+    for (const auto &p : table_suffstats[i]) {
       const auto &g = s->table_group(i, p.first);
       MICROSCOPES_CHECK((size_t)g.dim == V, "g.dim");
       for (size_t k = 0; k < V; k++) {
@@ -173,6 +175,35 @@ test2()
     }
   }
 
+  // --- verify dish suffstats ---
+
+  map<size_t, vector<size_t>> dish_suffstats;
+  for (auto did : s->dishes()) {
+    dish_suffstats[did].resize(V);
+  }
+
+  auto dish_assignments = s->assignments();
+  MICROSCOPES_CHECK(dish_assignments.size() == N, "dish_assignments.size()");
+
+  for (size_t i = 0; i < N; i++) {
+    const size_t W = i + 1;
+    auto acc = data->get(i);
+    for (size_t j = 0; j < W; j++) {
+      const size_t did = dish_assignments[i][j];
+      auto it = dish_suffstats.find(did);
+      MICROSCOPES_CHECK(it != dish_suffstats.end(), "cant find did");
+      it->second[acc.get(j).get<uint32_t>()]++;
+    }
+  }
+
+  for (const auto &p : dish_suffstats) {
+    const auto &g = s->dish_group(p.first);
+    MICROSCOPES_CHECK((size_t)g.dim == V, "g.dim");
+    for (size_t k = 0; k < V; k++) {
+      MICROSCOPES_CHECK(g.counts[k] >= 0, "negative count");
+      MICROSCOPES_CHECK((size_t)g.counts[k] == p.second[k], "counts !=");
+    }
+  }
 }
 
 int

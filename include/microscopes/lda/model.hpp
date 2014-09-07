@@ -540,6 +540,12 @@ public:
     return dishes_.group(did).group_.count_sum;
   }
 
+  inline std::vector<size_t>
+  dishes() const
+  {
+    return dishes_.groups();
+  }
+
   inline std::set<size_t>
   empty_dishes() const
   {
