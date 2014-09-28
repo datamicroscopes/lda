@@ -83,3 +83,70 @@ cdef class state:
                 initial_dishes,
                 c_dish_assignments,
                 (<rng> r)._thisptr[0])
+
+            if self._thisptr.get() == NULL:
+                raise RuntimeError("could not properly construct state")
+
+    def nentities(self):
+        return self._thisptr.get()[0].nentities()
+
+
+cdef class document_model:
+    def __cinit__(self, state s, abstract_dataview d):
+        self._thisptr.reset(
+            new c_document_model(
+                s._thisptr, d._thisptr))
+
+
+cdef class table_model:
+    def __cinit__(self, state s, size_t document):
+        validator.validate_in_range(document, s.nentities())
+        self._thisptr.reset(
+            new c_table_model(
+                s._thisptr, document))
+
+
+def bind(state s, **kwargs):
+    valid_kwargs = ('data', 'document',)
+    validator.validate_kwargs(kwargs, valid_kwargs)
+    if 'data' in kwargs:
+        return document_model(s, kwargs['data'])
+    elif 'document' in kwargs:
+        return table_model(s, kwargs['document'])
+    else:
+        raise ValueError("invalid arguments")
+
+
+def initialize(model_definition defn,
+               abstract_dataview data,
+               rng r,
+               **kwargs):
+    """Initialize state to a random, valid point in the state space
+
+    Parameters
+    ----------
+    defn : model definition
+    data : variadic dataview
+    rng : random state
+
+    """
+    return state(defn=defn, data=data, r=r, **kwargs)
+
+
+def deserialize(model_definition defn, bytes):
+    """Restore a state object from a bytestring representation.
+
+    Note that a serialized representation of a state object does
+    not contain its own structural definition.
+
+    Parameters
+    ----------
+    defn : model definition
+    bytes : bytestring representation
+
+    """
+    return state(defn=defn, bytes=bytes)
+
+
+def _reconstruct_state(defn, bytes):
+    return deserialize(defn, bytes)

@@ -17,6 +17,13 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         size_t nwords()
         size_t nterms(size_t) except +
 
+    cdef cppclass document_model:
+        document_model(const shared_ptr[state] &,
+                       const shared_ptr[dataview] &)
+
+    cdef cppclass table_model:
+        table_model(const shared_ptr[state] &, size_t)
+
 
 cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state":
     shared_ptr[state] \
