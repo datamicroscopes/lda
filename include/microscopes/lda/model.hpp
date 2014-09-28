@@ -8,6 +8,7 @@
 #include <distributions/models/dd.hpp>
 #include <distributions/io/protobuf.hpp>
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -420,15 +421,16 @@ public:
         auto p = restaurants_[i].create_group();
         MICROSCOPES_ASSERT(p.second.dish_ == -1);
         p.second.group_.init(shared_, rng);
-        // XXX(stephentu): better dish assignment
-        // randomly pick the dish
-        p.second.dish_ = dish_dist(rng);
       }
       MICROSCOPES_ASSERT(restaurants_[i].ngroups() == ntables);
       for (size_t j = 0; j < acc.n(); j++) {
         const size_t w = acc.get(j).get<uint32_t>();
         MICROSCOPES_DCHECK(w < def.v(), "invalid entry");
         auto &table_ref = restaurants_[i].add_value(actual_assignments[i][j], j);
+        // XXX(stephentu): better dish assignment
+        // randomly pick the dish
+        if (table_ref.dish_ == -1)
+          table_ref.dish_ = dish_dist(rng);
         table_ref.group_.add_value(shared_, w, rng);
         auto &dish = dishes_.group(table_ref.dish_);
         dish.group_.add_value(shared_, w, rng);
@@ -592,6 +594,19 @@ public:
   delete_dish(size_t did)
   {
     MICROSCOPES_DCHECK(dishsize(did) == 0, "dish not empty");
+#ifdef DEBUG_MODE
+    // iterate over all tables to make sure no dangling references
+    // to this dish!
+    for (const auto &r : restaurants_) {
+      for (const auto &table : r) {
+        if (table.second.data_.dish_ == -1 ||
+            size_t(table.second.data_.dish_) != did)
+          continue;
+        dump_internal_state();
+        MICROSCOPES_DCHECK(false, "dangling reference found");
+      }
+    }
+#endif
     dishes_.delete_group(did);
   }
 
@@ -683,6 +698,7 @@ public:
     } else {
       // sample the dish for the table
       std::vector<float> scores;
+      std::vector<size_t> dids;
       scores.reserve(ntopics());
       float pseudocounts = 0.;
       for (const auto &p : dishes_) {
@@ -691,6 +707,7 @@ public:
           pcount = alpha_;
         const float likelihood = p.second.group_.score_value(shared_, w, rng);
         scores.push_back(fast_log(float(pcount)) + likelihood);
+        dids.push_back(p.first);
         pseudocounts += float(pcount);
       }
 
@@ -698,12 +715,12 @@ public:
       for (auto &s : scores)
         s -= lgnorm;
 
-      const size_t k = common::util::sample_discrete_log(scores, rng);
-      table.dish_ = k;
+      const size_t did = dids[common::util::sample_discrete_log(scores, rng)];
+      table.dish_ = did;
 
       auto &dish = dishes_.group(table.dish_);
       dish.group_.add_value(shared_, w, rng);
-      return k;
+      return did;
     }
   }
 
@@ -827,6 +844,30 @@ public:
     return restaurants_[eid].group(tid).data_.group_;
   }
 
+  // for debugging purposes
+
+  void
+  dump_internal_state() const
+  {
+    std::cout << "--- LDA internal state ---" << std::endl;
+    for (const auto &d : dishes_) {
+      std::cout << "  dish ID: " << d.first << ", count: " << d.second.group_.count_sum << std::endl;
+    }
+
+    for (size_t i = 0; i < restaurants_.size(); i++) {
+      std::cout << "  rest ID: " << i << std::endl;
+      for (const auto &t : restaurants_[i]) {
+        std::cout << "    table ID: " << t.first
+                  << ", dish ID: " << t.second.data_.dish_
+                  << ", manager count: " << t.second.count_
+                  << ", suffstat count: " << t.second.data_.group_.count_sum
+                  << std::endl;
+      }
+    }
+
+    std::cout << "--------------------------" << std::endl;
+  }
+
 private:
 
   struct dish_suffstat_t {
@@ -914,8 +955,11 @@ private:
 class table_model {
 public:
   table_model(const std::shared_ptr<state> &impl, size_t eid)
-    : impl_(impl), eid_(eid), tid_mapping_(impl_->tables(eid))
+    : impl_(impl), eid_(eid), tid_mapping_()
   {
+    for (auto tid : impl_->tables(eid))
+      if (impl_->tablesize(eid, tid))
+        tid_mapping_.push_back(tid);
   }
 
   inline std::vector<ssize_t> assignments() const { return impl_->table_assignments()[eid_]; }

@@ -4,6 +4,7 @@
 # python imports
 from microscopes.common import validator
 from microscopes.io.schema_pb2 import CRP
+from distributions.io.schema_pb2 import DirichletDiscrete
 
 
 cdef class state:
@@ -30,7 +31,7 @@ cdef class state:
             raise ValueError("need exaclty one of `data' or `bytes'")
 
         valid_kwargs = ('data', 'bytes', 'r', 'initial_dishes',
-                        'dish_hp', 'vocab_hp', 'dish_assignments',)
+                        'dish_hp', 'vocab_hps', 'dish_assignments',)
         validator.validate_kwargs(kwargs, valid_kwargs)
 
         if 'data' in kwargs:
@@ -43,7 +44,7 @@ cdef class state:
             r = kwargs['r']
             validator.validate_type(r, rng, "r")
 
-            def make_hp_bytes(hp):
+            def make_dish_hp_bytes(hp):
                 m = CRP()
                 m.alpha = hp['alpha']
                 return m.SerializeToString()
@@ -52,13 +53,20 @@ cdef class state:
             if dish_hp is None:
                 dish_hp = {'alpha': 1.}
             validator.validate_type(dish_hp, dict, 'dish_hp')
-            dish_hp_bytes = make_hp_bytes(dish_hp)
+            dish_hp_bytes = make_dish_hp_bytes(dish_hp)
 
-            vocab_hp = kwargs.get('vocab_hp', None)
-            if vocab_hp is None:
-                vocab_hp = {'alpha': 1.}
-            validator.validate_type(vocab_hp, dict, 'vocab_hp')
-            vocab_hp_bytes = make_hp_bytes(vocab_hp)
+            def make_vocab_hps_bytes(hp):
+                m = DirichletDiscrete.Shared()
+                for alpha in hp['alphas']:
+                    m.alphas.append(float(alpha))
+                return m.SerializeToString()
+
+            vocab_hps = kwargs.get('vocab_hps', None)
+            if vocab_hps is None:
+                vocab_hps = {'alphas': [1.]*defn.v()}
+            validator.validate_len(vocab_hps['alphas'], defn.v())
+            validator.validate_type(vocab_hps, dict, 'vocab_hps')
+            vocab_hps_bytes = make_vocab_hps_bytes(vocab_hps)
 
             initial_dishes = kwargs.get('initial_dishes', 10)
             validator.validate_positive(initial_dishes, 'initial_dishes')
@@ -78,7 +86,7 @@ cdef class state:
             self._thisptr = c_initialize(
                 defn._thisptr.get()[0],
                 dish_hp_bytes,
-                vocab_hp_bytes,
+                vocab_hps_bytes,
                 (<abstract_dataview> data)._thisptr.get()[0],
                 initial_dishes,
                 c_dish_assignments,
