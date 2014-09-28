@@ -204,7 +204,6 @@ def make_extension(module_name):
 
 extensions = cythonize([
     make_extension('microscopes.lda.definition'),
-    make_extension('microscopes.lda.model'),
     make_extension('microscopes.lda._model'),
 ], include_path=[microscopes_common_cython_inc])
 

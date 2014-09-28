@@ -13,3 +13,9 @@ cdef class model_definition:
         self._n = n
         self._v = v
         self._thisptr.reset(new c_model_definition(n, v))
+
+    def n(self):
+        return self._n
+
+    def v(self):
+        return self._v
