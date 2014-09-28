@@ -341,6 +341,16 @@ public:
   typedef io::CRP dish_message_type;
   typedef distributions::protobuf::DirichletDiscrete_Shared vocab_message_type;
 
+  // keep the state constructor convention developed in the
+  // rest of the codebase
+
+  template <class... Args>
+  static inline std::shared_ptr<state>
+  initialize(Args &&... args)
+  {
+    return std::make_shared<state>(std::forward<Args>(args)...);
+  }
+
   state(const model_definition &def,
         const common::hyperparam_bag_t &topic_init,
         const common::hyperparam_bag_t &word_init,
