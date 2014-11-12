@@ -571,6 +571,29 @@ public:
     return ret;
   }
 
+  /**
+   * Returns, for each entity, a map from
+   * table IDs -> (global) dish assignments
+   *
+   */
+  inline std::vector<std::map<size_t, ssize_t>>
+  dish_assignments() const
+  {
+    std::vector<std::map<size_t, ssize_t>> ret;
+    ret.resize(nentities());
+    for (size_t i = 0; i < nentities(); i++) {
+      auto &r = restaurants_[i];
+      for (const auto &g : r)
+        ret[i][g.first] = g.second.data_.dish_;
+    }
+    return ret;
+  }
+
+  /**
+   * Returns, for each entity, an assignment vector
+   * from each word to the (local) table it is assigned to.
+   *
+   */
   inline std::vector<std::vector<ssize_t>>
   table_assignments() const
   {

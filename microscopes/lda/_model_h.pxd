@@ -1,4 +1,5 @@
 from libcpp.vector cimport vector
+from libcpp.map cimport map
 from libc.stddef cimport size_t
 
 from microscopes._shared_ptr_h cimport shared_ptr
@@ -16,6 +17,10 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         size_t ntopics()
         size_t nwords()
         size_t nterms(size_t) except +
+
+        vector[map[size_t, ssize_t]] dish_assignments()
+        vector[vector[ssize_t]] table_assignments()
+
         float score_assignment()
         float score_data(rng_t &)
 
