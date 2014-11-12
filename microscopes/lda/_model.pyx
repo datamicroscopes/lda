@@ -134,14 +134,14 @@ cdef class state:
 
                 for assignments in dish_assignments:
                     c_dish_assignment.clear()
-                    for dish in dish_assignments:
+                    for dish in assignments:
                         c_dish_assignment.push_back(dish)
                     c_dish_assignments.push_back(c_dish_assignment)
 
-                for i, table_assignments in enumerate(table_assignments):
-                    validator.validate_len(table_assignments, data.rowsize(i))
+                for i, assignments in enumerate(table_assignments):
+                    validator.validate_len(assignments, data.rowsize(i))
                     c_table_assignment.clear()
-                    for table in table_assignments:
+                    for table in assignments:
                         c_table_assignment.push_back(table)
                     c_table_assignments.push_back(c_table_assignment)
 
@@ -159,6 +159,12 @@ cdef class state:
 
     def nentities(self):
         return self._thisptr.get()[0].nentities()
+
+    def score_assignment(self):
+        return self._thisptr.get()[0].score_assignment()
+
+    def score_data(self, rng r):
+        return self._thisptr.get()[0].score_data(r._thisptr[0])
 
 
 cdef class document_model:

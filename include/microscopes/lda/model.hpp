@@ -916,7 +916,7 @@ public:
     size_t i = 0;
     for (const auto &p : dishes_) {
       const size_t count = p.second.group_.count_sum;
-      for (size_t idx = 0; i < count; idx++) {
+      for (size_t idx = 0; idx < count; idx++) {
         const float numer = idx ? idx : alpha_;
         const float denom = float(i) + alpha_;
         score += fast_log(numer / denom);
@@ -928,6 +928,15 @@ public:
       score += r.score_assignment();
 
     return score;
+  }
+
+  float
+  score_data(common::rng_t &rng) const
+  {
+    float s = 0.;
+    for (const auto &d : dishes_)
+      s += d.second.group_.score_data(shared_, rng);
+    return s;
   }
 
   // --- the methods exposed below are for testing ---

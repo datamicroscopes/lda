@@ -16,6 +16,8 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         size_t ntopics()
         size_t nwords()
         size_t nterms(size_t) except +
+        float score_assignment()
+        float score_data(rng_t &)
 
     cdef cppclass document_model:
         document_model(const shared_ptr[state] &,
@@ -36,7 +38,8 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state"
                rng_t &) except +
 
     shared_ptr[state] \
-    initialize_explicit "microscopes::lda::state::initialize" (const model_definition &,
+    initialize_explicit "microscopes::lda::state::initialize" (
+               const model_definition &,
                const hyperparam_bag_t &,
                const hyperparam_bag_t &,
                const dataview &,
