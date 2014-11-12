@@ -279,10 +279,49 @@ test2()
 
 }
 
+static void
+test3()
+{
+  const size_t N = 3, V = 10;
+  model_definition defn(N, V);
+
+  unique_ptr< uint32_t[] > raw(new uint32_t[arith_series(N)]);
+
+  vector<unsigned> ns;
+  uint32_t *px = raw.get();
+  for (size_t i = 0; i < N; i++) {
+    for (size_t j = 0; j < (i+1); j++, px++) {
+      *px = j;
+    }
+    ns.push_back(i+1);
+  }
+
+  auto data = make_shared<variadic::row_major_dataview>(
+      (const uint8_t *) raw.get(),
+      ns,
+      runtime_type(TYPE_U32));
+
+  rng_t r;
+
+  auto s = make_shared<state>(
+      defn,
+      to_crp_message(1.0),
+      to_dirichlet_hp_message(vector<float>(V, 1.)),
+      *data,
+      vector<vector<size_t>>({{1}, {2}, {5, 1}}),
+      vector<vector<size_t>>({{0}, {0, 0}, {0, 1, 1}}),
+      r);
+
+  const auto a = s->assignments();
+  const vector<vector<ssize_t>> check({{1}, {2, 2}, {5, 1, 1}});
+  MICROSCOPES_CHECK(check == a, "assignments not correct");
+}
+
 int
 main(void)
 {
   test1();
   test2();
+  test3();
   return 0;
 }

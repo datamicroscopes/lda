@@ -352,17 +352,15 @@ public:
     return std::make_shared<state>(std::forward<Args>(args)...);
   }
 
-  state(const model_definition &def,
-        const common::hyperparam_bag_t &topic_init,
-        const common::hyperparam_bag_t &word_init,
-        const common::variadic::dataview &data,
-        size_t k,
-        const std::vector<std::vector<size_t>> &assignments,
-        common::rng_t &rng)
+private:
+  void
+  common_init(const model_definition &def,
+              const common::hyperparam_bag_t &topic_init,
+              const common::hyperparam_bag_t &word_init,
+              const common::variadic::dataview &data)
   {
     MICROSCOPES_DCHECK(def.v() <= MaxVocabularySize, "vocab too large");
     MICROSCOPES_DCHECK(data.size() == def.n(), "data mismatch");
-    MICROSCOPES_DCHECK(k > 0, "cannot start with zero dishes");
 
     dish_message_type topic_m;
     common::util::protobuf_from_string(topic_m, topic_init);
@@ -379,6 +377,90 @@ public:
       shared_.alphas[i] = word_m.alphas(i);
       shared_alphas_sum_ += word_m.alphas(i);
     }
+  }
+
+public:
+
+  /**
+   * Initialize the state object from both the explicit dish and table
+   * assignments. Checks to make sure the assignment vectors are consistent
+   * with the sizes.
+   *
+   * Requires that both topic_assignments and dish_assignments are filled out:
+   * if you want random initialization use the other constructor.
+   *
+   */
+  state(const model_definition &def,
+        const common::hyperparam_bag_t &topic_init,
+        const common::hyperparam_bag_t &word_init,
+        const common::variadic::dataview &data,
+        const std::vector<std::vector<size_t>> &dish_assignments,
+        const std::vector<std::vector<size_t>> &table_assignments,
+        common::rng_t &rng)
+  {
+    common_init(def, topic_init, word_init, data);
+
+    MICROSCOPES_DCHECK(dish_assignments.size() == def.n(),
+        "invalid size dish_assignments vector");
+    MICROSCOPES_DCHECK(table_assignments.size() == def.n(),
+        "invalid size table_assignments vector");
+
+    size_t num_dishes = 0;
+    for (const auto &p : dish_assignments)
+      for (const auto &q : p)
+        num_dishes = std::max(num_dishes, q);
+    num_dishes += 1;
+
+    for (size_t i = 0; i < num_dishes; i++) {
+      auto p = dishes_.create_group();
+      p.second.group_.init(shared_, rng);
+    }
+
+    restaurants_.resize(def.n());
+    for (size_t i = 0; i < def.n(); i++) {
+      auto acc = data.get(i);
+      MICROSCOPES_DCHECK(acc.n() > 0,
+          "empty documents are not allowed");
+      restaurants_[i] = common::group_manager<restaurant_suffstat_t>(acc.n());
+      MICROSCOPES_DCHECK(table_assignments[i].size() == acc.n(),
+          "invalid size document assignment vector");
+      const size_t ntables = *std::max_element(
+          table_assignments[i].begin(),
+          table_assignments[i].end()) + 1;
+      MICROSCOPES_DCHECK(dish_assignments[i].size() == ntables,
+          "dish assignment not consistent with number of tables");
+      for (size_t j = 0; j < ntables; j++) {
+        auto p = restaurants_[i].create_group();
+        MICROSCOPES_ASSERT(p.second.dish_ == -1);
+        p.second.group_.init(shared_, rng);
+        p.second.dish_ = dish_assignments[i][j];
+      }
+      MICROSCOPES_ASSERT(restaurants_[i].ngroups() == ntables);
+      for (size_t j = 0; j < acc.n(); j++) {
+        const size_t w = acc.get(j).get<uint32_t>();
+        MICROSCOPES_DCHECK(w < def.v(), "invalid entry");
+        auto &table_ref = restaurants_[i].add_value(table_assignments[i][j], j);
+        table_ref.group_.add_value(shared_, w, rng);
+        auto &dish = dishes_.group(table_ref.dish_);
+        dish.group_.add_value(shared_, w, rng);
+      }
+    }
+  }
+
+  /**
+   * Initialize the state object from a (collapsed) assignment
+   * of words directly to topics (and a hint at the # of latent
+   * dishes to materialize at the beginning)
+   */
+  state(const model_definition &def,
+        const common::hyperparam_bag_t &topic_init,
+        const common::hyperparam_bag_t &word_init,
+        const common::variadic::dataview &data,
+        size_t k,
+        const std::vector<std::vector<size_t>> &assignments,
+        common::rng_t &rng)
+  {
+    common_init(def, topic_init, word_init, data);
 
     std::vector<std::vector<size_t>> actual_assignments(assignments);
     if (actual_assignments.empty()) {
@@ -819,6 +901,33 @@ public:
     }
 
     table.data_.dish_ = did;
+  }
+
+  /**
+   * Computes the joint probability of the dish AND table assignments
+   */
+  float
+  score_assignment() const
+  {
+    using distributions::fast_log;
+
+    // XXX: avoid code duplication from common::group_manager
+    float score = 0.;
+    size_t i = 0;
+    for (const auto &p : dishes_) {
+      const size_t count = p.second.group_.count_sum;
+      for (size_t idx = 0; i < count; idx++) {
+        const float numer = idx ? idx : alpha_;
+        const float denom = float(i) + alpha_;
+        score += fast_log(numer / denom);
+      }
+      i++;
+    }
+
+    for (const auto &r : restaurants_)
+      score += r.score_assignment();
+
+    return score;
   }
 
   // --- the methods exposed below are for testing ---
