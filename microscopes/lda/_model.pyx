@@ -21,8 +21,13 @@ cdef class state:
 
     def __cinit__(self, model_definition defn, **kwargs):
         self._defn = defn
+
+        cdef vector[vector[size_t]] c_topic_assignments
+        cdef vector[size_t] c_topic_assignment
         cdef vector[vector[size_t]] c_dish_assignments
         cdef vector[size_t] c_dish_assignment
+        cdef vector[vector[size_t]] c_table_assignments
+        cdef vector[size_t] c_table_assignment
 
         # note: python cannot overload __cinit__(), so we
         # use kwargs to handle both the random initialization case and
@@ -30,8 +35,13 @@ cdef class state:
         if not (('data' in kwargs) ^ ('bytes' in kwargs)):
             raise ValueError("need exaclty one of `data' or `bytes'")
 
-        valid_kwargs = ('data', 'bytes', 'r', 'initial_dishes',
-                        'dish_hp', 'vocab_hps', 'dish_assignments',)
+        valid_kwargs = ('data', 'bytes', 'r',
+                        'dish_hp',
+                        'vocab_hps',
+                        'initial_dishes',
+                        'topic_assignments',
+                        'dish_assignments',
+                        'table_assignments',)
         validator.validate_kwargs(kwargs, valid_kwargs)
 
         if 'data' in kwargs:
@@ -68,29 +78,81 @@ cdef class state:
             validator.validate_type(vocab_hps, dict, 'vocab_hps')
             vocab_hps_bytes = make_vocab_hps_bytes(vocab_hps)
 
-            initial_dishes = kwargs.get('initial_dishes', 10)
-            validator.validate_positive(initial_dishes, 'initial_dishes')
+            has_initial_dishes = 'initial_dishes' in kwargs
+            has_topic_assignments = 'topic_assignments' in kwargs
+            has_dish_assignments = 'dish_assignments' in kwargs
+            has_table_assignments = 'table_assignments' in kwargs
 
-            if 'dish_assignments' in kwargs:
-                dish_assignments = list(kwargs['dish_assignments'])
+            has_first = has_initial_dishes or has_topic_assignments
+            has_second = has_dish_assignments or has_table_assignments
+
+            if has_first and has_second:
+                raise ValueError(
+                    "cannot specify both `initial_dishes' and " +
+                    "`dish_assignments' simultaneously, etc.")
+
+            if has_first or (not has_first and not has_second):
+                initial_dishes = kwargs.get('initial_dishes', 10)
+                validator.validate_positive(initial_dishes, 'initial_dishes')
+
+                if 'topic_assignments' in kwargs:
+                    topic_assignments = list(kwargs['topic_assignments'])
+                    validator.validate_len(
+                        topic_assignments, len(data), 'topic_assignments')
+                    for i, assignments in enumerate(topic_assignments):
+                        validator.validate_len(assignments, data.rowsize(i))
+                        c_topic_assignment.clear()
+                        for topic in assignments:
+                            validator.validate_in_range(topic, initial_dishes)
+                            c_topic_assignment.push_back(topic)
+                        c_topic_assignments.push_back(c_topic_assignment)
+
+                self._thisptr = c_initialize(
+                    defn._thisptr.get()[0],
+                    dish_hp_bytes,
+                    vocab_hps_bytes,
+                    (<abstract_dataview> data)._thisptr.get()[0],
+                    initial_dishes,
+                    c_topic_assignments,
+                    (<rng> r)._thisptr[0])
+
+            else:
+                if not has_dish_assignments or not has_table_assignments:
+                    # XXX: implementation limitation
+                    raise ValueError("need both dish/table assignments")
+
+                dish_assignments = kwargs['dish_assignments']
+                table_assignments = kwargs['table_assignments']
+
                 validator.validate_len(
                     dish_assignments, len(data), 'dish_assignments')
-                for i, assignments in enumerate(dish_assignments):
-                    validator.validate_len(assignments, data.rowsize(i))
+                validator.validate_len(
+                    table_assignments, len(data), 'table_assignments')
+
+                # XXX: validate integrity of dish_assignments
+                # XXX: validate integrity of table_assignments
+
+                for assignments in dish_assignments:
                     c_dish_assignment.clear()
-                    for dish in assignments:
-                        validator.validate_in_range(dish, initial_dishes)
+                    for dish in dish_assignments:
                         c_dish_assignment.push_back(dish)
                     c_dish_assignments.push_back(c_dish_assignment)
 
-            self._thisptr = c_initialize(
-                defn._thisptr.get()[0],
-                dish_hp_bytes,
-                vocab_hps_bytes,
-                (<abstract_dataview> data)._thisptr.get()[0],
-                initial_dishes,
-                c_dish_assignments,
-                (<rng> r)._thisptr[0])
+                for i, table_assignments in enumerate(table_assignments):
+                    validator.validate_len(table_assignments, data.rowsize(i))
+                    c_table_assignment.clear()
+                    for table in table_assignments:
+                        c_table_assignment.push_back(table)
+                    c_table_assignments.push_back(c_table_assignment)
+
+                self._thisptr = c_initialize_explicit(
+                    defn._thisptr.get()[0],
+                    dish_hp_bytes,
+                    vocab_hps_bytes,
+                    (<abstract_dataview> data)._thisptr.get()[0],
+                    c_dish_assignments,
+                    c_table_assignments,
+                    (<rng> r)._thisptr[0])
 
             if self._thisptr.get() == NULL:
                 raise RuntimeError("could not properly construct state")

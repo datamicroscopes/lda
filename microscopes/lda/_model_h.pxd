@@ -34,3 +34,12 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state"
                size_t,
                const vector[vector[size_t]] &,
                rng_t &) except +
+
+    shared_ptr[state] \
+    initialize_explicit "microscopes::lda::state::initialize" (const model_definition &,
+               const hyperparam_bag_t &,
+               const hyperparam_bag_t &,
+               const dataview &,
+               const vector[vector[size_t]] &,
+               const vector[vector[size_t]] &,
+               rng_t &) except +

@@ -10,6 +10,7 @@ from microscopes.lda._model_h cimport (
     document_model as c_document_model,
     table_model as c_table_model,
     initialize as c_initialize,
+    initialize_explicit as c_initialize_explicit,
 )
 from microscopes._shared_ptr_h cimport shared_ptr
 from microscopes.lda.definition cimport (

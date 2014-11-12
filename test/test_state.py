@@ -21,3 +21,22 @@ def test_simple():
     R = rng()
     s = initialize(defn, view, R)
     assert_equals(s.nentities(), len(data))
+
+
+def test_explicit():
+    N, V = 5, 100
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
+    view = numpy_dataview(data)
+    R = rng()
+
+    table_assignments = [
+        np.random.randint(low=0, high=10, size=len(d)) for d in data]
+
+    dish_assignments = [
+        np.random.randint(low=0, high=len(t)) for t in table_assignments]
+
+    s = initialize(defn, view, R,
+        table_assignments=table_assignments,
+        dish_assignments=dish_assignments)
+    assert_equals(s.nentities(), len(data))
