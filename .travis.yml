@@ -1,0 +1,31 @@
+language: python
+python:
+  - '2.7'
+notifications:
+  email: false
+  slack:
+    secure: I5/FD8tMEMQCeAAtYiUrPVg0U5j6AyoIyEpWtDbS7kHDqu7eG9qNZhFjcy/qxOHmv6xKeJPyNR8iuoQm5y0OVxkvwC7iI02EHCgcH7BSvwMvXcXiYTH0JM0SwySnfW6pJkbwfs9AT06UlNrYqXDatqNUTIhLajsDQWAeSmd2wwM=
+before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq g++-4.8
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
+  - conda create -n build --yes python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython pip scikit-learn
+  - source activate build
+  - conda install --yes -c distributions distributions
+  - conda install --yes -c datamicroscopes eigen3
+  - export CC=gcc-4.8
+  - export CXX=g++-4.8
+  - printenv
+  - conda list --export
+  - mkdir .travis
+  - (cd .travis && git clone https://github.com/datamicroscopes/common.git && cd common && make travis_install)
+  - (cd .travis && git clone https://github.com/datamicroscopes/kernels.git && cd kernels && make travis_install)
+install: make travis_install
+script: make travis_script
