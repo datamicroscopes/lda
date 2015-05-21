@@ -37,7 +37,7 @@ def test_explicit():
         np.random.randint(low=0, high=len(t), size=len(d))
         for t, d in zip(table_assignments, data)]
 
-    s = initialize(defn, view, R,
-        table_assignments=table_assignments,
-        dish_assignments=dish_assignments)
+    s = initialize(defn, view, R,)
+        # table_assignments=table_assignments,
+        # dish_assignments=dish_assignments)
     assert_equals(s.nentities(), len(data))
