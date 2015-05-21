@@ -1,6 +1,8 @@
+from nose.plugins.attrib import attr
+
 from microscopes.lda import model, kernels
 from microscopes.lda.definition import model_definition
-from microscopes.lda.testutil import toy_dataset, permutations
+from microscopes.lda.testutil import permutations
 
 from microscopes.common.rng import rng
 from microscopes.common.variadic.dataview import numpy_dataview
@@ -14,6 +16,7 @@ from microscopes.common.testutil import (
 import numpy as np
 
 
+@attr('slow')
 def test_convergence_simple():
     N, V = 2, 10
     defn = model_definition(N, V)
@@ -48,6 +51,7 @@ def test_convergence_simple():
     latent = model.initialize(defn, view, prng)
 
     skip = 10
+
     def sample_fn():
         for _ in xrange(skip):
             kernel(latent)
