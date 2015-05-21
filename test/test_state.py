@@ -34,7 +34,8 @@ def test_explicit():
         np.random.randint(low=0, high=10, size=len(d)) for d in data]
 
     dish_assignments = [
-        np.random.randint(low=0, high=len(t)) for t in table_assignments]
+        np.random.randint(low=0, high=len(t), size=len(d))
+        for t, d in zip(table_assignments, data)]
 
     s = initialize(defn, view, R,
         table_assignments=table_assignments,
