@@ -209,7 +209,7 @@ def make_extension(module_name):
 extensions = cythonize([
     make_extension('microscopes.lda._model'),
     make_extension('microscopes.lda.definition'),
-    make_extension('microscopes.lda.kernels'),
+    # make_extension('microscopes.lda.kernels'),
 ], include_path=[microscopes_common_cython_inc])
 
 with open('README.md') as f:
