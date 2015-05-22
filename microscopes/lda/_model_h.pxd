@@ -16,7 +16,6 @@ from microscopes._models_h cimport model as c_model
 cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
 
     cdef cppclass model_definition:
-        pass
         model_definition(size_t, const vector[shared_ptr[c_model]] &) except +
         vector[runtime_type] get_runtime_types() except +
         size_t nmodels()

@@ -48,6 +48,8 @@ protected:
 	GroupManager<group_type> groups_;
 };
 
+}
+
 class model_definition {
 public:
 	model_definition(
@@ -63,7 +65,5 @@ private:
 	std::vector<std::shared_ptr<models::model>> models_;
 };
 
-
-}
 }
 }
