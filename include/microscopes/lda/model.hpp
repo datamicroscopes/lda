@@ -23,21 +23,20 @@
 
 namespace microscopes {
 namespace lda {
-namespace detail {
 
 typedef std::vector<std::shared_ptr<models::group>> group_type;
 
-template <template <typename> class GroupManager>
 class state {
 public:
-	typedef typename GroupManager<group_type>::message_type message_type;
 
-	state(const std::vector<std::shared_ptr<models::hypers>> &hypers,
-		  const GroupManager<group_type> &groups)
-	: hypers_(hypers), groups_(groups)
-	{
 
-	}
+    state(const std::vector<std::shared_ptr<models::hypers>> &hypers,
+          const common::group_manager<group_type> &groups)
+        : hypers_(hypers), groups_(groups)
+    {
+        for (const auto &h : hypers_)
+            MICROSCOPES_DCHECK(h, "hyper is null");
+    }
 
 	int temp(){
 		return 1;
@@ -45,10 +44,9 @@ public:
 
 protected:
 	std::vector<std::shared_ptr<models::hypers>> hypers_;
-	GroupManager<group_type> groups_;
+	common::group_manager<group_type> groups_;
 };
 
-}
 
 class model_definition {
 public:
