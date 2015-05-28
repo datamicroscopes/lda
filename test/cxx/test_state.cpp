@@ -12,7 +12,10 @@ using namespace microscopes;
 using namespace microscopes::common;
 using namespace microscopes::common::recarray;
 
-int main(void){
+
+static void
+test_create_model_def_and_state()
+{
     const size_t D = 28*28;
     rng_t r(5849343);
 
@@ -23,6 +26,12 @@ int main(void){
     }
 
     lda::model_definition def(50, 100);
+    std::vector< std::vector<size_t>> docs {{0, 1, 2}, {2, 3, 4, 1}};
+    lda::state state(def, 1, .5, 1, docs, r);
+}
 
+
+int main(void){
+    test_create_model_def_and_state();
     return 0;
 }

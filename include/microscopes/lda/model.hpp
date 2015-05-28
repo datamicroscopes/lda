@@ -51,155 +51,61 @@ private:
 
 class state {
 public:
-    static const size_t MaxVocabularySize = 0x10000;
-    typedef distributions::DirichletDiscrete<MaxVocabularySize> DD;
-
-    typedef io::CRP dish_message_type;
-    typedef distributions::protobuf::DirichletDiscrete_Shared vocab_message_type;
-
+    // Quick and dirty constructor for Shuyo implementation.
     state(const model_definition &def,
-          const std::string &topic_init, // std::string == common::hyperparam_bag_t
-          const std::string &word_init,  // std::string == common::hyperparam_bag_t
-          const common::variadic::dataview &data,
-          const std::vector<std::vector<size_t>> &dish_assignments,
-          const std::vector<std::vector<size_t>> &table_assigments,
-          common::rng_t &rng)
-    {
-        // Didn't finish yanking from https://github.com/datamicroscopes/lda/blob/dcfa0a5462ea34abf2d39ffb6692ca7b3e8371ae/include/microscopes/lda/model.hpp#L109-L164
-        // common_init(def, topic_init, word_init, data);
+        float alpha,
+        float beta,
+        float gamma,
+        const std::vector<std::vector<size_t>> &docs,
+        common::rng_t &rng)
+            : alpha_(alpha), beta_(beta), gamma_(gamma) {
+        V = def.v();
+        M = def.n();
 
-        // size_t num_dishes = 0;
-        // for (const auto &p : dish_assignments){
-        //     for (const auto &q : p){
-        //         num_dishes = std::max(num_dishes, q);
-        //     }
-        // }
-        // num_dishes += 1;
+        for(size_t i = 0; i < M; ++i) {
+            using_t.push_back({0});
+        }
+        using_k = std::vector<size_t> {0};
 
-        // for(size_t i = 0; i < num_dishes; ++i) {
-        //     auto p = dishes_.create_group();
-        //     p.second.group_.init(shared_, rng);
-        // }
+        x_ji = std::vector<std::vector<size_t>>(docs);
+        for(size_t j = 0; j < M; ++j) {
+            k_jt.push_back({0});
+            n_jt.push_back({0});
+            n_jtv.push_back({0});
+        }
+
+        m = 0;
+        m_k = std::vector<size_t> {1};
+        n_k = std::vector<float> {beta_ * V};
+        // // n_kv =
+
+        for(size_t i=0; i < docs.size(); i++){
+            t_ji.push_back(std::vector<size_t>(docs[i].size(), 0));
+        }
+
+
 
     }
-
-    state(const model_definition &def,
-          const common::hyperparam_bag_t &topic_init,
-          const common::hyperparam_bag_t &word_init,
-          const common::variadic::dataview &data,
-          size_t k,
-          std::vector<std::vector<size_t>> &assignments,
-          common::rng_t &rng) {
-        // from https://github.com/datamicroscopes/lda/blob/dcfa0a5462ea34abf2d39ffb6692ca7b3e8371ae/include/microscopes/lda/model.hpp#L171-L196
-        common_init(def, topic_init, word_init, data);
-
-        std::vector<std::vector<size_t>> actual_assignments(assignments);
-
-        if (actual_assignments.empty()) {
-            actual_assignments.resize(def.n());
-            // XXX(stephentu):
-            // arbitrarily start with 10 tables per document
-            std::uniform_int_distribution<unsigned> topic_dist(0, 9);
-            for (unsigned i = 0; i < def.n(); ++i) {
-                auto acc = data.get(i);
-                actual_assignments[i].resize(acc.n());
-                for (size_t j = 0; j < acc.n(); j++) {
-                    const size_t k = topic_dist(rng);
-                    actual_assignments[i][j] = k;
-                }
-            }
-        }
-        MICROSCOPES_DCHECK(actual_assignments.size() == def.n(),
-                           "invalid size assignment vector");
-
-        for (unsigned i = 0; i < k; ++i) {
-            auto p = dishes_.create_group();
-            p.second.group_.init(shared_, rng);
-        }
-        std::uniform_int_distribution<unsigned> dish_dist(0, k - 1);
-
-        restaurants_.resize(def.n());
-        for (size_t i = 0; i < def.n(); i++) {
-            auto acc = data.get(i);
-            MICROSCOPES_DCHECK(acc.n() > 0,
-                               "empty documents are not allowed");
-            restaurants_[i] = common::group_manager<restaurant_suffstat_t>(acc.n());
-            MICROSCOPES_DCHECK(actual_assignments[i].size() == acc.n(),
-                               "invalid size document assignment vector");
-            const size_t ntables = *std::max_element(
-                                       actual_assignments[i].begin(),
-                                       actual_assignments[i].end()) + 1;
-            for (size_t j = 0; j < ntables; j++) {
-                auto p = restaurants_[i].create_group();
-                MICROSCOPES_ASSERT(p.second.dish_ == -1);
-                p.second.group_.init(shared_, rng);
-            }
-            MICROSCOPES_ASSERT(restaurants_[i].ngroups() == ntables);
-            for (size_t j = 0; j < acc.n(); j++) {
-                const size_t w = acc.get(j).get<uint32_t>();
-                MICROSCOPES_DCHECK(w < def.v(), "invalid entry");
-                auto &table_ref = restaurants_[i].add_value(actual_assignments[i][j], j);
-                // XXX(stephentu): better dish assignment
-                // randomly pick the dish
-                if (table_ref.dish_ == -1)
-                    table_ref.dish_ = dish_dist(rng);
-                table_ref.group_.add_value(shared_, w, rng);
-                auto &dish = dishes_.group(table_ref.dish_);
-                dish.group_.add_value(shared_, w, rng);
-            }
-        }
-    }
-
-    // static std::shared_ptr<state>
-    // unsafe_initialize(const model_definition &def)
-    // {
-    //     return std::make_shared<state>();
-    // }
 
 private:
-    void
-    common_init(const model_definition &def,
-                const std::string &topic_init,
-                const std::string &word_init,
-                const common::variadic::dataview &data) {
-        MICROSCOPES_DCHECK(def.v() <= MaxVocabularySize, "vocab too large");
-        MICROSCOPES_DCHECK(data.size() == def.n(), "data mismatch");
+    size_t V; // Vocabulary size
+    size_t M; // Num documents
+    size_t m;
+    float alpha_;
+    float beta_;
+    float gamma_;
+    std::vector<std::vector<size_t>> using_t;
+    std::vector<size_t> using_k;
+    std::vector<std::vector<size_t>> x_ji;
+    std::vector<std::vector<size_t>> k_jt;
+    std::vector<std::vector<size_t>> n_jt;
+    std::vector<std::vector<size_t>> n_jtv;
+    std::vector<size_t> m_k;
+    std::vector<float> n_k;
+    // std::vector<std::map<key, value> map; > n_kv;
+    std::vector<std::vector<size_t>> t_ji;
 
-        dish_message_type topic_m;
-        common::util::protobuf_from_string(topic_m, topic_init);
-        MICROSCOPES_DCHECK(topic_m.alpha() > 0., "invalid alpha");
-        alpha_ = topic_m.alpha();
 
-        vocab_message_type word_m;
-        common::util::protobuf_from_string(topic_m, topic_init);
-        MICROSCOPES_DCHECK((size_t)word_m.alphas_size() == def.v(),
-                           "word mismatch");
-        shared_.dim = def.v();
-        for (size_t i = 0 ; i < def.v(); i++) {
-            MICROSCOPES_DCHECK(word_m.alphas(i) > 0., "invalid alpha found");
-            shared_.alphas[i] = word_m.alphas(i);
-            shared_alphas_sum_ += word_m.alphas(i);
-        }
-    }
-
-    struct dish_suffstat_t {
-        DD::Group group_;
-    };
-
-    struct restaurant_suffstat_t {
-        restaurant_suffstat_t() : group_(), dish_(-1) {}
-
-        DD::Group group_;
-        ssize_t dish_;
-    };
-
-    float alpha_; // hyperparam for the top level dDP
-    distributions::DirichletDiscrete<MaxVocabularySize>::Shared shared_; // hyperparam on the base measure of the individual Dps
-    float shared_alphas_sum_; // normalization constant to turn the
-    // base measure dirichlet alphas into
-    // a probability distribution
-    common::simple_group_manager<dish_suffstat_t> dishes_;
-    std::vector<common::group_manager<restaurant_suffstat_t>> restaurants_;
 };
 
 }
