@@ -26,6 +26,14 @@ namespace lda {
 typedef std::vector<std::shared_ptr<models::group>> group_type;
 
 
+template<typename T> void
+removeFirst(std::vector<T> &v, T element){
+    auto it = std::find(v.begin(),v.end(), element);
+    if (it != v.end()) {
+      v.erase(it);
+    }
+}
+
 
 class model_definition {
 public:
@@ -63,9 +71,9 @@ public:
         M = def.n();
         rng_ = rng;
         for(size_t i = 0; i < M; ++i) {
-            using_t.push_back({{0, true}});
+            using_t.push_back({0});
         }
-        using_k = {{0, true}};
+        using_k = {0};
 
         x_ji = std::vector<std::vector<size_t>>(docs);
         for(size_t j = 0; j < M; ++j) {
@@ -125,41 +133,97 @@ public:
         size_t t_new = using_t[j][word];
         if (t_new == 0)
         {
-            // float p_k = calc_dish_posterior_w(f_k);
-            // k_new = self.using_k[numpy.random.multinomial(1, p_k).argmax()]
-            // if k_new == 0:
-            //     k_new = self.add_new_dish()
-            // t_new = self.add_new_table(j, k_new)
+            std::vector<float> p_k = calc_dish_posterior_w(f_k);
+            size_t topic_index = common::util::sample_discrete(p_t, rng_);
+            size_t k_new = using_k[topic_index];
+            if (k_new == 0)
+            {
+                add_new_dish();
+            }
+            add_new_table(j, k_new);
         }
 
     }
 
 
 private:
-    // std::vector<float>
-    // calc_dish_posterior_w(std::vector<float> f_k){
-    //     std::map<size_t, float> p_k_map;
-    //     for(auto k: using_k){
-    //         p_k_map[k] = m_k[k] + f_k[k];
-    //     }
-    //     float sum_p_k = 0;
-    //     for(auto& kv: p_k_map){
-    //         p_k_map += kv.second;
-    //     }
-    //     std::vector<float> p_k;
-    //     for (size_t i = 0; i < p_k_map.size(); ++i)
-    //     {
-    //         p_k.push_back(p_k_map[i] / sum_p_k);
-    //     }
-    //     return p_k;
-    // }
+    void
+    add_new_dish(){
+        size_t k_new = using_k.size();
+        for (int i = 0; i < using_k.size(); ++i)
+        {
+            if (i != using_k[i])
+            {
+                k_new = i;
+                break;
+            }
+        }
+        if (k_new == using_k.size())
+        {
+            n_k.push_back(n_k[0]);
+            m_k.push_back(m_k[0]);
+            n_kv.push_back(std::map<size_t, size_t>());
+        }
+
+        using_k.insert(using_k.begin()+k_new, k_new);
+        n_k[k_new] = beta_ * (float)V;
+        m_k[k_new] = 0;
+
+        for (size_t i = 0; i < V; ++i)
+        {
+            n_kv[k_new][i] = 0;
+        }
+
+    }
+
+    void
+    add_new_table(size_t j, size_t k_new)
+    {
+        // assert k_new in self.using_k
+        // for t_new, t in enumerate(self.using_t[j]):
+        //     if t_new != t: break
+        // else:
+        //     t_new = len(self.using_t[j])
+        //     self.n_jt[j].resize(t_new+1)
+        //     self.k_jt[j].resize(t_new+1)
+        //     self.n_jtv[j].append(None)
+
+        // self.using_t[j].insert(t_new, t_new)
+        // self.n_jt[j][t_new] = 0  # to make sure
+        // self.n_jtv[j][t_new] = DefaultDict(0)
+
+        // self.k_jt[j][t_new] = k_new
+        // self.m_k[k_new] += 1
+        // self.m += 1
+
+        // return t_new
+
+    }
 
     std::vector<float>
-    calc_table_posterior(size_t j, std::vector<float> f_k){
-        std::map<size_t, bool> using_table = using_t[j];
-        std::map<size_t, float> p_t_map;
-        for(auto& kv: using_table){
-            p_t_map[kv.first] = n_jt[j][kv.first] + f_k[k_jt[j][kv.first]];
+    calc_dish_posterior_w(std::vector<float> &f_k){
+        std::map<size_t, float> p_k_map;
+        for(auto& k: using_k){
+            p_k_map[k] = m_k[k] + f_k[k];
+        }
+        float sum_p_k = 0;
+        for(auto& kv: p_k_map){
+            sum_p_k += kv.second;
+        }
+        std::vector<float> p_k;
+        for (size_t i = 0; i < p_k_map.size(); ++i)
+        {
+            p_k.push_back(p_k_map[i] / sum_p_k);
+        }
+        return p_k;
+    }
+
+    std::vector<float>
+    calc_table_posterior(size_t j, std::vector<float> &f_k){
+        std::vector<size_t> using_table = using_t[j];
+        std::vector<float> p_t;
+        for(auto& p: using_table){
+            p_t.push_back(n_jt[j][p] + f_k[k_jt[j][p]]);
         }
         float p_x_ji = gamma_ / (float)V;
         for (size_t k = 0; k < f_k.size(); ++k)
@@ -167,15 +231,14 @@ private:
             p_x_ji += m_k[k] * f_k[k];
         }
         float sum_p_t = 0;
-        for(auto& kv: p_t_map){
-            sum_p_t += kv.second;
+        for(auto& kv: p_t){
+            sum_p_t += kv;
         }
-        std::vector<float> p_t;
-        for (size_t i = 0; i < p_t_map.size(); ++i)
+        for (int i = 0; i < p_t.size(); ++i)
         {
-            p_t.push_back(p_t_map[i] / sum_p_t);
+            p_t[i] /= sum_p_t;
         }
-        return p_t;
+        return p_t ;
     }
 
 
@@ -202,12 +265,12 @@ private:
     void
     remove_table(size_t j, size_t t){
         size_t k = k_jt[j][t];
-        using_t[j].erase(t);
+        removeFirst(using_t[j], t);
         m_k[k] -= 1;
         m -= 1;
         if (m_k[k] == 0)
         {
-            using_k.erase(k);
+            removeFirst(using_k, k);
         }
     }
 
@@ -230,8 +293,8 @@ private:
     float beta_;
     float gamma_;
     common::rng_t rng_;
-    std::vector<std::map<size_t, bool>> using_t;
-    std::map<size_t, bool> using_k;
+    std::vector<std::vector<size_t>> using_t;
+    std::vector<size_t> using_k;
     std::vector<std::vector<size_t>> x_ji;
     std::vector<std::vector<size_t>> k_jt;
     std::vector<std::vector<size_t>> n_jt;
