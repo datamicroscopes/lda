@@ -138,16 +138,101 @@ public:
             size_t k_new = using_k[topic_index];
             if (k_new == 0)
             {
-                add_new_dish();
+                k_new = add_new_dish();
             }
-            add_new_table(j, k_new);
+            t_new = add_new_table(j, k_new);
         }
+        seat_at_table(j, i, t_new);
+    }
 
+    void
+    sampling_k(size_t j, size_t t){
+        leave_from_dish(j, t);
+        std::vector<float> p_k = calc_dish_posterior_t(j, t);
+        size_t topic_index = common::util::sample_discrete(p_k, rng_);
+        size_t k_new = using_k[topic_index];
+        if (k_new == 0)
+        {
+            k_new = add_new_dish();
+        }
+        seat_at_dish(j, t, k_new);
     }
 
 
 private:
     void
+    leave_from_dish(size_t j, size_t t){
+        size_t k = k_jt[j][t];
+        // assert k > 0
+        // assert m_k[k] > 0
+        m_k[k] -= 1;
+        m -= 1;
+        if (m_k[k] == 0)
+        {
+            removeFirst(using_k, k);
+            k_jt[j][t] = 0;
+        }
+    }
+
+    std::vector<float>
+    calc_dish_posterior_t(size_t j, size_t t){
+        size_t k_old = k_jt[j][t];
+        double Vbeta = V * beta_;
+        std::vector<float> new_n_k = n_k;
+
+        size_t n_jt_val = n_jt[j][t];
+        n_k[k_old] -= n_jt_val;
+        std::vector<float> new_n_k2;
+        for(auto k: using_k){
+            new_n_k2.push_back(k);
+        }
+        double log_p_k = 0;
+        // # TODO: FINISH https://github.com/shuyo/iir/blob/master/lda/hdplda2.py#L250-L270
+    }
+
+    void
+    seat_at_dish(size_t j, size_t t, size_t k_new){
+        m += 1;
+        m_k[k_new] += 1;
+
+        size_t k_old = k_jt[j][t];
+        if (k_new == k_old)
+        {
+            k_jt[j][t] = k_new;
+            double n_jt_val = n_jt[j][t];
+
+            if (k_old != 0)
+            {
+                n_k[k_old] -= n_jt_val;
+            }
+            n_k[k_new] += n_jt_val;
+            for(auto kv: n_jtv[j][t]){
+                if (k_old != 0)
+                {
+                    n_kv[k_old][kv.first] -= kv.second;
+                }
+                n_kv[k_new][kv.second] += kv.second;
+            }
+        }
+    }
+
+
+    void
+    seat_at_table(size_t j, size_t i, size_t t_new){
+        // assert t_new in self.using_t[j]
+        t_ji[j][i] = t_new;
+        n_jt[j][t_new] += 1;
+
+        size_t k_new = k_jt[j][t_new];
+        n_k[k_new] += 1;
+
+        size_t v = x_ji[j][i];
+        n_kv[k_new][v] += 1;
+        n_jtv[j][t_new][v] += 1;
+    }
+
+
+    size_t
     add_new_dish(){
         size_t k_new = using_k.size();
         for (size_t i = 0; i < using_k.size(); ++i)
@@ -173,6 +258,7 @@ private:
         {
             n_kv[k_new][i] = 0;
         }
+        return k_new;
 
     }
 
