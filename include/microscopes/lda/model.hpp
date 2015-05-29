@@ -150,7 +150,7 @@ private:
     void
     add_new_dish(){
         size_t k_new = using_k.size();
-        for (int i = 0; i < using_k.size(); ++i)
+        for (size_t i = 0; i < using_k.size(); ++i)
         {
             if (i != using_k[i])
             {
@@ -176,28 +176,39 @@ private:
 
     }
 
-    void
+    size_t
     add_new_table(size_t j, size_t k_new)
     {
         // assert k_new in self.using_k
-        // for t_new, t in enumerate(self.using_t[j]):
-        //     if t_new != t: break
-        // else:
-        //     t_new = len(self.using_t[j])
-        //     self.n_jt[j].resize(t_new+1)
-        //     self.k_jt[j].resize(t_new+1)
-        //     self.n_jtv[j].append(None)
+        size_t t_new = using_t[j].size();
+        for (size_t i = 0; i < using_t[j].size(); ++i)
+        {
+            if (i != using_t[j][i])
+            {
+                t_new = i;
+                break;
+            }
+        }
+        if (t_new == using_t[j].size())
+        {
+            n_jt[j].emplace_back();
+            k_jt[j].push_back(k_jt[j][0]);
 
-        // self.using_t[j].insert(t_new, t_new)
-        // self.n_jt[j][t_new] = 0  # to make sure
-        // self.n_jtv[j][t_new] = DefaultDict(0)
+            std::map<size_t, size_t> term_dict;
+            n_jtv[j].push_back(term_dict);
+        }
+        using_t[j].insert(using_t[j].begin()+t_new, t_new);
+        n_jt[j][t_new] = 0;
+        for (size_t i = 0; i < V; ++i)
+        {
+            n_jtv[j][t_new][i] = 0;
+        }
 
-        // self.k_jt[j][t_new] = k_new
-        // self.m_k[k_new] += 1
-        // self.m += 1
+        k_jt[j][t_new] = k_new;
+        m_k[k_new] += 1;
+        m += 1;
 
-        // return t_new
-
+        return t_new;
     }
 
     std::vector<float>
@@ -234,7 +245,7 @@ private:
         for(auto& kv: p_t){
             sum_p_t += kv;
         }
-        for (int i = 0; i < p_t.size(); ++i)
+        for (size_t i = 0; i < p_t.size(); ++i)
         {
             p_t[i] /= sum_p_t;
         }
