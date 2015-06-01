@@ -54,11 +54,6 @@ public:
         MICROSCOPES_DCHECK(v > 0, "no terms");
     }
 
-    std::vector<std::shared_ptr<models::hypers>>
-            create_hypers() const
-    {
-        std::vector<common::runtime_type> ret = std::vector<common::runtime_type>();
-    }
 
     inline size_t n() const { return n_; }
     inline size_t v() const { return v_; }
@@ -122,12 +117,12 @@ public:
 
     void
     inference(){
-        // for j, x_i in enumerate(self.x_ji):
-        //     for i in xrange(len(x_i)):
-        //         self.sampling_t(j, i)
-        // for j in xrange(self.M):
-        //     for t in self.using_t[j]:
-        //         if t != 0: self.sampling_k(j, t)
+        for (size_t j = 0; j < x_ji.size(); ++j)
+            for (size_t i = 0; i < x_ji[j].size(); ++i)
+                sampling_t(j, i);
+        for (size_t j = 0; j < M; ++j)
+            for (auto t: using_t[j])
+                sampling_k(j, t);
     }
 
     void
@@ -187,19 +182,57 @@ private:
     std::vector<float>
     calc_dish_posterior_t(size_t j, size_t t){
         size_t k_old = k_jt[j][t];
-        double Vbeta = V * beta_;
+        float Vbeta = V * beta_;
         std::vector<float> new_n_k = n_k;
 
         size_t n_jt_val = n_jt[j][t];
         n_k[k_old] -= n_jt_val;
         new_n_k = selectByIndex(new_n_k, using_k);
-        std::vector<double> log_p_k(using_k.size());
+        std::vector<float> log_p_k(using_k.size());
         // numpy.log(self.m_k[self.using_k]) + gammaln(n_k) - gammaln(n_k + n_jt)
         for(auto k: using_k){
             log_p_k[k] = log(m_k[k]) + lgamma(n_k[k]) - lgamma(Vbeta + n_jt_val);
         }
-        double log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
+        float log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
         // # TODO: FINISH https://github.com/shuyo/iir/blob/master/lda/hdplda2.py#L250-L270
+
+        for(auto kv: n_jtv[j][t]){
+            auto w = kv.first;
+            auto n_jtw = kv.second;
+            if (n_jtw == 0)
+                continue;
+
+            // n_kw = numpy.array([n.get(w, self.beta) for n in self.n_kv])
+            std::vector<float> n_kw;
+            for(auto n: n_kv){
+                if(n.count(w) > 0){
+                    n_kw.push_back(n[w]);
+                }
+                else{
+                    n_kw.push_back(beta_);
+                }
+            }
+            n_kw[k_old] -= n_jtw;
+            n_kw = selectByIndex(n_kw, using_k);
+            n_kw[0] = 1; // # dummy for logarithm's warning
+            // if numpy.any(n_kw <= 0): print n_kw # for debug
+            for(size_t i = 0; i <= n_kw.size(); i++){
+                log_p_k[i] += lgamma(n_kw[i] + n_jtw) - lgamma(n_kw[i]);
+            }
+            log_p_k_new += lgamma(beta_ + n_jtw) - lgamma(beta_);
+        }
+        log_p_k[0] = log_p_k_new;
+        std::vector<float> p_k(log_p_k.size());
+        float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
+        float p_k_sum = 0;
+        for(auto log_p_k_value: log_p_k){
+            p_k.push_back(exp(log_p_k_value + max_value));
+            p_k_sum += exp(log_p_k_value + max_value);
+        }
+        for(size_t i = 0; i <= p_k.size(); i++){
+            p_k[i] /= p_k_sum;
+        }
+        return p_k;
     }
 
     void
@@ -211,7 +244,7 @@ private:
         if (k_new == k_old)
         {
             k_jt[j][t] = k_new;
-            double n_jt_val = n_jt[j][t];
+            float n_jt_val = n_jt[j][t];
 
             if (k_old != 0)
             {
@@ -339,6 +372,7 @@ private:
         {
             p_x_ji += m_k[k] * f_k[k];
         }
+        p_t[0] = p_x_ji * alpha_ / (gamma_ + m);
         float sum_p_t = 0;
         for(auto& kv: p_t){
             sum_p_t += kv;
