@@ -198,7 +198,7 @@ private:
         for(auto k: using_k){
             log_p_k[k] = log(m_k[k]) + lgamma(n_k[k]) - lgamma(Vbeta + n_jt_val);
         }
-        double log_p_k_new = log(gamma) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
+        double log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
         // # TODO: FINISH https://github.com/shuyo/iir/blob/master/lda/hdplda2.py#L250-L270
     }
 
