@@ -28,6 +28,11 @@ test_create_model_def_and_state()
     lda::model_definition def(50, 100);
     std::vector< std::vector<size_t>> docs {{0, 1, 2}, {2, 3, 4, 1}};
     lda::state state(def, 1, .5, 1, docs, r);
+    for(unsigned i = 0; i < 2000; ++i){
+        state.inference();
+        std::cout << "iter" << i << std::endl;
+    }
+    std::cout << "FINI!";
 }
 
 
