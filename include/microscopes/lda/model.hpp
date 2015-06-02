@@ -10,6 +10,7 @@
 #include <distributions/models/dd.hpp>
 
 #include <math.h>
+#include <assert.h>
 #include <vector>
 #include <set>
 #include <functional>
@@ -41,6 +42,7 @@ std::vector<T> selectByIndex(std::vector<T> &v, std::vector<size_t> const &index
     for(size_t i: index){
         new_v.push_back(v[i]);
     }
+
     return new_v;
 }
 
@@ -139,7 +141,7 @@ public:
         if (t_new == 0)
         {
             std::vector<float> p_k = calc_dish_posterior_w(f_k);
-            size_t topic_index = common::util::sample_discrete(p_t, rng_);
+            size_t topic_index = common::util::sample_discrete(p_k, rng_);
             size_t k_new = using_k[topic_index];
             if (k_new == 0)
             {
@@ -154,6 +156,7 @@ public:
     sampling_k(size_t j, size_t t){
         leave_from_dish(j, t);
         std::vector<float> p_k = calc_dish_posterior_t(j, t);
+
         size_t topic_index = common::util::sample_discrete(p_k, rng_);
         size_t k_new = using_k[topic_index];
         if (k_new == 0)
@@ -221,8 +224,9 @@ private:
             }
             log_p_k_new += lgamma(beta_ + n_jtw) - lgamma(beta_);
         }
+
         log_p_k[0] = log_p_k_new;
-        std::vector<float> p_k(log_p_k.size());
+        std::vector<float> p_k;
         float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
         float p_k_sum = 0;
         for(auto log_p_k_value: log_p_k){
@@ -232,6 +236,7 @@ private:
         for(size_t i = 0; i <= p_k.size(); i++){
             p_k[i] /= p_k_sum;
         }
+
         return p_k;
     }
 
