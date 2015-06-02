@@ -127,6 +127,11 @@ public:
                 sampling_k(j, t);
     }
 
+    size_t
+    usedDishes(){
+        return using_k.size();
+    }
+
     void
     sampling_t(size_t j, size_t i){
         leave_from_table(j, i);
