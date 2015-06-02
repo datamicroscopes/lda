@@ -132,6 +132,8 @@ public:
         return using_k.size();
     }
 
+
+private:
     void
     sampling_t(size_t j, size_t i){
         leave_from_table(j, i);
@@ -171,8 +173,6 @@ public:
         seat_at_dish(j, t, k_new);
     }
 
-
-private:
     void
     leave_from_dish(size_t j, size_t t){
         size_t k = k_jt[j][t];
