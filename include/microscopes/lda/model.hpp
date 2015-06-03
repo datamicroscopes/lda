@@ -160,6 +160,41 @@ public:
         return vec;
     }
 
+    std::vector<std::vector<float>>
+    topicDist(){
+        // Distribution over topics for each document
+        std::vector<std::vector<float>> theta;
+        std::vector<float> am_k(m_k.begin(), m_k.end());
+        am_k[0] = gamma_;
+        double sum_am_using_k = 0;
+        for(auto k: using_k){
+            sum_am_using_k += am_k[k];
+        }
+        for(size_t i = 0; i < am_k.size(); ++i) {
+            am_k[i] *= alpha_ / sum_am_using_k;
+        }
+
+        for(size_t j = 0; j < k_jt.size(); j++){
+            std::vector<size_t> n_jt_ = n_jt[j];
+            std::vector<float> p_jk = am_k;
+            for(auto t: using_t[j]){
+                if(t == 0) continue;
+                size_t k = k_jt[j][t];
+                p_jk[k] += n_jt_[t];
+            }
+            p_jk = selectByIndex(p_jk, using_k);
+            double p_jk_sum = 0;
+            for(size_t i = 0; i < p_jk.size(); ++i) {
+                p_jk_sum += p_jk[i];
+            }
+            for(size_t i = 0; i < p_jk.size(); ++i) {
+                p_jk[i] /= p_jk_sum;
+            }
+            theta.push_back(p_jk);
+        }
+        return theta;
+    }
+
 
 private:
     void
