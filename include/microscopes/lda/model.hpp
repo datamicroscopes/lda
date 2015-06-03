@@ -91,15 +91,9 @@ public:
             n_jt.push_back({0});
 
             n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
-            std::cout << "    3. iterate t to using_t.size() " << using_t[j].size() << std::endl;
             for (size_t t = 0; t < using_t[j].size(); ++t)
             {
                 std::map<size_t, size_t> term_dict;
-                // std::cout << "    4. iterate i to V " << V << " (t=" << t << ")" << std::endl;
-                // for (size_t i = 0; i < V; ++i)
-                // {
-                //     term_dict[i] = 0;
-                // }
                 n_jtv[j].push_back(term_dict);
             }
         }
@@ -124,16 +118,21 @@ public:
 
     void
     inference(){
-        for (size_t j = 0; j < x_ji.size(); ++j)
+        for (size_t j = 0; j < x_ji.size(); ++j){
+            if (j % 100 == 0) std::cout << "    sampling_t(" << j << ")" << std::endl;
             for (size_t i = 0; i < x_ji[j].size(); ++i){
-                std::cout << "sampling_t(" << j << "," << i << ")" << std::endl;
+                // std::cout << "sampling_t(" << j << "," << i << ")" << std::endl;
+                // std::cout << "sampling_t(" << j << "," << i << ")" << std::endl;
                 sampling_t(j, i);
             }
-        for (size_t j = 0; j < M; ++j)
+        }
+        for (size_t j = 0; j < M; ++j){
+            if (j % 100 == 0) std::cout << "    sampling_k(" << j << ")" << std::endl;
             for (auto t: using_t[j]){
-                std::cout << "sampling_k(" << j << "," << t << ")" << std::endl;
+                // std::cout << "sampling_k(" << j << "," << t << ")" << std::endl;
                 sampling_k(j, t);
             }
+        }
     }
 
     size_t
