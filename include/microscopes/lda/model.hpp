@@ -39,7 +39,7 @@ removeFirst(std::vector<T> &v, T element){
 // http://stackoverflow.com/a/1267878/982745
 template< class T >
 std::vector<T> selectByIndex(std::vector<T> &v, std::vector<size_t> const &index )  {
-    std::vector<T> new_v {};
+    std::vector<T> new_v;
     for(size_t i: index){
         new_v.push_back(v[i]);
     }
@@ -205,10 +205,10 @@ private:
         size_t n_jt_val = n_jt[j][t];
         n_k[k_old] -= n_jt_val;
         new_n_k = selectByIndex(new_n_k, using_k);
-        std::vector<float> log_p_k(using_k.size());
+        std::vector<float> log_p_k;
         // numpy.log(self.m_k[self.using_k]) + gammaln(n_k) - gammaln(n_k + n_jt)
         for(auto k: using_k){
-            log_p_k[k] = log(m_k[k]) + lgamma(n_k[k]) - lgamma(Vbeta + n_jt_val);
+            log_p_k.push_back(log(m_k[k]) + lgamma(n_k[k]) - lgamma(Vbeta + n_jt_val));
         }
         float log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
         // # TODO: FINISH https://github.com/shuyo/iir/blob/master/lda/hdplda2.py#L250-L270
@@ -220,7 +220,7 @@ private:
                 continue;
 
             // n_kw = numpy.array([n.get(w, self.beta) for n in self.n_kv])
-            std::vector<float> n_kw;
+            std::vector<float> n_kw {};
             for(auto n: n_kv){
                 if(n.count(w) > 0){
                     n_kw.push_back(n[w]);
@@ -232,8 +232,7 @@ private:
             n_kw[k_old] -= n_jtw;
             n_kw = selectByIndex(n_kw, using_k);
             n_kw[0] = 1; // # dummy for logarithm's warning
-            // if numpy.any(n_kw <= 0): print n_kw # for debug
-            for(size_t i = 0; i <= n_kw.size(); i++){
+            for(size_t i = 0; i < n_kw.size(); i++){
                 log_p_k[i] += lgamma(n_kw[i] + n_jtw) - lgamma(n_kw[i]);
             }
             log_p_k_new += lgamma(beta_ + n_jtw) - lgamma(beta_);
@@ -247,7 +246,7 @@ private:
             p_k.push_back(exp(log_p_k_value + max_value));
             p_k_sum += exp(log_p_k_value + max_value);
         }
-        for(size_t i = 0; i <= p_k.size(); i++){
+        for(size_t i = 0; i < p_k.size(); i++){
             p_k[i] /= p_k_sum;
         }
 
