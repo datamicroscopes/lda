@@ -1,3 +1,4 @@
+#define _GLIBCXX_DEBUG
 #include <microscopes/models/base.hpp>
 #include <microscopes/common/entity_state.hpp>
 #include <microscopes/common/group_manager.hpp>
@@ -77,28 +78,32 @@ public:
         V = def.v();
         M = def.n();
         rng_ = rng;
+        std::cout << "1. iterate i to M " << M << std::endl;
         for(size_t i = 0; i < M; ++i) {
             using_t.push_back({0});
         }
         using_k = {0};
 
         x_ji = std::vector<std::vector<size_t>>(docs);
+        std::cout << "2. iterate j  to M " << M << std::endl;
         for(size_t j = 0; j < M; ++j) {
             k_jt.push_back({0});
             n_jt.push_back({0});
 
             n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
-            for (size_t t = 0; t < using_t.size(); ++t)
+            std::cout << "    3. iterate t to using_t.size() " << using_t[j].size() << std::endl;
+            for (size_t t = 0; t < using_t[j].size(); ++t)
             {
                 std::map<size_t, size_t> term_dict;
-                for (size_t i = 0; i < V; ++i)
-                {
-                    term_dict[i] = 0;
-                }
+                // std::cout << "    4. iterate i to V " << V << " (t=" << t << ")" << std::endl;
+                // for (size_t i = 0; i < V; ++i)
+                // {
+                //     term_dict[i] = 0;
+                // }
                 n_jtv[j].push_back(term_dict);
             }
         }
-
+        std::cout << "arrays created" << std::endl;
         m = 0;
         m_k = std::vector<size_t> {1};
         n_k = std::vector<float> {beta_ * V};
@@ -120,11 +125,15 @@ public:
     void
     inference(){
         for (size_t j = 0; j < x_ji.size(); ++j)
-            for (size_t i = 0; i < x_ji[j].size(); ++i)
+            for (size_t i = 0; i < x_ji[j].size(); ++i){
+                std::cout << "sampling_t(" << j << "," << i << ")" << std::endl;
                 sampling_t(j, i);
+            }
         for (size_t j = 0; j < M; ++j)
-            for (auto t: using_t[j])
+            for (auto t: using_t[j]){
+                std::cout << "sampling_k(" << j << "," << t << ")" << std::endl;
                 sampling_k(j, t);
+            }
     }
 
     size_t
