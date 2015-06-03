@@ -142,6 +142,26 @@ public:
     }
 
 
+    std::vector<std::map<size_t, size_t>>
+    wordDist(){
+        // Distribution over words for each topic
+        std::vector<std::map<size_t, size_t>> vec;
+        for(auto k: using_k){
+            if(k==0) continue;
+            vec.push_back(std::map<size_t, size_t>());
+            for(size_t v = 0; v < V; ++v) {
+                if(n_kv[k].find(v) != n_kv[k].end()){
+                    vec.back()[v] = n_kv[k][v] / n_k[k];
+                }
+                else{
+                    vec.back()[v] = beta_ / n_k[k];
+                }
+            }
+        }
+        return vec;
+    }
+
+
 private:
     void
     sampling_t(size_t j, size_t i){
