@@ -38,8 +38,9 @@ removeFirst(std::vector<T> &v, T element){
 
 // http://stackoverflow.com/a/1267878/982745
 template< class T >
-std::vector<T> selectByIndex(std::vector<T> &v, std::vector<size_t> const &index )  {
+std::vector<T> selectByIndex(const std::vector<T> &v, const std::vector<size_t> &index )  {
     std::vector<T> new_v;
+    new_v.reserve(index.size());
     for(size_t i: index){
         new_v.push_back(v[i]);
     }
@@ -145,6 +146,7 @@ public:
     wordDist(){
         // Distribution over words for each topic
         std::vector<std::map<size_t, size_t>> vec;
+        vec.reserve(using_k.size());
         for(auto k: using_k){
             if(k==0) continue;
             vec.push_back(std::map<size_t, size_t>());
@@ -164,6 +166,7 @@ public:
     topicDist(){
         // Distribution over topics for each document
         std::vector<std::vector<float>> theta;
+        theta.reserve(k_jt.size());
         std::vector<float> am_k(m_k.begin(), m_k.end());
         am_k[0] = gamma_;
         double sum_am_using_k = 0;
@@ -279,6 +282,7 @@ private:
         n_k[k_old] -= n_jt_val;
         new_n_k = selectByIndex(new_n_k, using_k);
         std::vector<float> log_p_k;
+        log_p_k.reserve(using_k.size());
         // numpy.log(self.m_k[self.using_k]) + gammaln(n_k) - gammaln(n_k + n_jt)
         for(auto k: using_k){
             log_p_k.push_back(log(m_k[k]) + lgamma(n_k[k]) - lgamma(Vbeta + n_jt_val));
@@ -293,7 +297,8 @@ private:
                 continue;
 
             // n_kw = numpy.array([n.get(w, self.beta) for n in self.n_kv])
-            std::vector<float> n_kw {};
+            std::vector<float> n_kw;
+            n_kw.reserve(n_kv.size());
             for(auto n: n_kv){
                 if(n.count(w) > 0){
                     n_kw.push_back(n[w]);
@@ -313,6 +318,7 @@ private:
 
         log_p_k[0] = log_p_k_new;
         std::vector<float> p_k;
+        p_k.reserve(log_p_k.size());
         float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
         float p_k_sum = 0;
         for(auto log_p_k_value: log_p_k){
@@ -434,7 +440,7 @@ private:
     }
 
     std::vector<float>
-    calc_dish_posterior_w(std::vector<float> &f_k){
+    calc_dish_posterior_w(const std::vector<float> &f_k){
         std::map<size_t, float> p_k_map;
         for(auto& k: using_k){
             p_k_map[k] = m_k[k] + f_k[k];
@@ -444,6 +450,7 @@ private:
             sum_p_k += kv.second;
         }
         std::vector<float> p_k;
+        p_k.reserve(p_k_map.size());
         for (size_t i = 0; i < p_k_map.size(); ++i)
         {
             p_k.push_back(p_k_map[i] / sum_p_k);
@@ -452,9 +459,10 @@ private:
     }
 
     std::vector<float>
-    calc_table_posterior(size_t j, std::vector<float> &f_k){
+    calc_table_posterior(size_t j, const std::vector<float> &f_k){
         std::vector<size_t> using_table = using_t[j];
         std::vector<float> p_t;
+        p_t.reserve(using_table.size());
         for(auto& p: using_table){
             p_t.push_back(n_jt[j][p] + f_k[k_jt[j][p]]);
         }
@@ -510,8 +518,8 @@ private:
 
     std::vector<float>
     calc_f_k(size_t v){
-        std::vector<float> f_k {};
-
+        std::vector<float> f_k;
+        f_k.reserve(n_kv.size());
         for (size_t k=0; k < n_kv.size(); k++)
         {
             f_k.push_back(n_kv[k][v] / n_k[k]);
