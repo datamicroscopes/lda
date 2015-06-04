@@ -195,6 +195,25 @@ public:
         return theta;
     }
 
+    double
+    perplexity(){
+        std::vector<std::map<size_t, size_t>> phi = wordDist();
+        std::vector<std::vector<float>> theta = docDist();
+        phi.insert(phi.begin(), std::map<size_t, size_t>());
+        double log_likelihood = 0;
+        size_t N = 0;
+        for(size_t j = 0; j < x_ji.size(); j++){
+            double word_prob = 0;
+            for(auto v: x_ji[j]){
+                for(size_t i = 0; i < theta[j].size(); i++){
+                    word_prob += theta[j][i] * phi[i][v];
+                }
+            }
+            N += x_ji[j].size();
+        }
+        return exp(log_likelihood / N);
+    }
+
 
 private:
     void
