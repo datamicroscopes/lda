@@ -163,7 +163,7 @@ public:
     }
 
     std::vector<std::vector<float>>
-    topicDist(){
+    docDist(){
         // Distribution over topics for each document
         std::vector<std::vector<float>> theta;
         theta.reserve(k_jt.size());
