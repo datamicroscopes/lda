@@ -81,10 +81,8 @@ test_create_model_def_and_state(){
     lda::state state(def, 1, .5, 1, docs, r);
     for(unsigned i = 0; i < 20; ++i){
         state.inference();
-        std::cout << "iter" << i << std::endl;
     }
-    std::cout << "FINI!" << std::endl;
-    std::cout << "perplexity   " << state.perplexity();
+    std::cout << "test_create_model_def_and_state" << std::endl;
 }
 
 static void
@@ -275,6 +273,9 @@ test1(){
 
 
 int main(void){
-    test_compare_shuyo();
+    // test_create_model_def_and_state();
+    // test_compare_shuyo();
+    test1();
     return 0;
+
 }
