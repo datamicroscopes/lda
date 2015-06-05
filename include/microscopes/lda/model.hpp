@@ -218,7 +218,7 @@ public:
     }
 
 
-private:
+// private:
     void
     sampling_t(size_t j, size_t i){
         leave_from_table(j, i);
