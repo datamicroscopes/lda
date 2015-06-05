@@ -224,8 +224,7 @@ private:
         leave_from_table(j, i);
         size_t v = x_ji[j][i];
         std::vector<float> f_k = calc_f_k(v);
-
-        // assert f_k[0] == 0 # f_k[0] is a dummy and will be erased
+        assert(f_k[0] == 0);
         std::vector<float> p_t = calc_table_posterior(j, f_k);
         // if len(p_t) > 1 and p_t[1] < 0: self.dump()
         size_t word = common::util::sample_discrete(p_t, rng_);
@@ -261,8 +260,7 @@ private:
     void
     leave_from_dish(size_t j, size_t t){
         size_t k = k_jt[j][t];
-        // assert k > 0
-        // assert m_k[k] > 0
+        assert(k > 0); assert(m_k[k] > 0);
         m_k[k] -= 1;
         m -= 1;
         if (m_k[k] == 0)
@@ -293,6 +291,7 @@ private:
         for(auto kv: n_jtv[j][t]){
             auto w = kv.first;
             auto n_jtw = kv.second;
+            assert(n_jtw >= 0);
             if (n_jtw == 0)
                 continue;
 
@@ -361,7 +360,7 @@ private:
 
     void
     seat_at_table(size_t j, size_t i, size_t t_new){
-        // assert t_new in self.using_t[j]
+        assert(std::find(using_t[j].begin(), using_t[j].end(), t_new) != using_t[j].end());
         t_ji[j][i] = t_new;
         n_jt[j][t_new] += 1;
 
@@ -391,6 +390,8 @@ private:
             m_k.push_back(m_k[0]);
             n_kv.push_back(std::map<size_t, size_t>());
         }
+        assert(k_new == using_k.back() + 1);
+        assert(k_new < n_kv.size());
 
         using_k.insert(using_k.begin()+k_new, k_new);
         n_k[k_new] = beta_ * (float)V;
@@ -407,7 +408,7 @@ private:
     size_t
     add_new_table(size_t j, size_t k_new)
     {
-        // assert k_new in self.using_k
+        assert(std::find(using_k.begin(), using_k.end(), k_new) != using_k.end());
         size_t t_new = using_t[j].size();
         for (size_t i = 0; i < using_t[j].size(); ++i)
         {
@@ -490,6 +491,7 @@ private:
         if (t > 0)
         {
             size_t k = k_jt[j][t];
+            assert(k > 0);
             // decrease counters
             size_t v = x_ji[j][i];
             n_kv[k][v] -= 1;
@@ -510,6 +512,7 @@ private:
         removeFirst(using_t[j], t);
         m_k[k] -= 1;
         m -= 1;
+        assert(m_k[k] >= 0);
         if (m_k[k] == 0)
         {
             removeFirst(using_k, k);
