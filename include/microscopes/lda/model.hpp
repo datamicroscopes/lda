@@ -442,19 +442,18 @@ private:
 
     std::vector<float>
     calc_dish_posterior_w(const std::vector<float> &f_k){
-        std::map<size_t, float> p_k_map;
-        for(auto& k: using_k){
-            p_k_map[k] = m_k[k] + f_k[k];
+        std::vector<float> p_k(using_k.size());
+        for(size_t i = 0; i < using_k.size(); ++i) {
+            p_k[using_k[i]] = m_k[using_k[i]] * f_k[using_k[i]];
         }
-        float sum_p_k = 0;
-        for(auto& kv: p_k_map){
-            sum_p_k += kv.second;
+        p_k[0] = gamma_ / V;
+        double p_k_sum = 0;
+        for(auto v: p_k){
+            p_k_sum += v;
         }
-        std::vector<float> p_k;
-        p_k.reserve(p_k_map.size());
-        for (size_t i = 0; i < p_k_map.size(); ++i)
+        for (size_t i = 0; i < p_k.size(); ++i)
         {
-            p_k.push_back(p_k_map[i] / sum_p_k);
+            p_k[i] /= p_k_sum;
         }
         return p_k;
     }
