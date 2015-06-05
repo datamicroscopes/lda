@@ -388,7 +388,7 @@ private:
         {
             n_k.push_back(n_k[0]);
             m_k.push_back(m_k[0]);
-            n_kv.push_back(std::map<size_t, size_t>());
+            n_kv.push_back(std::map<size_t, float>());
         }
         assert(k_new == using_k.back() + 1);
         assert(k_new < n_kv.size());
@@ -399,7 +399,7 @@ private:
 
         for (size_t i = 0; i < V; ++i)
         {
-            n_kv[k_new][i] = 0;
+            n_kv[k_new][i] = beta_;
         }
         return k_new;
 
@@ -546,7 +546,7 @@ private:
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv;
     std::vector<size_t> m_k;
     std::vector<float> n_k;
-    std::vector<std::map<size_t, size_t>> n_kv;
+    std::vector<std::map<size_t, float>> n_kv;
     std::vector<std::vector<size_t>> t_ji;
 
 
