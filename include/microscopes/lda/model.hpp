@@ -465,7 +465,7 @@ private:
         std::vector<float> p_t;
         p_t.reserve(using_table.size());
         for(auto& p: using_table){
-            p_t.push_back(n_jt[j][p] + f_k[k_jt[j][p]]);
+            p_t.push_back(n_jt[j][p] * f_k[k_jt[j][p]]);
         }
         float p_x_ji = gamma_ / (float)V;
         for (size_t k = 0; k < f_k.size(); ++k)
