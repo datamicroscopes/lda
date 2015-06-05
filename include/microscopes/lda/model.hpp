@@ -103,7 +103,7 @@ public:
         m_k = std::vector<size_t> {1};
         n_k = std::vector<float> {beta_ * V};
 
-        std::map<size_t, size_t> term_count;
+        std::map<size_t, float> term_count;
         for (size_t i = 0; i < V; ++i)
         {
             term_count[i] = 0;
