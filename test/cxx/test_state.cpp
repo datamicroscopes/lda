@@ -85,6 +85,121 @@ test_create_model_def_and_state(){
     std::cout << "test_create_model_def_and_state" << std::endl;
 }
 
+static void
+sequence3(double alpha, double beta, double gamma){
+    rng_t r(5849343);
+    std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
+    size_t V = 7;
+    lda::model_definition def(3, V);
+    lda::state state(def, alpha, beta, gamma, docs, r);
+
+    size_t k1 = state.add_new_dish();
+    size_t k2 = state.add_new_dish();
+
+    // Section 1
+    size_t j = 0;
+    size_t t1 = state.add_new_table(j, k1);
+    size_t t2 = state.add_new_table(j, k2);
+    state.seat_at_table(j, 0, t1);
+    state.seat_at_table(j, 1, t2);
+    state.seat_at_table(j, 2, t1);
+    state.seat_at_table(j, 3, t1);
+
+    j = 1;
+    t1 = state.add_new_table(j, k1);
+    t2 = state.add_new_table(j, k2);
+    state.seat_at_table(j, 0, t1);
+    state.seat_at_table(j, 1, t2);
+    state.seat_at_table(j, 2, t2);
+    state.seat_at_table(j, 3, t2);
+
+    j = 2;
+    t1 = state.add_new_table(j, k1);
+    t2 = state.add_new_table(j, k2);
+    state.seat_at_table(j, 0, t1);
+    state.seat_at_table(j, 1, t2);
+    state.seat_at_table(j, 2, t2);
+    state.seat_at_table(j, 3, t2);
+
+    // Section 2
+    std::vector<std::map<size_t, float>> phi = state.wordDist();
+    MICROSCOPES_CHECK(phi.size() == 2, "phi is wrong size");
+    MICROSCOPES_CHECK(assertAlmostEqual(phi[0][0], (beta+3)/(V*beta+5)), "phi[0][0] is wrong in section 2");
+    MICROSCOPES_CHECK(assertAlmostEqual(phi[0][2], (beta+1)/(V*beta+5)), "phi[0][2] is wrong in section 2");
+    MICROSCOPES_CHECK(assertAlmostEqual(phi[0][3], (beta+1)/(V*beta+5)), "phi[0][3] is wrong in section 2");
+    MICROSCOPES_CHECK(assertAlmostEqual(phi[1][1], (beta+3)/(V*beta+7)), "phi[1][1] is wrong in section 2");
+    MICROSCOPES_CHECK(assertAlmostEqual(phi[1][4], (beta+1)/(V*beta+7)), "phi[1][4] is wrong in section 2");
+    MICROSCOPES_CHECK(assertAlmostEqual(phi[1][5], (beta+2)/(V*beta+7)), "phi[1][5] is wrong in section 2");
+    MICROSCOPES_CHECK(assertAlmostEqual(phi[1][6], (beta+1)/(V*beta+7)), "phi[1][6] is wrong in section 2");
+    for(size_t v: {1, 4, 5, 6}){
+        MICROSCOPES_CHECK(assertAlmostEqual(phi[0][v], (beta+0)/(V*beta+5)), "phi[0][v] is wrong");
+    }
+    for(size_t v: {0, 2, 3}){
+        MICROSCOPES_CHECK(assertAlmostEqual(phi[1][v], (beta+0)/(V*beta+7)), "phi[1][v] is wrong");
+    }
+
+    // Section 3
+    std::vector<std::vector<float>> theta = state.docDist();
+    MICROSCOPES_CHECK(theta.size() == 3, "theta is wrong size");
+    for(auto inner_theta: theta){
+        MICROSCOPES_CHECK(inner_theta.size() == 3, "inner_theta is wrong size");
+    }
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[0][0], (  alpha*gamma/(6+gamma))/(4+alpha)), "theta[0][0], (  alpha*gamma/(6+gamma))/(4+alpha) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[0][1], (3+alpha*  3  /(6+gamma))/(4+alpha)), "theta[0][1], (3+alpha*  3  /(6+gamma))/(4+alpha) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[0][2], (1+alpha*  3  /(6+gamma))/(4+alpha)), "theta[0][2], (1+alpha*  3  /(6+gamma))/(4+alpha) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[1][0], (  alpha*gamma/(6+gamma))/(4+alpha)), "theta[1][0], (  alpha*gamma/(6+gamma))/(4+alpha) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[1][1], (1+alpha*  3  /(6+gamma))/(4+alpha)), "theta[1][1], (1+alpha*  3  /(6+gamma))/(4+alpha) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[1][2], (3+alpha*  3  /(6+gamma))/(4+alpha)), "theta[1][2], (3+alpha*  3  /(6+gamma))/(4+alpha) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[2][0], (  alpha*gamma/(6+gamma))/(4+alpha)), "theta[2][0], (  alpha*gamma/(6+gamma))/(4+alpha) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[2][1], (1+alpha*  3  /(6+gamma))/(4+alpha)), "theta[2][1], (1+alpha*  3  /(6+gamma))/(4+alpha) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(theta[2][2], (3+alpha*  3  /(6+gamma))/(4+alpha)), "theta[2][2], (3+alpha*  3  /(6+gamma))/(4+alpha) is wrong");
+
+    // Section 4
+
+    j = 0;
+    size_t i = 0;
+    size_t v = docs[j][i];
+
+    state.leave_from_table(j, i);
+
+    auto f_k = state.calc_f_k(v);
+    MICROSCOPES_CHECK(f_k.size() == 3, "f_k is wrong size");
+    std::cout << "@@@@ f_k  " << f_k << std::endl;
+    MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], (beta+2)/(V*beta+4)), "f_k[1] is wrong in section 4");
+    MICROSCOPES_CHECK(assertAlmostEqual(f_k[2], (beta+0)/(V*beta+7)), "f_k[2] is wrong in section 4");
+
+    auto p_t = state.calc_table_posterior(j, f_k);
+    MICROSCOPES_CHECK(p_t.size() == 3, "p_t is wrong size");
+    double p1 = 2*f_k[1];
+    double p2 = 1*f_k[2];
+    double p0 = alpha / (6+gamma) * (3*f_k[1] + 3*f_k[2] + gamma/V);
+    MICROSCOPES_CHECK(assertAlmostEqual(p_t[0], p0 / (p0+p1+p2)), "(p_t[0], p0 / (p0+p1+p2)) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(p_t[1], p1 / (p0+p1+p2)), "(p_t[1], p1 / (p0+p1+p2)) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(p_t[2], p2 / (p0+p1+p2)), "(p_t[2], p2 / (p0+p1+p2)) is wrong");
+
+    state.seat_at_table(j, i, 1);
+
+    // Section 5
+    j = 0;
+    i = 1;
+    v = docs[j][i];
+    state.leave_from_table(j, i);
+    MICROSCOPES_CHECK(state.using_t[j].size() == 2, "using_t[j] is wrong size");
+    MICROSCOPES_CHECK(state.using_t[j][0] == 0, "using_t[j][0] is wrong");
+    MICROSCOPES_CHECK(state.using_t[j][1] == 1, "using_t[j][1] is wrong");
+
+    f_k = state.calc_f_k(v);
+    MICROSCOPES_CHECK(f_k.size() == 3, "f_k is wrong size in section 5");
+    MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], (beta+0)/(V*beta+5)), "f_k[1] is wrong in section 5");
+    MICROSCOPES_CHECK(assertAlmostEqual(f_k[2], (beta+2)/(V*beta+6)), "f_k[2] is wrong in section 5");
+
+    p_t = state.calc_table_posterior(j, f_k);
+    MICROSCOPES_CHECK(p_t.size() == 2, "p_t is wrong size in section 5");
+    p1 = 3*f_k[1];
+    p0 = alpha / (5+gamma) * (3*f_k[1] + 2*f_k[2] + gamma/V);
+    MICROSCOPES_CHECK(assertAlmostEqual(p_t[0], p0 / (p0+p1)), "(p_t[0], p0 / (p0+p1)) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(p_t[1], p1 / (p0+p1)), "(p_t[1], p1 / (p0+p1)) is wrong");
+}
 
 static void
 sequence2(double alpha, double beta, double gamma){
@@ -326,6 +441,12 @@ test2(){
 }
 
 static void
+test4(){
+    sequence3(0.2, 0.01, 0.5);
+}
+
+
+static void
 test7(){
     sequence2(0.01, 0.001, 10);
 }
@@ -341,6 +462,7 @@ int main(void){
     // test_compare_shuyo();
     test1();
     test2();
+    test4();
     test7();
     test8();
     return 0;
