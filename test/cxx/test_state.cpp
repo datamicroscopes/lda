@@ -86,11 +86,8 @@ test_create_model_def_and_state(){
 }
 
 static void
-test1(){
+sequence1(double alpha, double beta, double gamma){
     rng_t r(5849343);
-    float alpha = 0.1;
-    float beta = 0.1;
-    float gamma = 0.1;
     size_t V = 7;
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
     lda::model_definition def(3, 7);
@@ -270,12 +267,23 @@ test1(){
     MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[k_new][v], beta+2), "n_kv[k_new][v]");
 }
 
+static void
+test1(){
+    sequence1(0.1, 0.1, 0.1);
+}
+
+static void
+test2(){
+    sequence1(0.2, 0.01, 0.5);
+}
+
 
 
 int main(void){
     // test_create_model_def_and_state();
     // test_compare_shuyo();
     test1();
+    test2();
     return 0;
 
 }
