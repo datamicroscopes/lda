@@ -85,6 +85,54 @@ test_create_model_def_and_state(){
     std::cout << "test_create_model_def_and_state" << std::endl;
 }
 
+
+static void
+sequence2(double alpha, double beta, double gamma){
+    rng_t r(5849343);
+    std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
+    size_t V = 7;
+    lda::model_definition def(3, V);
+    lda::state state(def, alpha, beta, gamma, docs, r);
+
+    // assign all words to table 1 and all tables to dish 1
+    size_t k_new = state.add_new_dish();
+    MICROSCOPES_CHECK(k_new == 1, "k_new is wrong");
+    for(size_t j: {0, 1, 2}){
+        size_t t_new = state.add_new_table(j, k_new);
+        MICROSCOPES_CHECK(t_new == 1, "j_new is wrong");
+        for(size_t i: {0, 1, 2, 3}){
+            state.seat_at_table(j, i, t_new);
+        }
+    }
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_k[0], beta*V),
+        "n_k[0] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_k[1], beta*V+12),
+        "n_k[1] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][0], beta + 3),
+        "n_kv[1][0] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][1], beta + 3),
+        "n_kv[1][1] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][2], beta + 1),
+        "n_kv[1][2] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][3], beta + 1),
+        "n_kv[1][3] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][4], beta + 1),
+        "n_kv[1][4] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][5], beta + 2),
+        "n_kv[1][5] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][6], beta + 1),
+        "n_kv[1][6] is wrong");
+
+    state.leave_from_dish(0, 1); // decreate m and m_k only
+    MICROSCOPES_CHECK(state.m == 2, "state.m != 2");
+    MICROSCOPES_CHECK(state.m_k[1] == 2, "state.m_k[1] != 2");
+
+    state.seat_at_dish(0, 1, 1);
+    MICROSCOPES_CHECK(state.m == 3, "state.m != 3");
+    MICROSCOPES_CHECK(state.m_k[1] == 3, "state.m_k[1] != 3");
+}
+
+
 static void
 sequence1(double alpha, double beta, double gamma){
     rng_t r(5849343);
@@ -277,6 +325,15 @@ test2(){
     sequence1(0.2, 0.01, 0.5);
 }
 
+static void
+test7(){
+    sequence2(0.01, 0.001, 10);
+}
+
+static void
+test8(){
+    sequence2(0.01, 0.001, 0.05);
+}
 
 
 int main(void){
@@ -284,6 +341,8 @@ int main(void){
     // test_compare_shuyo();
     test1();
     test2();
+    test7();
+    test8();
     return 0;
 
 }
