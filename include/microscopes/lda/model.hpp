@@ -200,14 +200,20 @@ public:
         double log_likelihood = 0;
         size_t N = 0;
         for(size_t j = 0; j < x_ji.size(); j++){
-            double word_prob = 0;
-            for(auto v: x_ji[j]){
+            auto py_x_ji = x_ji[j];
+            auto p_jk = theta[j];
+            for(auto v: py_x_ji){
+                double word_prob = 0;
                 for(size_t i = 0; i < theta[j].size(); i++){
-                    word_prob += theta[j][i] * phi[i][v];
+                    auto p = p_jk[i];
+                    auto p_kv = phi[i];
+                    word_prob += p * p_kv[v];
                 }
+                log_likelihood -= log(word_prob);
             }
             N += x_ji[j].size();
         }
+
         return exp(log_likelihood / N);
     }
 
