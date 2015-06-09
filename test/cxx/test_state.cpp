@@ -86,6 +86,93 @@ test_create_model_def_and_state(){
 }
 
 static void
+sequence4(double alpha, double beta, double gamma){
+    rng_t r(5849343);
+    std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
+    size_t V = 7;
+    lda::model_definition def(3, V);
+    lda::state state(def, alpha, beta, gamma, docs, r);
+    auto Vbeta = V*beta;
+    size_t k1 = state.add_new_dish();
+    size_t k2 = state.add_new_dish();
+
+    // Section 1
+    size_t j = 0;
+    size_t t1 = state.add_new_table(j, k1);
+    size_t t2 = state.add_new_table(j, k2);
+    state.seat_at_table(j, 0, t1);
+    state.seat_at_table(j, 1, t2);
+    state.seat_at_table(j, 2, t2);
+    state.seat_at_table(j, 3, t2);
+
+    j = 1;
+    t1 = state.add_new_table(j, k1);
+    t2 = state.add_new_table(j, k2);
+    state.seat_at_table(j, 0, t2);
+    state.seat_at_table(j, 1, t2);
+    state.seat_at_table(j, 2, t1);
+    state.seat_at_table(j, 3, t2);
+
+    j = 2;
+    t1 = state.add_new_table(j, k1);
+    t2 = state.add_new_table(j, k2);
+    state.seat_at_table(j, 0, t1);
+    state.seat_at_table(j, 1, t2);
+    state.seat_at_table(j, 2, t2);
+    state.seat_at_table(j, 3, t2);
+
+    // Section 2
+    state.leave_from_dish(2, 1);
+    state.seat_at_dish(2, 1, 2);
+
+    state.leave_from_table(2, 0);
+    state.seat_at_table(2, 0, 2);
+
+    state.leave_from_dish(0, 1);
+    state.seat_at_dish(0, 1, 2);
+    MICROSCOPES_CHECK(state.m == 5, "state.m is wrong in section 2");
+    // return;
+    MICROSCOPES_CHECK(state.m_k[1] == 1, "state.m_k[1] is wrong in section 2");
+    MICROSCOPES_CHECK(state.m_k[2] == 4, "state.m_k[1] is wrong in section 2");
+    state.leave_from_dish(1, 1);
+    state.seat_at_dish(1, 1, 2);
+
+    state.leave_from_table(2, 3);
+    auto k_new = state.add_new_dish();
+    MICROSCOPES_CHECK(k_new == 1, "k_new is wrong in section 2");
+    auto t_new = state.add_new_table(j, k_new);
+    MICROSCOPES_CHECK(t_new == 1, "t_new is wrong in section 2");
+    state.seat_at_table(2, 3, 1);
+    // Section 3
+    j = 0;
+    size_t t = 1;
+    state.leave_from_dish(j, t);
+
+    auto p_k = state.calc_dish_posterior_t(j, t);
+    float p0 = gamma / V;
+    float p1 = 1 * beta / (V * beta + 1);
+    float p2 = 4 * (beta + 2) / (Vbeta + 10);
+    MICROSCOPES_CHECK(assertAlmostEqual(p_k[0], p0 / (p0 + p1 + p2)), "p_k[0] is wrong in section 3");
+    MICROSCOPES_CHECK(assertAlmostEqual(p_k[1], p1 / (p0 + p1 + p2)), "p_k[1] is wrong in section 3");
+    MICROSCOPES_CHECK(assertAlmostEqual(p_k[2], p2 / (p0 + p1 + p2)), "p_k[2] is wrong in section 3");
+
+    state.seat_at_dish(j, t, 1);
+
+    // Section 4
+    t = 2;
+    state.leave_from_dish(j, t);
+
+    p_k = state.calc_dish_posterior_t(j, t);
+    p0 = gamma * beta * beta * beta / (Vbeta * (Vbeta + 1) * (Vbeta + 2));
+    p1 = 2 * (beta + 0) * beta * beta / ((Vbeta + 2) * (Vbeta + 3) * (Vbeta + 4));
+    p2 = 3 * (beta + 2) * beta * beta / ((Vbeta + 7) * (Vbeta + 8) * (Vbeta + 9));
+    MICROSCOPES_CHECK(assertAlmostEqual(p_k[0], p0 / (p0 + p1 + p2)), "p_k[0] is wrong in section 4");
+    MICROSCOPES_CHECK(assertAlmostEqual(p_k[1], p1 / (p0 + p1 + p2)), "p_k[1] is wrong in section 4");
+    MICROSCOPES_CHECK(assertAlmostEqual(p_k[2], p2 / (p0 + p1 + p2)), "p_k[2] is wrong in section 4");
+
+}
+
+static void
 sequence3(double alpha, double beta, double gamma){
     rng_t r(5849343);
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
@@ -164,7 +251,6 @@ sequence3(double alpha, double beta, double gamma){
 
     auto f_k = state.calc_f_k(v);
     MICROSCOPES_CHECK(f_k.size() == 3, "f_k is wrong size");
-    std::cout << "@@@@ f_k  " << f_k << std::endl;
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], (beta+2)/(V*beta+4)), "f_k[1] is wrong in section 4");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[2], (beta+0)/(V*beta+7)), "f_k[2] is wrong in section 4");
 
@@ -445,6 +531,10 @@ test4(){
     sequence3(0.2, 0.01, 0.5);
 }
 
+static void
+test5(){
+    sequence4(0.2, 0.01, 0.5);
+}
 
 static void
 test7(){
@@ -463,6 +553,7 @@ int main(void){
     test1();
     test2();
     test4();
+    test5();
     test7();
     test8();
     return 0;
