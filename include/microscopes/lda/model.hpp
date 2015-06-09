@@ -117,18 +117,14 @@ public:
     void
     inference(){
         for (size_t j = 0; j < x_ji.size(); ++j){
-            if (j % 100 == 0) std::cout << "    sampling_t(" << j << ")" << std::endl;
             for (size_t i = 0; i < x_ji[j].size(); ++i){
-                std::cout << "sampling_t(" << j << "," << i << ")" << std::endl;
                 sampling_t(j, i);
             }
         }
         for (size_t j = 0; j < M; ++j){
-            if (j % 100 == 0) std::cout << "    sampling_k(" << j << ")" << std::endl;
             for (auto t: using_t[j]){
                 if(t != 0) {
                     sampling_k(j, t);
-                    std::cout << "sampling_k(" << j << "," << t << ")" << std::endl;
                 }
             }
         }
