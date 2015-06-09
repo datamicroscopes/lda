@@ -126,8 +126,10 @@ public:
         for (size_t j = 0; j < M; ++j){
             if (j % 100 == 0) std::cout << "    sampling_k(" << j << ")" << std::endl;
             for (auto t: using_t[j]){
-                std::cout << "sampling_k(" << j << "," << t << ")" << std::endl;
-                sampling_k(j, t);
+                if(t != 0) {
+                    sampling_k(j, t);
+                    std::cout << "sampling_k(" << j << "," << t << ")" << std::endl;
+                }
             }
         }
     }
@@ -256,7 +258,8 @@ public:
     void
     leave_from_dish(size_t j, size_t t){
         size_t k = k_jt[j][t];
-        assert(k > 0); assert(m_k[k] > 0);
+        assert(k > 0);
+        assert(m_k[k] > 0);
         m_k[k] -= 1;
         m -= 1;
         if (m_k[k] == 0)
@@ -335,6 +338,7 @@ public:
         size_t k_old = k_jt[j][t];
         if (k_new != k_old)
         {
+            assert(k_new != 0);
             k_jt[j][t] = k_new;
             float n_jt_val = n_jt[j][t];
 
@@ -418,8 +422,8 @@ public:
         }
         if (t_new == using_t[j].size())
         {
-            n_jt[j].emplace_back();
-            k_jt[j].push_back(k_jt[j][0]);
+            n_jt[j].push_back(0);
+            k_jt[j].push_back(0);
 
             std::map<size_t, size_t> term_dict;
             n_jtv[j].push_back(term_dict);
@@ -430,7 +434,7 @@ public:
         {
             n_jtv[j][t_new][i] = 0;
         }
-
+        assert(k_new != 0);
         k_jt[j][t_new] = k_new;
         m_k[k_new] += 1;
         m += 1;
