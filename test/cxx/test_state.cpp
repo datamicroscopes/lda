@@ -1,5 +1,5 @@
 #include <microscopes/lda/model.hpp>
-#include <microscopes/lda/data.hpp>
+// #include <microscopes/lda/data.hpp>
 #include <microscopes/common/macros.hpp>
 #include <microscopes/common/recarray/dataview.hpp>
 #include <microscopes/models/distributions.hpp>
@@ -33,37 +33,37 @@ bool assertSequenceEqual(const vector<T> &v1, const vector<T> &v2){
 }
 
 
-static void
-test_compare_shuyo()
-{
-    const size_t D = 28*28;
-    rng_t r(5849343);
+// static void
+// test_compare_shuyo()
+// {
+//     const size_t D = 28*28;
+//     rng_t r(5849343);
 
-    vector<shared_ptr<models::model>> models;
-    for (size_t i = 0; i < D; i++){
-        models.emplace_back(make_shared<
-            models::distributions_model<BetaBernoulli>>());
-    }
+//     vector<shared_ptr<models::model>> models;
+//     for (size_t i = 0; i < D; i++){
+//         models.emplace_back(make_shared<
+//             models::distributions_model<BetaBernoulli>>());
+//     }
 
-    // std::cout << "loading data..."; std::cout.flush();
+//     // std::cout << "loading data..."; std::cout.flush();
 
-    std::cout << " complete" << std::endl;
-    std::cout << "creating model definition...";
-    lda::model_definition def(5665, 4878);
-    std::cout << " complete" << std::endl;
+//     std::cout << " complete" << std::endl;
+//     std::cout << "creating model definition...";
+//     lda::model_definition def(5665, 4878);
+//     std::cout << " complete" << std::endl;
 
-    std::cout << "initializing state...";
-    lda::state state(def, 1, .5, 1, data::docs, r);
-    std::cout << " complete" << std::endl;
-    std::cout << "inference!!" << std::endl;
-    for(unsigned i = 0; i < 2000; ++i){
+//     std::cout << "initializing state...";
+//     lda::state state(def, 1, .5, 1, data::docs, r);
+//     std::cout << " complete" << std::endl;
+//     std::cout << "inference!!" << std::endl;
+//     for(unsigned i = 0; i < 2000; ++i){
 
-        state.inference();
-        std::cout << "K=" << state.usedDishes() << std::endl;
-        std::cout << "iter " << i << std::endl;
-    }
-    std::cout << "FINI!";
-}
+//         state.inference();
+//         std::cout << "K=" << state.usedDishes() << std::endl;
+//         std::cout << "iter " << i << std::endl;
+//     }
+//     std::cout << "FINI!";
+// }
 
 static void
 sequence_random(double alpha, double beta, double gamma, size_t seed){
