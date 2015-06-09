@@ -446,7 +446,7 @@ public:
     calc_dish_posterior_w(const std::vector<float> &f_k){
         std::vector<float> p_k(using_k.size());
         for(size_t i = 0; i < using_k.size(); ++i) {
-            p_k[using_k[i]] = m_k[using_k[i]] * f_k[using_k[i]];
+            p_k[i] = m_k[using_k[i]] * f_k[using_k[i]];
         }
         p_k[0] = gamma_ / V;
         double p_k_sum = 0;
