@@ -67,6 +67,7 @@ bool assertSequenceEqual(const vector<T> &v1, const vector<T> &v2){
 
 static void
 sequence_random(double alpha, double beta, double gamma, size_t seed){
+    std::cout << alpha << " " << beta << " " << gamma <<std::endl;
     rng_t r(seed);
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
     size_t V = 7;
