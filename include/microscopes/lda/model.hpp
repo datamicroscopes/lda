@@ -142,14 +142,14 @@ public:
     }
 
 
-    std::vector<std::map<size_t, size_t>>
+    std::vector<std::map<size_t, float>>
     wordDist(){
         // Distribution over words for each topic
-        std::vector<std::map<size_t, size_t>> vec;
+        std::vector<std::map<size_t, float>> vec;
         vec.reserve(using_k.size());
         for(auto k: using_k){
             if(k==0) continue;
-            vec.push_back(std::map<size_t, size_t>());
+            vec.push_back(std::map<size_t, float>());
             for(size_t v = 0; v < V; ++v) {
                 if(n_kv[k].find(v) != n_kv[k].end()){
                     vec.back()[v] = n_kv[k][v] / n_k[k];
@@ -200,9 +200,9 @@ public:
 
     double
     perplexity(){
-        std::vector<std::map<size_t, size_t>> phi = wordDist();
+        std::vector<std::map<size_t, float>> phi = wordDist();
         std::vector<std::vector<float>> theta = docDist();
-        phi.insert(phi.begin(), std::map<size_t, size_t>());
+        phi.insert(phi.begin(), std::map<size_t, float>());
         double log_likelihood = 0;
         size_t N = 0;
         for(size_t j = 0; j < x_ji.size(); j++){
