@@ -77,7 +77,7 @@ test_create_model_def_and_state(){
     }
 
     lda::model_definition def(2, 5);
-    std::vector< std::vector<size_t>> docs {{0, 1, 2}, {2, 3, 4, 1}};
+    std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
     lda::state state(def, 1, .5, 1, docs, r);
     for(unsigned i = 0; i < 20; ++i){
         state.inference();
@@ -548,14 +548,21 @@ test8(){
 
 
 int main(void){
-    // test_create_model_def_and_state();
     // test_compare_shuyo();
     test1();
+    std::cout << "test1 passed" << std::endl;
     test2();
+    std::cout << "test2 passed" << std::endl;
     test4();
+    std::cout << "test4 passed" << std::endl;
     test5();
+    std::cout << "test5 passed" << std::endl;
     test7();
+    std::cout << "test7 passed" << std::endl;
     test8();
+    std::cout << "test8 passed" << std::endl;
+
+    test_create_model_def_and_state();
     return 0;
 
 }

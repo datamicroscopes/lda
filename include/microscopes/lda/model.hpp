@@ -79,14 +79,12 @@ public:
         V = def.v();
         M = def.n();
         rng_ = rng;
-        std::cout << "1. iterate i to M " << M << std::endl;
         for(size_t i = 0; i < M; ++i) {
             using_t.push_back({0});
         }
         using_k = {0};
 
         x_ji = std::vector<std::vector<size_t>>(docs);
-        std::cout << "2. iterate j  to M " << M << std::endl;
         for(size_t j = 0; j < M; ++j) {
             k_jt.push_back({0});
             n_jt.push_back({0});
@@ -98,7 +96,6 @@ public:
                 n_jtv[j].push_back(term_dict);
             }
         }
-        std::cout << "arrays created" << std::endl;
         m = 0;
         m_k = std::vector<size_t> {1};
         n_k = std::vector<float> {beta_ * V};
@@ -122,15 +119,14 @@ public:
         for (size_t j = 0; j < x_ji.size(); ++j){
             if (j % 100 == 0) std::cout << "    sampling_t(" << j << ")" << std::endl;
             for (size_t i = 0; i < x_ji[j].size(); ++i){
-                // std::cout << "sampling_t(" << j << "," << i << ")" << std::endl;
-                // std::cout << "sampling_t(" << j << "," << i << ")" << std::endl;
+                std::cout << "sampling_t(" << j << "," << i << ")" << std::endl;
                 sampling_t(j, i);
             }
         }
         for (size_t j = 0; j < M; ++j){
             if (j % 100 == 0) std::cout << "    sampling_k(" << j << ")" << std::endl;
             for (auto t: using_t[j]){
-                // std::cout << "sampling_k(" << j << "," << t << ")" << std::endl;
+                std::cout << "sampling_k(" << j << "," << t << ")" << std::endl;
                 sampling_k(j, t);
             }
         }
@@ -465,7 +461,7 @@ public:
         std::vector<size_t> using_table = using_t[j];
         std::vector<float> p_t;
         p_t.reserve(using_table.size());
-        for(auto& p: using_table){
+        for(auto p: using_table){
             p_t.push_back(n_jt[j][p] * f_k[k_jt[j][p]]);
         }
         float p_x_ji = gamma_ / (float)V;
@@ -475,7 +471,7 @@ public:
         }
         p_t[0] = p_x_ji * alpha_ / (gamma_ + m);
         float sum_p_t = 0;
-        for(auto& kv: p_t){
+        for(auto kv: p_t){
             sum_p_t += kv;
         }
         for (size_t i = 0; i < p_t.size(); ++i)
