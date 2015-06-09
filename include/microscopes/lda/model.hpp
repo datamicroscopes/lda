@@ -348,11 +348,13 @@ public:
             }
             n_k[k_new] += n_jt_val;
             for(auto kv: n_jtv[j][t]){
+                auto v = kv.first;
+                auto n = kv.second;
                 if (k_old != 0)
                 {
-                    n_kv[k_old][kv.first] -= kv.second;
+                    n_kv[k_old][v] -= n;
                 }
-                n_kv[k_new][kv.first] += kv.second;
+                n_kv[k_new][v] += n;
             }
         }
     }
