@@ -66,23 +66,25 @@ test_compare_shuyo()
 }
 
 static void
-test_create_model_def_and_state(){
-    const size_t D = 28*28;
-    rng_t r(5849343);
-
-    vector<shared_ptr<models::model>> models;
-    for (size_t i = 0; i < D; i++){
-        models.emplace_back(make_shared<
-            models::distributions_model<BetaBernoulli>>());
-    }
-
-    lda::model_definition def(2, 5);
+sequence_random(double alpha, double beta, double gamma, size_t seed){
+    rng_t r(seed);
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
-    lda::state state(def, 1, .5, 1, docs, r);
-    for(unsigned i = 0; i < 20; ++i){
+    size_t V = 7;
+    lda::model_definition def(3, V);
+    lda::state state(def, alpha, beta, gamma, docs, r);
+    std::cout << "perplexity: " << state.perplexity() << std::endl;
+    for(unsigned i = 0; i < 10; ++i){
         state.inference();
+        std::cout << "perplexity: " << state.perplexity() << std::endl;
     }
-    std::cout << "test_create_model_def_and_state" << std::endl;
+}
+
+static void
+test_random_sequences(){
+    sequence_random(0.2, 0.01, 0.5, 0);
+    sequence_random(0.2, 0.01, 0.01, 6);
+    sequence_random(0.2, 0.01, 0.5, 2);
+    sequence_random(0.01, 0.001, 0.05, 13);
 }
 
 static void
@@ -561,8 +563,8 @@ int main(void){
     std::cout << "test7 passed" << std::endl;
     test8();
     std::cout << "test8 passed" << std::endl;
-
-    test_create_model_def_and_state();
+    test_random_sequences();
+    std::cout << "test_random_sequences passed" << std::endl;
     return 0;
 
 }
