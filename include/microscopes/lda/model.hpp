@@ -277,13 +277,13 @@ public:
         std::vector<float> new_n_k = n_k;
 
         size_t n_jt_val = n_jt[j][t];
-        n_k[k_old] -= n_jt_val;
+        new_n_k[k_old] -= n_jt_val;
         new_n_k = selectByIndex(new_n_k, using_k);
         std::vector<float> log_p_k;
         log_p_k.reserve(using_k.size());
-        // numpy.log(self.m_k[self.using_k]) + gammaln(n_k) - gammaln(n_k + n_jt)
-        for(auto k: using_k){
-            log_p_k.push_back(log(m_k[k]) + lgamma(n_k[k]) - lgamma(Vbeta + n_jt_val));
+        for(size_t i = 0; i < new_n_k.size(); i++){
+
+            log_p_k.push_back(log(m_k[using_k[i]]) + lgamma(new_n_k[i]) - lgamma(new_n_k[i] + n_jt_val));
         }
         float log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
         // # TODO: FINISH https://github.com/shuyo/iir/blob/master/lda/hdplda2.py#L250-L270
@@ -337,7 +337,7 @@ public:
         m_k[k_new] += 1;
 
         size_t k_old = k_jt[j][t];
-        if (k_new == k_old)
+        if (k_new != k_old)
         {
             k_jt[j][t] = k_new;
             float n_jt_val = n_jt[j][t];
@@ -352,7 +352,7 @@ public:
                 {
                     n_kv[k_old][kv.first] -= kv.second;
                 }
-                n_kv[k_new][kv.second] += kv.second;
+                n_kv[k_new][kv.first] += kv.second;
             }
         }
     }
@@ -389,9 +389,9 @@ public:
             n_k.push_back(n_k[0]);
             m_k.push_back(m_k[0]);
             n_kv.push_back(std::map<size_t, float>());
+            assert(k_new == using_k.back() + 1);
+            assert(k_new < n_kv.size());
         }
-        assert(k_new == using_k.back() + 1);
-        assert(k_new < n_kv.size());
 
         using_k.insert(using_k.begin()+k_new, k_new);
         n_k[k_new] = beta_ * (float)V;
