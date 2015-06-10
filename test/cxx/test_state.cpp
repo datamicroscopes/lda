@@ -141,7 +141,8 @@ test_permutations(){
 //     for(unsigned i = 0; i < 2000; ++i){
 
 //         state.inference();
-//         std::cout << "K=" << state.usedDishes() << std::endl;
+//         std::cout << "K=" << state.usedDishes();
+//         std::cout << "   p=" << state.perplexity() << std::endl;
 //         std::cout << "iter " << i << std::endl;
 //     }
 //     std::cout << "FINI!";
@@ -155,11 +156,10 @@ sequence_random(double alpha, double beta, double gamma, size_t seed){
     size_t V = 7;
     lda::model_definition def(3, V);
     lda::state state(def, alpha, beta, gamma, docs, r);
-    std::cout << "perplexity: " << state.perplexity() << std::endl;
     for(unsigned i = 0; i < 10; ++i){
         state.inference();
-        std::cout << "perplexity: " << state.perplexity() << std::endl;
     }
+    std::cout << "perplexity: " << state.perplexity() << std::endl;
 }
 
 static void
