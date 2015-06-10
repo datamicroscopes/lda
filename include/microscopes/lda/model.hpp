@@ -189,13 +189,7 @@ public:
                 p_jk[k] += n_jt_[t];
             }
             p_jk = selectByIndex(p_jk, using_k);
-            double p_jk_sum = 0;
-            for(size_t i = 0; i < p_jk.size(); ++i) {
-                p_jk_sum += p_jk[i];
-            }
-            for(size_t i = 0; i < p_jk.size(); ++i) {
-                p_jk[i] /= p_jk_sum;
-            }
+            normalize(p_jk);
             theta.push_back(p_jk);
         }
         return theta;
