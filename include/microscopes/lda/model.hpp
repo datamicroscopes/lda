@@ -49,6 +49,12 @@ std::vector<T> selectByIndex(const std::vector<T> &v, const std::vector<size_t> 
     return new_v;
 }
 
+template<class T>
+void
+normalize(std::vector<T> &v){
+    Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, 1>> vec(v.data(), v.size());
+    vec /= vec.sum();
+}
 
 class model_definition {
 public:
