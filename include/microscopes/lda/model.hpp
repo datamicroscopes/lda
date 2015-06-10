@@ -9,6 +9,7 @@
 #include <microscopes/io/schema.pb.h>
 #include <distributions/special.hpp>
 #include <distributions/models/dd.hpp>
+#include <eigen3/Eigen/dense>
 
 #include <math.h>
 #include <assert.h>
@@ -448,20 +449,13 @@ public:
 
     std::vector<float>
     calc_dish_posterior_w(const std::vector<float> &f_k){
-        std::vector<float> p_k(using_k.size());
+        Eigen::VectorXf p_k(using_k.size());
         for(size_t i = 0; i < using_k.size(); ++i) {
-            p_k[i] = m_k[using_k[i]] * f_k[using_k[i]];
+            p_k(i) = m_k[using_k[i]] * f_k[using_k[i]];
         }
-        p_k[0] = gamma_ / V;
-        double p_k_sum = 0;
-        for(auto v: p_k){
-            p_k_sum += v;
-        }
-        for (size_t i = 0; i < p_k.size(); ++i)
-        {
-            p_k[i] /= p_k_sum;
-        }
-        return p_k;
+        p_k(0) = gamma_ / V;
+        p_k /= p_k.sum();
+        return std::vector<float>(p_k.data(), p_k.data() + p_k.size());
     }
 
     std::vector<float>
