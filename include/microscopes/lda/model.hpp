@@ -292,7 +292,7 @@ public:
         float log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
         // # TODO: FINISH https://github.com/shuyo/iir/blob/master/lda/hdplda2.py#L250-L270
 
-        for(auto kv: n_jtv[j][t]){
+        for(auto &kv: n_jtv[j][t]){
             auto w = kv.first;
             auto n_jtw = kv.second;
             assert(n_jtw >= 0);
@@ -321,7 +321,7 @@ public:
 
         log_p_k[0] = log_p_k_new;
         std::vector<float> p_k;
-        p_k.reserve(log_p_k.size());
+        p_k.reserve(using_k.size());
         float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
         float p_k_sum = 0;
         for(auto log_p_k_value: log_p_k){
