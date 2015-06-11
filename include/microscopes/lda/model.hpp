@@ -524,14 +524,14 @@ public:
 
     std::vector<float>
     calc_f_k(size_t v){
-        std::vector<float> f_k;
-        f_k.reserve(n_kv.size());
+        Eigen::VectorXf f_k(n_kv.size());
+
         for (size_t k=0; k < n_kv.size(); k++)
         {
-            f_k.push_back(n_kv[k][v] / n_k[k]);
+            f_k(k) = n_kv[k][v] / n_k[k];
         }
 
-        return f_k;
+        return std::vector<float>(f_k.data(), f_k.data() + f_k.size());
     }
 
     size_t V; // Vocabulary size
