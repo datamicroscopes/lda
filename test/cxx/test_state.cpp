@@ -1,5 +1,4 @@
 #include <microscopes/lda/model.hpp>
-// #include <microscopes/lda/data.hpp>
 #include <microscopes/lda/random_docs.hpp>
 #include <microscopes/common/macros.hpp>
 #include <microscopes/common/recarray/dataview.hpp>
@@ -116,39 +115,6 @@ test_permutations(){
     MICROSCOPES_CHECK(assertAlmostEqual(p_baseline, p_shuffle_words, 0.1), "shuffle words test failed");
 }
 
-
-// static void
-// test_compare_shuyo()
-// {
-//     const size_t D = 28*28;
-//     rng_t r(5849343);
-
-//     vector<shared_ptr<models::model>> models;
-//     for (size_t i = 0; i < D; i++){
-//         models.emplace_back(make_shared<
-//             models::distributions_model<BetaBernoulli>>());
-//     }
-
-//     // std::cout << "loading data..."; std::cout.flush();
-
-//     std::cout << " complete" << std::endl;
-//     std::cout << "creating model definition...";
-//     lda::model_definition def(5665, 4878);
-//     std::cout << " complete" << std::endl;
-
-//     std::cout << "initializing state...";
-//     lda::state state(def, 1, .5, 1, data::docs, r);
-//     std::cout << " complete" << std::endl;
-//     std::cout << "inference!!" << std::endl;
-//     for(unsigned i = 0; i < 2000; ++i){
-
-//         state.inference();
-//         std::cout << "K=" << state.usedDishes();
-//         std::cout << "   p=" << state.perplexity() << std::endl;
-//         std::cout << "iter " << i << std::endl;
-//     }
-//     std::cout << "FINI!";
-// }
 
 static void
 sequence_random(double alpha, double beta, double gamma, size_t seed){
@@ -635,7 +601,6 @@ test8(){
 
 
 int main(void){
-    // test_compare_shuyo();
     test1();
     std::cout << "test1 passed" << std::endl;
     test2();

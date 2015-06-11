@@ -76,6 +76,8 @@ install(TARGETS microscopes_lda LIBRARY DESTINATION lib)
 
 # test executables
 enable_testing()
+add_executable(test_biology_abstracts test/cxx/test_biology_abstracts.cpp)
 add_executable(test_state test/cxx/test_state.cpp)
 add_test(test_state test_state)
 target_link_libraries(test_state ${PROTOBUF_LIBRARIES} distributions_shared microscopes_common microscopes_lda)
+target_link_libraries(test_biology_abstracts ${PROTOBUF_LIBRARIES} distributions_shared microscopes_common microscopes_lda)
