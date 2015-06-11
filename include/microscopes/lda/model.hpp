@@ -472,14 +472,7 @@ public:
             p_x_ji += m_k[k] * f_k[k];
         }
         p_t[0] = p_x_ji * alpha_ / (gamma_ + m);
-        float sum_p_t = 0;
-        for(auto kv: p_t){
-            sum_p_t += kv;
-        }
-        for (size_t i = 0; i < p_t.size(); ++i)
-        {
-            p_t[i] /= sum_p_t;
-        }
+        normalize(p_t);
         return p_t ;
     }
 
