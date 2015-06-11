@@ -41,103 +41,6 @@ bool assertSequenceEqual(const vector<T> &v1, const vector<T> &v2){
 
 }
 
-namespace permutations{
-    std::vector< std::vector<size_t>>
-    rotate_labels(const std::vector< std::vector<size_t>> &docs, size_t vocab_size){
-        std::vector< std::vector<size_t>> new_docs;
-        new_docs.reserve(docs.size());
-        for(auto doc: docs){
-            std::vector<size_t> new_doc;
-            new_doc.reserve(doc.size());
-            for(auto word: doc){
-                new_doc.push_back((word + 1) % vocab_size);
-            }
-            new_docs.push_back(new_doc);
-        }
-        return new_docs;
-    }
-
-    std::vector< std::vector<size_t>>
-    rotate_docs(const std::vector< std::vector<size_t>> &docs, size_t vocab_size){
-        std::vector< std::vector<size_t>> new_docs = docs;
-        std::rotate(new_docs.begin(), new_docs.begin()+1, new_docs.end());
-        return new_docs;
-    }
-
-    std::vector< std::vector<size_t>>
-    shuffle_words(const std::vector< std::vector<size_t>> &docs, size_t vocab_size){
-        std::vector< std::vector<size_t>> new_docs;
-        new_docs.reserve(docs.size());
-        for(auto doc: docs){
-            std::vector<size_t> new_doc = doc;
-            std::random_shuffle(new_doc.begin(), new_doc.end());
-            new_docs.push_back(new_doc);
-        }
-        return new_docs;
-    }
-}
-
-
-std::vector< std::vector<size_t>>
-generate_random_docs(){
-    return data::random_docs;
-}
-
-float
-trial(const std::vector< std::vector<size_t>> &docs, size_t vocab_size,
-      double alpha, double beta, double gamma, common::rng_t &r){
-    size_t max_steps = 500;
-    lda::model_definition def(docs.size(), vocab_size);
-    lda::state state(def, alpha, beta, gamma, docs, r);
-    for(size_t i = 0; i < max_steps; i++){
-        state.inference();
-    }
-    return state.perplexity();
-}
-
-void
-test_permutations(){
-    std::vector< std::vector<size_t>> docs = generate_random_docs();
-    rng_t r(5849343);
-    size_t vocab_size = 5;
-
-    double p_baseline = trial(docs,
-                              vocab_size, 1, .5, 1, r);
-    double p_rotate_labels = trial(permutations::rotate_labels(docs, vocab_size),
-                                   vocab_size, 1, .5, 1, r);
-    double p_rotate_docs = trial(permutations::rotate_docs(docs, vocab_size),
-                                 vocab_size, 1, .5, 1, r);
-    double p_shuffle_words = trial(permutations::shuffle_words(docs, vocab_size),
-                                   vocab_size, 1, .5, 1, r);
-
-    MICROSCOPES_CHECK(assertAlmostEqual(p_baseline, p_rotate_labels, 0.1), "rotate labels test failed");
-    MICROSCOPES_CHECK(assertAlmostEqual(p_baseline, p_rotate_docs, 0.1), "rotate docs test failed");
-    MICROSCOPES_CHECK(assertAlmostEqual(p_baseline, p_shuffle_words, 0.1), "shuffle words test failed");
-}
-
-
-static void
-sequence_random(double alpha, double beta, double gamma, size_t seed){
-    std::cout << alpha << " " << beta << " " << gamma <<std::endl;
-    rng_t r(seed);
-    std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
-    size_t V = 7;
-    lda::model_definition def(3, V);
-    lda::state state(def, alpha, beta, gamma, docs, r);
-    for(unsigned i = 0; i < 10; ++i){
-        state.inference();
-    }
-    std::cout << "perplexity: " << state.perplexity() << std::endl;
-}
-
-static void
-test_random_sequences(){
-    sequence_random(0.2, 0.01, 0.5, 0);
-    sequence_random(0.2, 0.01, 0.01, 6);
-    sequence_random(0.2, 0.01, 0.5, 2);
-    sequence_random(0.01, 0.001, 0.05, 13);
-}
-
 static void
 sequence4(double alpha, double beta, double gamma){
     rng_t r(5849343);
@@ -613,10 +516,6 @@ int main(void){
     std::cout << "test7 passed" << std::endl;
     test8();
     std::cout << "test8 passed" << std::endl;
-    test_random_sequences();
-    std::cout << "test_random_sequences passed" << std::endl;
-    test_permutations();
-    std::cout << "permutations passed" << std::endl;
     return 0;
 
 }
