@@ -294,11 +294,9 @@ public:
         size_t n_jt_val = n_jt[j][t];
         new_n_k[k_old] -= n_jt_val;
         new_n_k = selectByIndex(new_n_k, using_k);
-        std::vector<float> log_p_k;
-        log_p_k.reserve(using_k.size());
+        Eigen::ArrayXf log_p_k(using_k.size());
         for(size_t i = 0; i < new_n_k.size(); i++){
-
-            log_p_k.push_back(log(m_k[using_k[i]]) + lgamma(new_n_k[i]) - lgamma(new_n_k[i] + n_jt_val));
+            log_p_k(i) = log(m_k[using_k[i]]) + lgamma(new_n_k[i]) - lgamma(new_n_k[i] + n_jt_val);
         }
         float log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
         // # TODO: FINISH https://github.com/shuyo/iir/blob/master/lda/hdplda2.py#L250-L270
@@ -325,25 +323,17 @@ public:
             n_kw = selectByIndex(n_kw, using_k);
             n_kw[0] = 1; // # dummy for logarithm's warning
             for(size_t i = 0; i < n_kw.size(); i++){
-                log_p_k[i] += lgamma(n_kw[i] + n_jtw) - lgamma(n_kw[i]);
+                log_p_k(i) += lgamma(n_kw[i] + n_jtw) - lgamma(n_kw[i]);
             }
             log_p_k_new += lgamma(beta_ + n_jtw) - lgamma(beta_);
         }
 
-        log_p_k[0] = log_p_k_new;
-        std::vector<float> p_k;
-        p_k.reserve(using_k.size());
-        float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
-        float p_k_sum = 0;
-        for(auto log_p_k_value: log_p_k){
-            p_k.push_back(exp(log_p_k_value + max_value));
-            p_k_sum += exp(log_p_k_value + max_value);
-        }
-        for(size_t i = 0; i < p_k.size(); i++){
-            p_k[i] /= p_k_sum;
-        }
+        log_p_k(0) = log_p_k_new;
+        float max_value = log_p_k.maxCoeff();
+        log_p_k += Eigen::ArrayXf::Constant(log_p_k.size(), max_value);
 
-        return p_k;
+        Eigen::ArrayXf final = log_p_k.exp() / log_p_k.exp().sum();
+        return std::vector<float>(final.data(), final.data() + final.size());
     }
 
     void
