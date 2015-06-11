@@ -33,10 +33,12 @@ bool assertSequenceEqual(const vector<T> &v1, const vector<T> &v2){
     if(v1.size() != v2.size()){
         return false;
     }
-    if (std::equal(v1.begin(), v1.end(), v2.begin())){
-        return true;
+    for(size_t i = 0; i < v1.size(); i++){
+        if(!assertAlmostEqual(v1[i], v2[i])){
+            return false;
+        }
     }
-    return false;
+    return true;
 
 }
 
