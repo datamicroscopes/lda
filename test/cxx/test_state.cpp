@@ -636,8 +636,6 @@ test8(){
 
 int main(void){
     // test_compare_shuyo();
-    test_permutations();
-    std::cout << "permutations passed" << std::endl;
     test1();
     std::cout << "test1 passed" << std::endl;
     test2();
@@ -652,6 +650,8 @@ int main(void){
     std::cout << "test8 passed" << std::endl;
     test_random_sequences();
     std::cout << "test_random_sequences passed" << std::endl;
+    test_permutations();
+    std::cout << "permutations passed" << std::endl;
     return 0;
 
 }
