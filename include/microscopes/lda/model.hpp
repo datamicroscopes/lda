@@ -22,6 +22,7 @@
 #include <utility>
 #include <stdexcept>
 
+using namespace distributions;
 
 namespace microscopes {
 namespace lda {
@@ -223,7 +224,7 @@ public:
                     auto p_kv = phi[i];
                     word_prob += p * p_kv[v];
                 }
-                log_likelihood -= log(word_prob);
+                log_likelihood -= fast_log(word_prob);
             }
             N += x_ji[j].size();
         }
@@ -296,9 +297,9 @@ public:
         new_n_k = selectByIndex(new_n_k, using_k);
         Eigen::ArrayXf log_p_k(using_k.size());
         for(size_t i = 0; i < new_n_k.size(); i++){
-            log_p_k(i) = log(m_k[using_k[i]]) + lgamma(new_n_k[i]) - lgamma(new_n_k[i] + n_jt_val);
+            log_p_k(i) = fast_log(m_k[using_k[i]]) + fast_lgamma(new_n_k[i]) - fast_lgamma(new_n_k[i] + n_jt_val);
         }
-        float log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
+        float log_p_k_new = fast_log(gamma_) + fast_lgamma(Vbeta) - fast_lgamma(Vbeta + n_jt_val);
 
         for(auto &kv: n_jtv[j][t]){
             auto w = kv.first;
@@ -321,9 +322,9 @@ public:
             n_kw = selectByIndex(n_kw, using_k);
             n_kw[0] = 1; // # dummy for logarithm's warning
             for(size_t i = 0; i < n_kw.size(); i++){
-                log_p_k(i) += lgamma(n_kw[i] + n_jtw) - lgamma(n_kw[i]);
+                log_p_k(i) += fast_lgamma(n_kw[i] + n_jtw) - fast_lgamma(n_kw[i]);
             }
-            log_p_k_new += lgamma(beta_ + n_jtw) - lgamma(beta_);
+            log_p_k_new += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
         }
         log_p_k(0) = log_p_k_new;
         float max_value = log_p_k.maxCoeff();
