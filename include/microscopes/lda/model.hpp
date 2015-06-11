@@ -299,7 +299,6 @@ public:
             log_p_k(i) = log(m_k[using_k[i]]) + lgamma(new_n_k[i]) - lgamma(new_n_k[i] + n_jt_val);
         }
         float log_p_k_new = log(gamma_) + lgamma(Vbeta) - lgamma(Vbeta + n_jt_val);
-        // # TODO: FINISH https://github.com/shuyo/iir/blob/master/lda/hdplda2.py#L250-L270
 
         for(auto &kv: n_jtv[j][t]){
             auto w = kv.first;
@@ -308,7 +307,6 @@ public:
             if (n_jtw == 0)
                 continue;
 
-            // n_kw = numpy.array([n.get(w, self.beta) for n in self.n_kv])
             std::vector<float> n_kw;
             n_kw.reserve(n_kv.size());
             for(auto n: n_kv){
@@ -327,11 +325,9 @@ public:
             }
             log_p_k_new += lgamma(beta_ + n_jtw) - lgamma(beta_);
         }
-
         log_p_k(0) = log_p_k_new;
         float max_value = log_p_k.maxCoeff();
         log_p_k += Eigen::ArrayXf::Constant(log_p_k.size(), max_value);
-
         Eigen::ArrayXf final = log_p_k.exp() / log_p_k.exp().sum();
         return std::vector<float>(final.data(), final.data() + final.size());
     }
