@@ -49,6 +49,17 @@ std::vector<T> selectByIndex(const std::vector<T> &v, const std::vector<size_t> 
     return new_v;
 }
 
+
+template< class T >
+Eigen::Matrix<T, Eigen::Dynamic, 1>
+selectByIndex(const Eigen::Matrix<T, Eigen::Dynamic, 1> &v, const std::vector<size_t> &index )  {
+    Eigen::Matrix<T, Eigen::Dynamic, 1> new_v(index.size());
+    for(size_t i = 0; i < index.size(); i++){
+        new_v(i) = v(index[i]);
+    }
+    return new_v;
+}
+
 template<class T>
 void
 normalize(std::vector<T> &v){
