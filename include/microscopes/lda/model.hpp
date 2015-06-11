@@ -470,21 +470,20 @@ public:
     }
 
     std::vector<float>
-    calc_table_posterior(size_t j, const std::vector<float> &f_k){
+    calc_table_posterior(size_t j, std::vector<float> &f_k){
         std::vector<size_t> using_table = using_t[j];
-        std::vector<float> p_t;
-        p_t.reserve(using_table.size());
-        for(auto p: using_table){
-            p_t.push_back(n_jt[j][p] * f_k[k_jt[j][p]]);
+        Eigen::VectorXf p_t(using_table.size());
+
+        for(size_t i = 0; i < using_table.size(); i++){
+            auto p = using_table[i];
+            p_t(i) = n_jt[j][p] * f_k[k_jt[j][p]];
         }
-        float p_x_ji = gamma_ / (float)V;
-        for (size_t k = 0; k < f_k.size(); ++k)
-        {
-            p_x_ji += m_k[k] * f_k[k];
-        }
+        Eigen::Map<Eigen::VectorXf> eigen_f_k(f_k.data(), f_k.size());
+        Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> eigen_m_k(m_k.data(), m_k.size());
+        float p_x_ji = gamma_ / V + eigen_f_k.dot(eigen_m_k.cast<float>());
         p_t[0] = p_x_ji * alpha_ / (gamma_ + m);
-        normalize(p_t);
-        return p_t ;
+        p_t /= p_t.sum();
+        return std::vector<float>(p_t.data(), p_t.data() + p_t.size());
     }
 
 
