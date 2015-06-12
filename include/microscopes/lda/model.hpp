@@ -288,15 +288,12 @@ public:
 
     std::vector<float>
     calc_dish_posterior_t(size_t j, size_t t){
-        size_t k_old = k_jt[j][t];
-        float Vbeta = V * beta_;
-        size_t n_jt_val = n_jt[j][t];
         Eigen::ArrayXf log_p_k(using_k.size());
         for(size_t i = 0; i < using_k.size(); i++){
-            auto n_k_val = (using_k[i] == k_old) ? n_k[i] - n_jt_val : n_k[i];
-            log_p_k(i) = fast_log(m_k[using_k[i]]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt_val);
+            auto n_k_val = (using_k[i] == k_jt[j][t]) ? n_k[i] - n_jt[j][t] : n_k[i];
+            log_p_k(i) = fast_log(m_k[using_k[i]]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt[j][t]);
         }
-        float log_p_k_new = fast_log(gamma_) + fast_lgamma(Vbeta) - fast_lgamma(Vbeta + n_jt_val);
+        float log_p_k_new = fast_log(gamma_) + fast_lgamma(V * beta_) - fast_lgamma(V * beta_ + n_jt[j][t]);
 
         for(auto &kv: n_jtv[j][t]){
             auto w = kv.first;
@@ -315,7 +312,7 @@ public:
                     n_kw.push_back(beta_);
                 }
             }
-            n_kw[k_old] -= n_jtw;
+            n_kw[k_jt[j][t]] -= n_jtw;
             n_kw = selectByIndex(n_kw, using_k);
             n_kw[0] = 1; // # dummy for logarithm's warning
             for(size_t i = 0; i < n_kw.size(); i++){
@@ -324,10 +321,9 @@ public:
             log_p_k_new += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
         }
         log_p_k(0) = log_p_k_new;
-        float max_value = log_p_k.maxCoeff();
-        log_p_k += Eigen::ArrayXf::Constant(log_p_k.size(), max_value);
-        Eigen::ArrayXf final = log_p_k.exp() / log_p_k.exp().sum();
-        return std::vector<float>(final.data(), final.data() + final.size());
+        log_p_k += Eigen::ArrayXf::Constant(log_p_k.size(), log_p_k.maxCoeff());
+        Eigen::ArrayXf p_k = log_p_k.exp() / log_p_k.exp().sum();
+        return std::vector<float>(p_k.data(), p_k.data() + p_k.size());
     }
 
     void
