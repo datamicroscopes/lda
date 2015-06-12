@@ -365,7 +365,6 @@ public:
 
     void
     seat_at_table(size_t j, size_t i, size_t t_new){
-        assert(std::find(using_t[j].begin(), using_t[j].end(), t_new) != using_t[j].end());
         t_ji[j][i] = t_new;
         n_jt[j][t_new] += 1;
 
@@ -413,7 +412,6 @@ public:
     size_t
     add_new_table(size_t j, size_t k_new)
     {
-        assert(std::find(using_k.begin(), using_k.end(), k_new) != using_k.end());
         size_t t_new = using_t[j].size();
         for (size_t i = 0; i < using_t[j].size(); ++i)
         {
