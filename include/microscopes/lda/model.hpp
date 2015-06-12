@@ -290,14 +290,14 @@ public:
     calc_dish_posterior_t(size_t j, size_t t){
         size_t k_old = k_jt[j][t];
         float Vbeta = V * beta_;
-        std::vector<float> new_n_k = n_k;
-
         size_t n_jt_val = n_jt[j][t];
-        new_n_k[k_old] -= n_jt_val;
-        new_n_k = selectByIndex(new_n_k, using_k);
         Eigen::ArrayXf log_p_k(using_k.size());
-        for(size_t i = 0; i < new_n_k.size(); i++){
-            log_p_k(i) = fast_log(m_k[using_k[i]]) + fast_lgamma(new_n_k[i]) - fast_lgamma(new_n_k[i] + n_jt_val);
+        for(size_t i = 0; i < using_k.size(); i++){
+            auto n_k_val = n_k[i];
+            if(using_k[i] == k_old){
+                n_k_val -= n_jt_val;
+            }
+            log_p_k(i) = fast_log(m_k[using_k[i]]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt_val);
         }
         float log_p_k_new = fast_log(gamma_) + fast_lgamma(Vbeta) - fast_lgamma(Vbeta + n_jt_val);
 
