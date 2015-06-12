@@ -346,7 +346,7 @@ public:
                 {
                     n_kv[k_old][v] -= n;
                 }
-                n_kv[k_new][v] += n;
+                increment_n_kv(k_new, v, n);
             }
         }
     }
@@ -361,7 +361,7 @@ public:
         n_k[k_new] += 1;
 
         size_t v = x_ji[j][i];
-        n_kv[k_new][v] += 1;
+        increment_n_kv(k_new, v, 1);
         n_jtv[j][t_new][v] += 1;
     }
 
@@ -501,10 +501,26 @@ public:
 
         for (size_t k=0; k < n_kv.size(); k++)
         {
-            f_k(k) = n_kv[k][v] / n_k[k];
+            f_k(k) = get_n_kv(k, v) / n_k[k];
         }
 
         return std::vector<float>(f_k.data(), f_k.data() + f_k.size());
+    }
+
+    float
+    get_n_kv(size_t k, size_t v){
+        if (n_kv[k].count(v) > 0){
+          return n_kv[k][v];
+        }
+        else {
+            return beta_;
+        }
+    }
+
+    void
+    increment_n_kv(size_t k, size_t v, float amount){
+        if (n_kv[k].count(v) == 0) n_kv[k][v] = beta_;
+        n_kv[k][v] += amount;
     }
 
     size_t V; // Vocabulary size
