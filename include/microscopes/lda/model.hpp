@@ -293,10 +293,7 @@ public:
         size_t n_jt_val = n_jt[j][t];
         Eigen::ArrayXf log_p_k(using_k.size());
         for(size_t i = 0; i < using_k.size(); i++){
-            auto n_k_val = n_k[i];
-            if(using_k[i] == k_old){
-                n_k_val -= n_jt_val;
-            }
+            auto n_k_val = (using_k[i] == k_old) ? n_k[i] - n_jt_val : n_k[i];
             log_p_k(i) = fast_log(m_k[using_k[i]]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt_val);
         }
         float log_p_k_new = fast_log(gamma_) + fast_lgamma(Vbeta) - fast_lgamma(Vbeta + n_jt_val);
