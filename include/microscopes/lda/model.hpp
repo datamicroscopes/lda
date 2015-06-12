@@ -302,16 +302,18 @@ public:
                 continue;
             assert(n_jtw >= 0);
 
-            std::vector<float> n_kw(using_k.size());
+            Eigen::ArrayXf n_kw(using_k.size());
             for(size_t i = 0; i < using_k.size(); i++){
                 auto n = n_kv[using_k[i]];
-                n_kw[i] = (n.count(w) > 0) ? n[w] : beta_;
-                if(using_k[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
+                n_kw(i) = (n.count(w) > 0) ? n[w] : beta_;
+                if(using_k[i] == k_jt[j][t]) n_kw(i) -= n_jtw;
             }
-            n_kw[0] = 1; // # dummy for logarithm's warning
-            for(size_t i = 0; i < n_kw.size(); i++){
-                log_p_k(i) += fast_lgamma(n_kw[i] + n_jtw) - fast_lgamma(n_kw[i]);
-            }
+            n_kw(0) = 1; // # dummy for logarithm's warning
+            auto lgamma_nkw = n_kw.unaryExpr(std::ptr_fun(fast_lgamma));
+            auto n_jtw_vec = Eigen::ArrayXf::Constant(n_kw.size(), n_jtw);
+            auto lgamma_nkw_plus_njtw = (n_kw + n_jtw_vec).unaryExpr(std::ptr_fun(fast_lgamma));
+            log_p_k += lgamma_nkw_plus_njtw - lgamma_nkw;
+
             log_p_k_new += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
         }
         log_p_k(0) = log_p_k_new;
