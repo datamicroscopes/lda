@@ -298,22 +298,16 @@ public:
         for(auto &kv: n_jtv[j][t]){
             auto w = kv.first;
             auto n_jtw = kv.second;
-            assert(n_jtw >= 0);
             if (n_jtw == 0)
                 continue;
+            assert(n_jtw >= 0);
 
-            std::vector<float> n_kw;
-            n_kw.reserve(n_kv.size());
-            for(auto n: n_kv){
-                if(n.count(w) > 0){
-                    n_kw.push_back(n[w]);
-                }
-                else{
-                    n_kw.push_back(beta_);
-                }
+            std::vector<float> n_kw(using_k.size());
+            for(size_t i = 0; i < using_k.size(); i++){
+                auto n = n_kv[using_k[i]];
+                n_kw[i] = (n.count(w) > 0) ? n[w] : beta_;
+                if(using_k[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
             }
-            n_kw[k_jt[j][t]] -= n_jtw;
-            n_kw = selectByIndex(n_kw, using_k);
             n_kw[0] = 1; // # dummy for logarithm's warning
             for(size_t i = 0; i < n_kw.size(); i++){
                 log_p_k(i) += fast_lgamma(n_kw[i] + n_jtw) - fast_lgamma(n_kw[i]);
