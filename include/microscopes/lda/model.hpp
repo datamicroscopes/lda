@@ -519,8 +519,8 @@ public:
 
     void
     increment_n_kv(size_t k, size_t v, float amount){
-        if (n_kv[k].count(v) == 0) n_kv[k][v] = beta_;
         n_kv[k][v] += amount;
+        if (n_kv[k][v] == amount) n_kv[k][v] += beta_;
     }
 
     size_t V; // Vocabulary size
