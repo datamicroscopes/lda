@@ -111,16 +111,14 @@ public:
             n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
             for (size_t t = 0; t < using_t[j].size(); ++t)
             {
-                std::map<size_t, size_t> term_dict;
-                n_jtv[j].push_back(term_dict);
+                n_jtv[j].push_back(std::map<size_t, size_t>());
             }
         }
         m = 0;
         m_k = std::vector<size_t> {1};
         n_k = std::vector<float> {beta_ * V};
 
-        std::map<size_t, float> term_count;
-        n_kv.push_back(term_count);
+        n_kv.push_back(std::map<size_t, float>());
 
         for(size_t i=0; i < docs.size(); i++){
 
@@ -294,9 +292,8 @@ public:
         for(auto &kv: n_jtv[j][t]){
             auto w = kv.first;
             auto n_jtw = kv.second;
-            if (n_jtw == 0)
-                continue;
-            assert(n_jtw >= 0);
+            if (n_jtw == 0) continue;
+            assert(n_jtw > 0);
 
             Eigen::ArrayXf n_kw(using_k.size());
             for(size_t i = 0; i < using_k.size(); i++){
@@ -406,8 +403,7 @@ public:
             n_jt[j].push_back(0);
             k_jt[j].push_back(0);
 
-            std::map<size_t, size_t> term_dict;
-            n_jtv[j].push_back(term_dict);
+            n_jtv[j].push_back(std::map<size_t, size_t>());
         }
         using_t[j].insert(using_t[j].begin()+t_new, t_new);
         n_jt[j][t_new] = 0;
