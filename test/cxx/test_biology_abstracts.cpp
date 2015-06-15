@@ -55,15 +55,14 @@ test_compare_biology_abstracts()
     std::cout << "initializing state...";
     lda::state state(def, 1, .5, 1, data::docs, r);
     std::cout << " complete" << std::endl;
-    std::cout << "inference!!" << std::endl;
-    for(unsigned i = 0; i < 1; ++i){
 
+    for(unsigned i = 0; i < 100; ++i){
+        std::cout << "inference step: " << i << std::endl;
         state.inference();
-        std::cout << "K=" << state.usedDishes();
+        std::cout << "   K=" << state.usedDishes() << std::endl;
         std::cout << "   p=" << state.perplexity() << std::endl;
-        std::cout << "iter " << i << std::endl;
     }
-    std::cout << "FINI!";
+    std::cout << "FINI!" << std::endl;
 }
 
 int main(void){
