@@ -187,7 +187,7 @@ public:
         }
 
         for(size_t j = 0; j < k_jt.size(); j++){
-            std::vector<size_t> n_jt_ = n_jt[j];
+            std::vector<size_t> &n_jt_ = n_jt[j];
             std::vector<float> p_jk = am_k;
             for(auto t: using_t[j]){
                 if(t == 0) continue;
@@ -209,13 +209,13 @@ public:
         double log_likelihood = 0;
         size_t N = 0;
         for(size_t j = 0; j < x_ji.size(); j++){
-            auto py_x_ji = x_ji[j];
-            auto p_jk = theta[j];
-            for(auto v: py_x_ji){
+            auto &py_x_ji = x_ji[j];
+            auto &p_jk = theta[j];
+            for(auto &v: py_x_ji){
                 double word_prob = 0;
                 for(size_t i = 0; i < theta[j].size(); i++){
                     auto p = p_jk[i];
-                    auto p_kv = phi[i];
+                    auto &p_kv = phi[i];
                     word_prob += p * p_kv[v];
                 }
                 log_likelihood -= fast_log(word_prob);
@@ -297,7 +297,7 @@ public:
 
             Eigen::ArrayXf n_kw(using_k.size());
             for(size_t i = 0; i < using_k.size(); i++){
-                auto n = n_kv[using_k[i]];
+                std::map<size_t, float> &n = n_kv[using_k[i]];
                 n_kw(i) = (n.count(w) > 0) ? n[w] : beta_;
                 if(using_k[i] == k_jt[j][t]) n_kw(i) -= n_jtw;
             }
