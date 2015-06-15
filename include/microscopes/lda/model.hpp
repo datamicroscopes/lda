@@ -120,10 +120,6 @@ public:
         n_k = std::vector<float> {beta_ * V};
 
         std::map<size_t, float> term_count;
-        for (size_t i = 0; i < V; ++i)
-        {
-            term_count[i] = 0;
-        }
         n_kv.push_back(term_count);
 
         for(size_t i=0; i < docs.size(); i++){
@@ -389,11 +385,6 @@ public:
         using_k.insert(using_k.begin()+k_new, k_new);
         n_k[k_new] = beta_ * (float)V;
         m_k[k_new] = 0;
-
-        for (size_t i = 0; i < V; ++i)
-        {
-            n_kv[k_new][i] = beta_;
-        }
         return k_new;
 
     }
@@ -509,7 +500,7 @@ public:
 
     float
     get_n_kv(size_t k, size_t v){
-        if (n_kv[k].count(v) > 0){
+        if (n_kv[k].count(v) > 0 || k == 0){
           return n_kv[k][v];
         }
         else {
