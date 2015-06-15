@@ -411,10 +411,6 @@ public:
         }
         using_t[j].insert(using_t[j].begin()+t_new, t_new);
         n_jt[j][t_new] = 0;
-        for (size_t i = 0; i < V; ++i)
-        {
-            n_jtv[j][t_new][i] = 0;
-        }
         assert(k_new != 0);
         k_jt[j][t_new] = k_new;
         m_k[k_new] += 1;
