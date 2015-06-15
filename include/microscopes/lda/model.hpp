@@ -213,7 +213,7 @@ public:
             auto &p_jk = theta[j];
             for(auto &v: py_x_ji){
                 double word_prob = 0;
-                for(size_t i = 0; i < theta[j].size(); i++){
+                for(size_t i = 0; i < p_jk.size(); i++){
                     auto p = p_jk[i];
                     auto &p_kv = phi[i];
                     word_prob += p * p_kv[v];
