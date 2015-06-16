@@ -43,13 +43,26 @@ bool assertSequenceEqual(const vector<T> &v1, const vector<T> &v2){
 }
 
 
+size_t
+num_unique_words_in_docs(const std::vector< std::vector<size_t> > &docs){
+    std::set<size_t> words;
+    for(auto doc: docs)
+        for(auto word: doc)
+            words.insert(word);
+    return words.size();
+}
+
+
 static void
 test_compare_biology_abstracts()
 {
     rng_t r(5849343);
 
     std::cout << "creating model definition...";
-    lda::model_definition def(5665, 4878);
+    size_t unique_words = num_unique_words_in_docs(data::docs);
+    lda::model_definition def(data::docs.size(), unique_words);
+    std::cout << data::docs.size() <<  " documents" << std::endl;
+    std::cout << unique_words <<  " unique words in docs" << std::endl;
     std::cout << " complete" << std::endl;
 
     std::cout << "initializing state...";
