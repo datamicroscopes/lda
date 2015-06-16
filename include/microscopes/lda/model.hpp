@@ -29,6 +29,16 @@ namespace lda {
 
 typedef std::vector<std::shared_ptr<models::group>> group_type;
 
+void
+validate_probability_vector(const std::vector<float> &p){
+    float sum = 0;
+    for(auto x: p){
+        assert(!isnan(x));
+        assert(x >= 0);
+        sum+=x;
+    }
+    assert(std::abs(1 - sum) < 0.01);
+}
 
 template<typename T> void
 removeFirst(std::vector<T> &v, T element){
@@ -233,11 +243,13 @@ public:
         assert(f_k[0] == 0);
         std::vector<float> p_t = calc_table_posterior(j, f_k);
         // if len(p_t) > 1 and p_t[1] < 0: self.dump()
+        validate_probability_vector(p_t);
         size_t word = common::util::sample_discrete(p_t, rng_);
         size_t t_new = using_t[j][word];
         if (t_new == 0)
         {
             std::vector<float> p_k = calc_dish_posterior_w(f_k);
+            validate_probability_vector(p_k);
             size_t topic_index = common::util::sample_discrete(p_k, rng_);
             size_t k_new = using_k[topic_index];
             if (k_new == 0)
@@ -253,7 +265,7 @@ public:
     sampling_k(size_t j, size_t t){
         leave_from_dish(j, t);
         std::vector<float> p_k = calc_dish_posterior_t(j, t);
-
+        validate_probability_vector(p_k);
         size_t topic_index = common::util::sample_discrete(p_k, rng_);
         size_t k_new = using_k[topic_index];
         if (k_new == 0)
