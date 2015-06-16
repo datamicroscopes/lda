@@ -8,6 +8,7 @@
 
 #include <random>
 #include <iostream>
+#include <time.h>
 
 using namespace std;
 using namespace distributions;
@@ -56,7 +57,7 @@ num_unique_words_in_docs(const std::vector< std::vector<size_t> > &docs){
 static void
 test_compare_biology_abstracts()
 {
-    rng_t r(5849343);
+    rng_t r(time(NULL));
 
     std::cout << "creating model definition...";
     size_t unique_words = num_unique_words_in_docs(data::docs);
