@@ -145,7 +145,7 @@ public:
 
     size_t
     usedDishes(){
-        return using_k.size();
+        return using_k.size() - 1;
     }
 
 
