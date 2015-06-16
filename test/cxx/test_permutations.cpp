@@ -86,7 +86,7 @@ generate_random_docs(){
 float
 trial(const std::vector< std::vector<size_t>> &docs, size_t vocab_size,
       double alpha, double beta, double gamma, common::rng_t &r){
-    size_t max_steps = 500;
+    size_t max_steps = 1000;
     lda::model_definition def(docs.size(), vocab_size);
     lda::state state(def, alpha, beta, gamma, docs, r);
     for(size_t i = 0; i < max_steps; i++){
