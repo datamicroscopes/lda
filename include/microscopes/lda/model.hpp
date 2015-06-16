@@ -307,8 +307,9 @@ public:
             log_p_k_new += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
         }
         log_p_k(0) = log_p_k_new;
-        log_p_k += Eigen::ArrayXf::Constant(log_p_k.size(), log_p_k.maxCoeff());
+        log_p_k -= Eigen::ArrayXf::Constant(log_p_k.size(), log_p_k.maxCoeff());
         Eigen::ArrayXf p_k = log_p_k.exp() / log_p_k.exp().sum();
+        for(auto x: std::vector<float>(p_k.data(), p_k.data() + p_k.size())) assert(!std::isnan(x));
         return std::vector<float>(p_k.data(), p_k.data() + p_k.size());
     }
 
