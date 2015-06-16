@@ -94,7 +94,7 @@ public:
         float gamma,
         const std::vector<std::vector<size_t>> &docs,
         common::rng_t &rng)
-            : alpha_(alpha), beta_(beta), gamma_(gamma) {
+            : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs) {
         V = def.v();
         M = def.n();
         rng_ = rng;
@@ -103,7 +103,6 @@ public:
         }
         using_k = {0};
 
-        x_ji = std::vector<std::vector<size_t>>(docs);
         for(size_t j = 0; j < M; ++j) {
             k_jt.push_back({0});
             n_jt.push_back({0});
@@ -513,7 +512,7 @@ public:
     common::rng_t rng_;
     std::vector<std::vector<size_t>> using_t;
     std::vector<size_t> using_k;
-    std::vector<std::vector<size_t>> x_ji;
+    const std::vector<std::vector<size_t>> &x_ji;
     std::vector<std::vector<size_t>> k_jt;
     std::vector<std::vector<size_t>> n_jt;
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv;
