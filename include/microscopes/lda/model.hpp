@@ -160,7 +160,7 @@ public:
             vec.push_back(std::map<size_t, float>());
             for(size_t v = 0; v < V; ++v) {
                 if(n_kv[k].find(v) != n_kv[k].end()){
-                    vec.back()[v] = n_kv[k][v] / n_k[k];
+                    vec.back()[v] = get_n_kv(k, v) / n_k[k];
                 }
                 else{
                     vec.back()[v] = beta_ / n_k[k];
