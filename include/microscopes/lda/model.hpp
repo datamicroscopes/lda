@@ -500,7 +500,7 @@ public:
 
     float
     get_n_kv(size_t k, size_t v){
-        if (n_kv[k].count(v) > 0 || k == 0){
+        if ((n_kv[k].count(v) > 0 && n_kv[k][v] > 0) || k == 0){
           return n_kv[k][v];
         }
         else {
