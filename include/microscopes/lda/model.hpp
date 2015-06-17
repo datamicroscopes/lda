@@ -309,21 +309,16 @@ public:
             }
             log_p_k_new += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
         }
-
         log_p_k[0] = log_p_k_new;
         for(auto x: log_p_k) assert(isfinite(x));
 
         std::vector<float> p_k;
         p_k.reserve(using_k.size());
         float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
-        float p_k_sum = 0;
         for(auto log_p_k_value: log_p_k){
             p_k.push_back(exp(log_p_k_value - max_value));
-            p_k_sum += exp(log_p_k_value - max_value);
         }
-        for(size_t i = 0; i < p_k.size(); i++){
-            p_k[i] /= p_k_sum;
-        }
+        normalize(p_k);
         return p_k;
     }
 
