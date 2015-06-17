@@ -345,7 +345,7 @@ public:
                 auto n = kv.second;
                 if (k_old != 0)
                 {
-                    n_kv[k_old][v] -= n;
+                    decrement_n_kv(k_old, v, n);
                 }
                 increment_n_kv(k_new, v, n);
             }
@@ -461,7 +461,7 @@ public:
             assert(k > 0);
             // decrease counters
             size_t v = x_ji[j][i];
-            n_kv[k][v] -= 1;
+            decrement_n_kv(k, v, 1);
             n_k[k] -= 1;
             n_jt[j][t] -= 1;
             n_jtv[j][t][v] -= 1;
@@ -511,7 +511,17 @@ public:
     void
     increment_n_kv(size_t k, size_t v, float amount){
         n_kv[k][v] += amount;
-        if (n_kv[k][v] == amount) n_kv[k][v] += beta_;
+        if (n_kv[k][v] == amount){
+            n_kv[k][v] += beta_;
+        }
+    }
+
+    void
+    decrement_n_kv(size_t k, size_t v, float amount){
+        n_kv[k][v] -= amount;
+        if (n_kv[k][v] == -amount){
+            n_kv[k][v] += beta_;
+        }
     }
 
     size_t V; // Vocabulary size
