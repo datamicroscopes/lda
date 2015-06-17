@@ -305,9 +305,9 @@ public:
             }
             n_kw[0] = 1; // # dummy for logarithm's warning
             for(size_t i = 0; i < n_kw.size(); i++){
-                log_p_k[i] += lgamma(n_kw[i] + n_jtw) - lgamma(n_kw[i]);
+                log_p_k[i] += fast_lgamma(n_kw[i] + n_jtw) - fast_lgamma(n_kw[i]);
             }
-            log_p_k_new += lgamma(beta_ + n_jtw) - lgamma(beta_);
+            log_p_k_new += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
         }
 
         log_p_k[0] = log_p_k_new;
