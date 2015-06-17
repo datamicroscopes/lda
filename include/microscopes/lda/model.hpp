@@ -311,6 +311,8 @@ public:
         }
 
         log_p_k[0] = log_p_k_new;
+        for(auto x: log_p_k) assert(isfinite(x));
+
         std::vector<float> p_k;
         p_k.reserve(using_k.size());
         float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
