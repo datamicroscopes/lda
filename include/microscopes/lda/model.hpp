@@ -299,10 +299,9 @@ public:
 
             std::vector<float> n_kw(using_k.size());
             for(size_t i = 0; i < using_k.size(); i++){
-                auto &n = n_kv[using_k[i]];
-                n_kw[i] = (n.count(w) > 0) ? n[w] : beta_;
+                n_kw[i] = get_n_kv(using_k[i], w);
                 if(using_k[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
-                assert(i == 0 || n_kw[i] >= 0);
+                assert(i == 0 || n_kw[i] > 0);
             }
             n_kw[0] = 1; // # dummy for logarithm's warning
             for(size_t i = 0; i < n_kw.size(); i++){
