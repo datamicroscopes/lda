@@ -33,7 +33,7 @@ void
 validate_probability_vector(const std::vector<float> &p){
     float sum = 0;
     for(auto x: p){
-        assert(!isnan(x));
+        assert(isfinite(x));
         assert(x >= 0);
         sum+=x;
     }
@@ -60,20 +60,12 @@ std::vector<T> selectByIndex(const std::vector<T> &v, const std::vector<size_t> 
     return new_v;
 }
 
-
-template< class T >
-Eigen::Matrix<T, Eigen::Dynamic, 1>
-selectByIndex(const Eigen::Matrix<T, Eigen::Dynamic, 1> &v, const std::vector<size_t> &index )  {
-    Eigen::Matrix<T, Eigen::Dynamic, 1> new_v(index.size());
-    for(size_t i = 0; i < index.size(); i++){
-        new_v(i) = v(index[i]);
-    }
-    return new_v;
-}
-
 template<class T>
 void
 normalize(std::vector<T> &v){
+    for(auto x: v) {
+        assert(isfinite(x));
+    }
     Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, 1>> vec(v.data(), v.size());
     vec /= vec.sum();
 }
@@ -295,6 +287,7 @@ public:
         for(size_t i = 0; i < using_k.size(); i++){
             auto n_k_val = (using_k[i] == k_jt[j][t]) ? n_k[i] - n_jt[j][t] : n_k[i];
             log_p_k[i] = fast_log(m_k[using_k[i]]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt[j][t]);
+            assert(!isinf(log_p_k[i]));
         }
         float log_p_k_new = fast_log(gamma_) + fast_lgamma(V * beta_) - fast_lgamma(V * beta_ + n_jt[j][t]);
 
