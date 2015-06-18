@@ -389,6 +389,7 @@ public:
 
         using_k.insert(using_k.begin()+k_new, k_new);
         n_k[k_new] = 0;
+        n_kv[k_new] = std::map<size_t, float>();
         m_k[k_new] = 0;
         return k_new;
 
