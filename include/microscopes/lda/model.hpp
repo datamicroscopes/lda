@@ -257,6 +257,7 @@ public:
         leave_from_dish(j, t);
         std::vector<float> p_k = calc_dish_posterior_t(j, t);
         validate_probability_vector(p_k);
+        assert(using_k.size() == p_k.size());
         size_t topic_index = common::util::sample_discrete(p_k, rng_);
         size_t k_new = using_k[topic_index];
         if (k_new == 0)
