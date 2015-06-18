@@ -24,7 +24,7 @@ test_small()
 
     std::cout << "creating model definition...";
     lda::model_definition def(3, 4);
-    std::vector<std::vector<size_t>> docs = {{1,2,3}, {2, 3, 4}, {4, 4}};
+    std::vector<std::vector<size_t>> docs = {{0, 1, 2}, {1, 2, 3}, {3, 3}};
     lda::state state(def, 1, .5, 1, docs, r);
     std::cout << " complete" << std::endl;
 
