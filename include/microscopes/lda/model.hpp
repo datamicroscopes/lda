@@ -98,14 +98,13 @@ public:
         common::rng_t &rng)
             : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs) {
         V = def.v();
-        M = def.n();
         rng_ = rng;
-        for(size_t i = 0; i < M; ++i) {
+        for(size_t i = 0; i < x_ji.size(); ++i) {
             using_t.push_back({0});
         }
         using_k = {0};
 
-        for(size_t j = 0; j < M; ++j) {
+        for(size_t j = 0; j < x_ji.size(); ++j) {
             k_jt.push_back({0});
             n_jt.push_back({0});
 
@@ -135,7 +134,7 @@ public:
                 sampling_t(j, i);
             }
         }
-        for (size_t j = 0; j < M; ++j){
+        for (size_t j = 0; j < x_ji.size(); ++j){
             for (auto t: using_t[j]){
                 if(t != 0) {
                     sampling_k(j, t);
@@ -525,7 +524,7 @@ public:
     }
 
     size_t V; // Vocabulary size
-    size_t M; // Num documents
+    // size_t x_ji.size(); // Num documents
     size_t m;
     float alpha_;
     float beta_;
