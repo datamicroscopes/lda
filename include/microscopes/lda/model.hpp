@@ -116,7 +116,7 @@ public:
         }
         m = 0;
         m_k = std::vector<size_t> {1};
-        n_k = std::vector<float> {beta_ * V};
+        n_k = std::vector<float> {0};
 
         n_kv.push_back(std::map<size_t, float>());
 
@@ -159,10 +159,10 @@ public:
             vec.push_back(std::map<size_t, float>());
             for(size_t v = 0; v < V; ++v) {
                 if(n_kv[k].find(v) != n_kv[k].end()){
-                    vec.back()[v] = get_n_kv(k, v) / n_k[k];
+                    vec.back()[v] = get_n_kv(k, v) / get_n_k(k);
                 }
                 else{
-                    vec.back()[v] = beta_ / n_k[k];
+                    vec.back()[v] = beta_ / get_n_k(k);
                 }
             }
         }
@@ -285,7 +285,7 @@ public:
     calc_dish_posterior_t(size_t j, size_t t){
        std::vector<float> log_p_k(using_k.size());
         for(size_t i = 0; i < using_k.size(); i++){
-            auto n_k_val = (using_k[i] == k_jt[j][t]) ? n_k[i] - n_jt[j][t] : n_k[i];
+            auto n_k_val = (using_k[i] == k_jt[j][t]) ? get_n_k(i) - n_jt[j][t] : get_n_k(i);
             log_p_k[i] = fast_log(m_k[using_k[i]]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt[j][t]);
             assert(!isinf(log_p_k[i]));
         }
@@ -337,9 +337,9 @@ public:
 
             if (k_old != 0)
             {
-                n_k[k_old] -= n_jt_val;
+                decrement_n_k(k_old, n_jt_val);
             }
-            n_k[k_new] += n_jt_val;
+            increment_n_k(k_new, n_jt_val);
             for(auto kv: n_jtv[j][t]){
                 auto v = kv.first;
                 auto n = kv.second;
@@ -359,7 +359,7 @@ public:
         n_jt[j][t_new] += 1;
 
         size_t k_new = k_jt[j][t_new];
-        n_k[k_new] += 1;
+        increment_n_k(k_new, 1);
 
         size_t v = x_ji[j][i];
         increment_n_kv(k_new, v, 1);
@@ -380,7 +380,7 @@ public:
         }
         if (k_new == using_k.size())
         {
-            n_k.push_back(n_k[0]);
+            n_k.push_back(get_n_k(0));
             m_k.push_back(m_k[0]);
             n_kv.push_back(std::map<size_t, float>());
             assert(k_new == using_k.back() + 1);
@@ -388,7 +388,7 @@ public:
         }
 
         using_k.insert(using_k.begin()+k_new, k_new);
-        n_k[k_new] = beta_ * (float)V;
+        n_k[k_new] = 0;
         m_k[k_new] = 0;
         return k_new;
 
@@ -492,10 +492,36 @@ public:
 
         for (size_t k=0; k < n_kv.size(); k++)
         {
-            f_k(k) = get_n_kv(k, v) / n_k[k];
+            f_k(k) = get_n_kv(k, v) / get_n_k(k);
         }
 
         return std::vector<float>(f_k.data(), f_k.data() + f_k.size());
+    }
+
+    float
+    get_n_k(size_t k){
+        if (n_k[k] > 0){
+          return n_k[k];
+        }
+        else {
+            return V * beta_;
+        }
+    }
+
+    void
+    increment_n_k(size_t k, float amount){
+        n_k[k] += amount;
+        if (n_k[k] == amount){
+            n_k[k] += V * beta_;
+        }
+    }
+
+    void
+    decrement_n_k(size_t k, float amount){
+        n_k[k] -= amount;
+        if (n_k[k] == -amount){
+            n_k[k] += V * beta_;
+        }
     }
 
     float
