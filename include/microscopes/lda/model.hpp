@@ -283,7 +283,7 @@ public:
 
     std::vector<float>
     calc_dish_posterior_t(size_t j, size_t t){
-       std::vector<float> log_p_k(using_k.size());
+        std::vector<float> log_p_k(using_k.size());
         for(size_t i = 0; i < using_k.size(); i++){
             auto n_k_val = (using_k[i] == k_jt[j][t]) ? get_n_k(i) - n_jt[j][t] : get_n_k(i);
             log_p_k[i] = fast_log(m_k[using_k[i]]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt[j][t]);
@@ -380,7 +380,7 @@ public:
         }
         if (k_new == using_k.size())
         {
-            n_k.push_back(get_n_k(0));
+            n_k.push_back(0);
             m_k.push_back(m_k[0]);
             n_kv.push_back(std::map<size_t, float>());
             assert(k_new == using_k.back() + 1);
@@ -462,7 +462,7 @@ public:
             // decrease counters
             size_t v = x_ji[j][i];
             decrement_n_kv(k, v, 1);
-            n_k[k] -= 1;
+            decrement_n_k(k, 1);
             n_jt[j][t] -= 1;
             n_jtv[j][t][v] -= 1;
 
