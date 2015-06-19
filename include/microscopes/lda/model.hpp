@@ -291,10 +291,6 @@ public:
             }
             values[k] = {n_kv_sum, get_n_k(k)};
         }
-        std::cout << "values :" << std::endl;
-        for(auto v: values){
-            std::cout << "    :" << std::get<0>(v.second) << "  " << std::get<1>(v.second) << std::endl;
-        }
         for(auto kv: values){
             if (kv.first == 0) continue;
             assert(std::abs((std::get<0>(kv.second) - std::get<1>(kv.second))) < 0.01);
