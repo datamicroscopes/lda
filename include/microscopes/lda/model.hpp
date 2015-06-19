@@ -281,6 +281,26 @@ public:
         }
     }
 
+    void
+    validate_n_k_values(){
+        std::map<size_t, std::tuple<float, float>> values;
+        for(auto k: using_k){
+            float n_kv_sum = 0;
+            for(size_t v = 0; v < V; v++){
+                n_kv_sum += get_n_kv(k, v);
+            }
+            values[k] = {n_kv_sum, get_n_k(k)};
+        }
+        std::cout << "values :" << std::endl;
+        for(auto v: values){
+            std::cout << "    :" << std::get<0>(v.second) << "  " << std::get<1>(v.second) << std::endl;
+        }
+        for(auto kv: values){
+            if (kv.first == 0) continue;
+            assert(std::abs((std::get<0>(kv.second) - std::get<1>(kv.second))) < 0.01);
+        }
+    }
+
     std::vector<float>
     calc_dish_posterior_t(size_t j, size_t t){
         std::vector<float> log_p_k(using_k.size());

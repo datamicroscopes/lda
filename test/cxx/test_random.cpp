@@ -26,6 +26,7 @@ sequence_random(double alpha, double beta, double gamma, size_t seed){
     for(unsigned i = 0; i < 10; ++i){
         state.inference();
     }
+    state.validate_n_k_values();
     std::cout << "perplexity: " << state.perplexity() << std::endl;
 }
 
