@@ -304,10 +304,14 @@ public:
     std::vector<float>
     calc_dish_posterior_t(size_t j, size_t t){
         std::vector<float> log_p_k(using_k.size());
+
+        auto k_old = k_jt[j][t];
+        auto n_jt_val = n_jt[j][t];
         for(size_t i = 0; i < using_k.size(); i++){
-            auto n_k_val = (using_k[i] == k_jt[j][t]) ? get_n_k(i) - n_jt[j][t] : get_n_k(i);
-            log_p_k[i] = fast_log(m_k[using_k[i]]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt[j][t]);
-            assert(!isinf(log_p_k[i]));
+            auto k = using_k[i];
+            float n_k_val = (k == k_old) ? get_n_k(k) - n_jt[j][t] : get_n_k(k);
+            log_p_k[i] = fast_log(m_k[k]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt_val);
+            assert(isfinite(log_p_k[i]));
         }
         float log_p_k_new = fast_log(gamma_) + fast_lgamma(V * beta_) - fast_lgamma(V * beta_ + n_jt[j][t]);
 
