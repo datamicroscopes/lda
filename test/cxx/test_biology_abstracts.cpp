@@ -67,7 +67,7 @@ test_compare_biology_abstracts()
     std::cout << " complete" << std::endl;
 
     std::cout << "initializing state...";
-    lda::state state(def, 1, .5, 1, data::docs, r);
+    lda::state state(def, .1, .5, .1, data::docs, r);
     std::cout << " complete" << std::endl;
 
     for(unsigned i = 0; i < 100; ++i){
