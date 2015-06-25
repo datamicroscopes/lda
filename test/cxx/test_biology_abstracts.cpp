@@ -55,7 +55,7 @@ num_unique_words_in_docs(const std::vector< std::vector<size_t> > &docs){
 
 
 static void
-test_compare_biology_abstracts()
+test_compare_biology_abstracts(size_t n_iterations)
 {
     rng_t r(time(NULL));
 
@@ -70,7 +70,7 @@ test_compare_biology_abstracts()
     lda::state state(def, .1, .5, .1, data::docs, r);
     std::cout << " complete" << std::endl;
 
-    for(unsigned i = 0; i < 100; ++i){
+    for(unsigned i = 0; i < n_iterations; ++i){
         std::cout << "inference step: " << i << std::endl;
         state.inference();
         std::cout << "   K=" << state.usedDishes() << std::endl;
@@ -79,6 +79,10 @@ test_compare_biology_abstracts()
     std::cout << "FINI!" << std::endl;
 }
 
-int main(void){
-    test_compare_biology_abstracts();
+int main(int argc, char* argv[]){
+    size_t n_iterations = SIZE_MAX;
+    if(argc >= 2){
+        n_iterations = std::stoi(argv[1]);
+    }
+    test_compare_biology_abstracts(n_iterations);
 }
