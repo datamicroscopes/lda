@@ -16,6 +16,16 @@ using namespace microscopes;
 using namespace microscopes::common;
 using namespace microscopes::common::recarray;
 
+size_t
+num_unique_words_in_docs(const std::vector< std::vector<size_t> > &docs){
+    std::set<size_t> words;
+    for(auto doc: docs)
+        for(auto word: doc)
+            words.insert(word);
+    return words.size();
+}
+
+
 
 static void
 test_small()
@@ -23,9 +33,9 @@ test_small()
     rng_t r(time(NULL)); //
 
     std::cout << "creating model definition...";
-    lda::model_definition def(3, 4);
-    std::vector<std::vector<size_t>> docs = {{0, 1, 2}, {1, 2, 3}, {3, 3}};
-    lda::state state(def, .1, .5, .1, docs, r);
+    std::vector<std::vector<size_t>> docs = {{0, 1}, {2, 3}};
+    lda::model_definition def(docs.size(), num_unique_words_in_docs(docs));
+    lda::state state(def, .5, .01, .5, docs, r);
     std::cout << " complete" << std::endl;
 
     for(unsigned i = 0; i < 100; ++i){
