@@ -304,7 +304,51 @@ public:
         auto n_jt_val = n_jt[j][t];
         for(size_t i = 0; i < using_k.size(); i++){
             auto k = using_k[i];
-            float n_k_val = (k == k_old) ? get_n_k(k) - n_jt[j][t] : get_n_k(k);
+            float n_k_val = 0;
+            if(k == k_old){
+                n_k_val = get_n_k(k) - n_jt[j][t];
+                if(!(n_k_val > 0)){
+                    std::cout << "---" << std::endl;
+                    std::cout << "using_k = numpy.array([";
+                    for(auto k: using_k){
+                        std::cout << k << ", ";
+                    }
+                    std::cout << "])" << std::endl;
+                    std::cout << "V=" << x_ji.size() << std::endl;
+                    std::cout << "beta=" << beta_ << std::endl;
+                    std::cout << "gamma=" << gamma_ << std::endl;
+                    std::cout << "k_old=" << k_old << std::endl;
+                    std::cout << "j=" << j << std::endl;
+                    std::cout << "t=" << t << std::endl;
+                    std::cout << "n_k = {";
+                    for(auto k: using_k){
+                        std::cout << k << ":" << get_n_k(k) << ", ";
+                    }
+                    std::cout << "}" << std::endl;
+                    std::cout << "n_jt = [";
+                    for(auto x: n_jt){
+                        std::cout << x << ",";
+                    }
+                    std::cout << "]" << std::endl;
+                    std::cout << "m_k = [";
+                    for(auto x: m_k){
+                        std::cout << x << ",";
+                    }
+                    std::cout << "]" << std::endl;
+                    std::cout << "k_jt = [";
+                    for(auto x: k_jt){
+                        std::cout << x << ",";
+                    }
+                    std::cout << "]" << std::endl;
+                    std::cout << "n_k_val  " << n_k_val << std::endl;
+                    std::cout <<  "val  " << fast_log(m_k[k]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt_val) << std::endl;
+                    assert(n_k_val > 0);
+                }
+            }
+            else{
+                n_k_val = get_n_k(k);
+                assert(n_k_val > 0);
+            }
             log_p_k[i] = fast_log(m_k[k]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt_val);
             assert(isfinite(log_p_k[i]));
         }
@@ -530,16 +574,20 @@ public:
 
     void
     increment_n_k(size_t k, float amount){
+        std::cout << "increase n[" << k << "l] by " << amount << std::endl;
         n_k[k] += amount;
         if (n_k[k] == amount){
+            std::cout << "add " << V*beta_ << std::endl;
             n_k[k] += V * beta_;
         }
     }
 
     void
     decrement_n_k(size_t k, float amount){
+        std::cout << "decreate n[" << k << "l] by " << amount << std::endl;
         n_k[k] -= amount;
         if (n_k[k] == -amount){
+            std::cout << "add " << V*beta_ << std::endl;
             n_k[k] += V * beta_;
         }
     }
