@@ -271,9 +271,9 @@ public:
         size_t k = k_jt[j][t];
         assert(k > 0);
         assert(m_k[k] > 0);
-        m_k[k] -= 1;
-        m -= 1;
-        if (m_k[k] == 0)
+        m_k[k] -= 1; // one less table for topic k
+        m -= 1; // one less table
+        if (m_k[k] == 0) // destroy table
         {
             removeFirst(using_k, k);
             k_jt[j][t] = 0;
