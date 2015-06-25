@@ -6,7 +6,6 @@
 #include <microscopes/common/util.hpp>
 #include <microscopes/common/typedefs.hpp>
 #include <microscopes/common/assert.hpp>
-#include <microscopes/io/schema.pb.h>
 #include <distributions/special.hpp>
 #include <distributions/models/dd.hpp>
 #include <eigen3/Eigen/dense>
