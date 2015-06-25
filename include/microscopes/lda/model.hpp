@@ -304,11 +304,13 @@ public:
         auto n_jt_val = n_jt[j][t];
         for(size_t i = 0; i < using_k.size(); i++){
             auto k = using_k[i];
+            if(k == 0) continue;
             float n_k_val = (k == k_old) ? get_n_k(k) - n_jt[j][t] : get_n_k(k);
+            assert(n_k_val > 0);
             log_p_k[i] = fast_log(m_k[k]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt_val);
             assert(isfinite(log_p_k[i]));
         }
-        float log_p_k_new = fast_log(gamma_) + fast_lgamma(V * beta_) - fast_lgamma(V * beta_ + n_jt[j][t]);
+        log_p_k[0] = fast_log(gamma_) + fast_lgamma(V * beta_) - fast_lgamma(V * beta_ + n_jt[j][t]);
 
         for(auto &kv: n_jtv[j][t]){
             auto w = kv.first;
@@ -323,12 +325,11 @@ public:
                 assert(i == 0 || n_kw[i] > 0);
             }
             n_kw[0] = 1; // # dummy for logarithm's warning
-            for(size_t i = 0; i < n_kw.size(); i++){
+            for(size_t i = 1; i < n_kw.size(); i++){
                 log_p_k[i] += fast_lgamma(n_kw[i] + n_jtw) - fast_lgamma(n_kw[i]);
             }
-            log_p_k_new += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
+            log_p_k[0] += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
         }
-        log_p_k[0] = log_p_k_new;
         for(auto x: log_p_k) assert(isfinite(x));
 
         std::vector<float> p_k;
