@@ -1,3 +1,4 @@
 from microscopes.lda._model import (
-    state
+    state,
+    initialize,
 )

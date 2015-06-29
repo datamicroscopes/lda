@@ -1,17 +1,11 @@
 # cython: embedsignature=True
 
+# python imports
+# from microscopes.common import validate_probability_vector
 
-from microscopes.models import model_descriptor
-from microscopes.common import validator
-import operator as op
-import copy
 
 cdef class model_definition:
-    def __cinit__(self,
-                  int n,
-                  models):
-        self._n = n
-        self._models = []
-        for model in models:
-            self._models.append(model)
-
+    def __cinit__(self, n, v):
+        self.n = n
+        self.v = v
+        self._thisptr.reset(new c_model_definition(n, v))
