@@ -88,6 +88,14 @@ private:
 
 class state {
 public:
+    template <class... Args>
+    static inline std::shared_ptr<state>
+    initialize(Args &&... args)
+    {
+        return std::make_shared<state>(std::forward<Args>(args)...);
+    }
+
+
     // Quick and dirty constructor for Shuyo implementation.
     state(const model_definition &def,
         float alpha,
