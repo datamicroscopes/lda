@@ -200,7 +200,7 @@ public:
                 p_jk[k] += n_jt_[t];
             }
             p_jk = selectByIndex(p_jk, using_k);
-            normalize(p_jk);
+            normalize<float>(p_jk);
             theta.push_back(p_jk);
         }
         return theta;
