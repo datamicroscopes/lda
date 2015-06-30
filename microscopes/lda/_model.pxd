@@ -1,3 +1,4 @@
+from cython.operator cimport dereference as deref
 from libcpp.vector cimport vector
 from libc.stddef cimport size_t
 

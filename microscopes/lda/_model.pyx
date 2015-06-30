@@ -1,5 +1,5 @@
 # cython: embedsignature=True
-
+from cython.operator cimport dereference as deref
 
 cdef class state:
     """The underlying state of an HDP-LDA
@@ -12,8 +12,23 @@ cdef class state:
     def __cinit__(self, model_definition defn, data, rng r, **kwargs):
         cdef vector[vector[size_t]] _data = data
         self._thisptr = c_initialize(defn._thisptr.get()[0], 0.1, 0.001, 0.1, _data, r._thisptr[0])
+        print "Create state"
 
 
+    def inference(self):
+        deref(self._thisptr.get()).inference()
+
+    def perplexity(self):
+        print "perplexity3"
+        print deref(self._thisptr.get())
+        if self._thisptr.get() == NULL:
+            print "could not properly construct state"
+            return 0
+
+        self._thisptr.get().perplexity()
+        return 10
+        # return deref(self._thisptr.get()).perplexity()
+        # return deref(self._thisptr.get()).perplexity()
 
 def bind(state s, **kwargs):
     pass

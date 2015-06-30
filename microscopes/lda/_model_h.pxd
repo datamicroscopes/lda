@@ -12,7 +12,8 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         model_definition(size_t, size_t) except +
 
     cdef cppclass state:
-        pass
+        void inference()
+        double perplexity()
 
 
 
