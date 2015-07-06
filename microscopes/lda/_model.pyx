@@ -9,9 +9,9 @@ cdef class state:
     -----
     This class is not meant to be sub-classed.
     """
-    def __cinit__(self, model_definition defn, data, rng r, **kwargs):
-        cdef vector[vector[size_t]] _data = data
-        self._thisptr = c_initialize(defn._thisptr.get()[0], 0.1, 0.001, 0.1, _data, r._thisptr[0])
+    def __cinit__(self, model_definition defn, vector[vector[size_t]] data, rng r, **kwargs):
+        cdef vector[vector[size_t]] _data = deepcopy(data)
+        self._thisptr = c_initialize(defn._thisptr.get()[0], 0.2, 0.01, 0.5, _data, r._thisptr[0])
         print "Create state"
 
 
@@ -20,7 +20,7 @@ cdef class state:
 
     def perplexity(self):
         print "perplexity3"
-        print deref(self._thisptr.get())
+        # print deref(self._thisptr.get()).__class__
         if self._thisptr.get() == NULL:
             print "could not properly construct state"
             return 0
@@ -34,7 +34,7 @@ def bind(state s, **kwargs):
     pass
 
 def initialize(model_definition defn,
-               data,
+               vector[vector[size_t]] data,
                rng r,
                **kwargs):
     """Initialize state to a random, valid point in the state space
