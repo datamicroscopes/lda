@@ -120,7 +120,6 @@ public:
         const std::vector<std::vector<size_t>> &docs,
         common::rng_t &rng)
             : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs) {
-        std::cout <<  "x_ji.size()  " << x_ji.size() << " -- " << "beginning of c++ constructor" << std::endl;
         V = def.v();
         rng_ = rng;
         for(size_t i = 0; i < x_ji.size(); ++i) {
@@ -148,12 +147,10 @@ public:
 
             t_ji.push_back(std::vector<size_t>(docs[i].size(), 0));
         }
-        std::cout <<  "x_ji.size()  " << x_ji.size() << " -- " << "end of c++ constructor" << std::endl;
     }
 
     void
     inference(){
-        std::cout <<  "x_ji.size()  " << x_ji.size() << " -- " << "beginning of inference" << std::endl;
         for (size_t j = 0; j < x_ji.size(); ++j){
             for (size_t i = 0; i < x_ji[j].size(); ++i){
                 sampling_t(j, i);
