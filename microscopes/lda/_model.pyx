@@ -1,5 +1,6 @@
 # cython: embedsignature=True
 from cython.operator cimport dereference as deref
+from copy import deepcopy
 
 cdef class state:
     """The underlying state of an HDP-LDA
