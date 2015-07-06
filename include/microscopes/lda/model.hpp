@@ -96,7 +96,7 @@ public:
     common::rng_t rng_; // random number generator
     std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
     std::vector<size_t> using_k; // dish(topic) index (k=0 means to draw a new dish)
-    const std::vector<std::vector<size_t>> &x_ji; // vocabulary for each document and term
+    const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
     std::vector<std::vector<size_t>> k_jt; // topics of document and table
     std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
