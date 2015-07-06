@@ -8,7 +8,7 @@
 #include <microscopes/common/assert.hpp>
 #include <distributions/special.hpp>
 #include <distributions/models/dd.hpp>
-#include <eigen3/Eigen/dense>
+#include <Eigen/dense>
 
 #include <math.h>
 #include <assert.h>
