@@ -311,7 +311,7 @@ public:
             for(size_t v = 0; v < V; v++){
                 n_kv_sum += get_n_kv(k, v);
             }
-            values[k] = {n_kv_sum, get_n_k(k)};
+            values[k] = std::tuple<float, float>(n_kv_sum, get_n_k(k));
         }
         for(auto kv: values){
             if (kv.first == 0) continue;
