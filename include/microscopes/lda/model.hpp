@@ -20,8 +20,6 @@
 #include <utility>
 #include <stdexcept>
 
-using namespace distributions;
-
 namespace microscopes {
 namespace lda {
 
@@ -237,7 +235,7 @@ public:
                     auto &p_kv = phi[i];
                     word_prob += p * p_kv[v];
                 }
-                log_likelihood -= fast_log(word_prob);
+                log_likelihood -= distributions::fast_log(word_prob);
             }
             N += x_ji[j].size();
         }
@@ -329,10 +327,10 @@ public:
             if(k == 0) continue;
             float n_k_val = (k == k_old) ? get_n_k(k) - n_jt[j][t] : get_n_k(k);
             assert(n_k_val > 0);
-            log_p_k[i] = fast_log(m_k[k]) + fast_lgamma(n_k_val) - fast_lgamma(n_k_val + n_jt_val);
+            log_p_k[i] = distributions::fast_log(m_k[k]) + distributions::fast_lgamma(n_k_val) - distributions::fast_lgamma(n_k_val + n_jt_val);
             assert(isfinite(log_p_k[i]));
         }
-        log_p_k[0] = fast_log(gamma_) + fast_lgamma(V * beta_) - fast_lgamma(V * beta_ + n_jt[j][t]);
+        log_p_k[0] = distributions::fast_log(gamma_) + distributions::fast_lgamma(V * beta_) - distributions::fast_lgamma(V * beta_ + n_jt[j][t]);
 
         for(auto &kv: n_jtv[j][t]){
             auto w = kv.first;
@@ -348,9 +346,9 @@ public:
             }
             n_kw[0] = 1; // # dummy for logarithm's warning
             for(size_t i = 1; i < n_kw.size(); i++){
-                log_p_k[i] += fast_lgamma(n_kw[i] + n_jtw) - fast_lgamma(n_kw[i]);
+                log_p_k[i] += distributions::fast_lgamma(n_kw[i] + n_jtw) - distributions::fast_lgamma(n_kw[i]);
             }
-            log_p_k[0] += fast_lgamma(beta_ + n_jtw) - fast_lgamma(beta_);
+            log_p_k[0] += distributions::fast_lgamma(beta_ + n_jtw) - distributions::fast_lgamma(beta_);
         }
         for(auto x: log_p_k) assert(isfinite(x));
 
