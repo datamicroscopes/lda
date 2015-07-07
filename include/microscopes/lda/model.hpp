@@ -1,4 +1,3 @@
-#define _GLIBCXX_DEBUG
 #include <microscopes/models/base.hpp>
 #include <microscopes/common/entity_state.hpp>
 #include <microscopes/common/group_manager.hpp>
