@@ -14,6 +14,9 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
     cdef cppclass state:
         void inference()
         double perplexity()
+        size_t nentities()
+        size_t ntopics()
+        size_t nwords()
 
 
 

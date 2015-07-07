@@ -593,6 +593,11 @@ public:
             n_kv[k][v] += beta_;
         }
     }
+
+    inline size_t nentities() const { return x_ji.size(); }
+    inline size_t ntopics() const { return using_k.size() - 1; }
+    inline size_t nwords() const { return V; }
+
 };
 
 }

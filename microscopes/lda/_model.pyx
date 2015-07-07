@@ -21,6 +21,10 @@ cdef class state:
     def perplexity(self):
         return self._thisptr.get().perplexity()
 
+    def nentities(self):
+        return self._thisptr.get().nentities()
+
+
 def bind(state s, **kwargs):
     pass
 
