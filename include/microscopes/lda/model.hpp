@@ -146,6 +146,32 @@ public:
         }
     }
 
+
+    std::vector<std::map<size_t, size_t>>
+    dish_assignments(){
+        return std::vector<std::map<size_t, size_t>>();
+    }
+
+
+    std::vector<std::vector<size_t>>
+    table_assignments(){
+        return std::vector<std::vector<size_t>>();
+    }
+
+    float
+    score_assignment() const
+    {
+        return 0;
+    }
+
+    float
+    score_data(common::rng_t &rng) const
+    {
+        return 0;
+    }
+
+
+
     void
     inference(){
         for (size_t j = 0; j < x_ji.size(); ++j){

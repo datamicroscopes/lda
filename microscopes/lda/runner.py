@@ -49,4 +49,4 @@ class runner(object):
         validator.validate_positive(niters, param_name='niters')
 
         for _ in xrange(niters):
-            self._latent.inference()
+            self._latent._inference()

@@ -14,15 +14,26 @@ cdef class state:
         cdef vector[vector[size_t]] _data = deepcopy(data)
         self._thisptr = c_initialize(defn._thisptr.get()[0], 0.2, 0.01, 0.5, _data, r._thisptr[0])
 
+    def _inference(self):
+        return self._thisptr.get().inference()
 
-    def inference(self):
-        deref(self._thisptr.get()).inference()
-
-    def perplexity(self):
+    def _perplexity(self):
         return self._thisptr.get().perplexity()
 
     def nentities(self):
         return self._thisptr.get().nentities()
+
+    def dish_assignments(self):
+        return self._thisptr.get()[0].dish_assignments()
+
+    def table_assignments(self):
+        return self._thisptr.get()[0].table_assignments()
+
+    def score_assignment(self):
+        return self._thisptr.get()[0].score_assignment()
+
+    def score_data(self, rng r):
+        return self._thisptr.get()[0].score_data(r._thisptr[0])
 
 
 def bind(state s, **kwargs):
