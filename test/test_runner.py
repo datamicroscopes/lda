@@ -10,4 +10,4 @@ def test_runner_simple():
     view = data
     latent = model.initialize(defn=defn, data=view, r=r)
     rnr = runner.runner(defn, view, latent)
-    rnr.run(r=r, niters=10)
+    rnr.run(r=r, niters=1)
