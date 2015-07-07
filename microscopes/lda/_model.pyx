@@ -13,23 +13,13 @@ cdef class state:
     def __cinit__(self, model_definition defn, vector[vector[size_t]] data, rng r, **kwargs):
         cdef vector[vector[size_t]] _data = deepcopy(data)
         self._thisptr = c_initialize(defn._thisptr.get()[0], 0.2, 0.01, 0.5, _data, r._thisptr[0])
-        print "Create state"
 
 
     def inference(self):
         deref(self._thisptr.get()).inference()
 
     def perplexity(self):
-        print "perplexity3"
-        # print deref(self._thisptr.get()).__class__
-        if self._thisptr.get() == NULL:
-            print "could not properly construct state"
-            return 0
-
-        self._thisptr.get().perplexity()
-        return 10
-        # return deref(self._thisptr.get()).perplexity()
-        # return deref(self._thisptr.get()).perplexity()
+        return self._thisptr.get().perplexity()
 
 def bind(state s, **kwargs):
     pass
