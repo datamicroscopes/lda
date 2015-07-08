@@ -535,15 +535,15 @@ public:
 
             if (n_jt[j][t] == 0)
             {
-                remove_table(j, t);
+                delete_table(j, t);
             }
         }
     }
 
     void
-    remove_table(size_t j, size_t t){
-        size_t k = k_jt[j][t];
-        removeFirst(using_t[j], t);
+    delete_table(size_t eid, size_t tid){
+        size_t k = k_jt[eid][tid];
+        removeFirst(using_t[eid], tid);
         m_k[k] -= 1;
         m -= 1;
         assert(m_k[k] >= 0);
