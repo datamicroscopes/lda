@@ -147,14 +147,31 @@ public:
     }
 
 
+    inline std::vector<std::vector<ssize_t>>
+    assignments() const{
+        MICROSCOPES_DCHECK(false, "assignments not implemented");
+        return std::vector<std::vector<ssize_t>>();
+    }
+
+    /**
+    * Returns, for each entity, a map from
+    * table IDs -> (global) dish assignments
+    *
+    */
     std::vector<std::map<size_t, size_t>>
     dish_assignments(){
+        MICROSCOPES_DCHECK(false, "dish_assignments not implemented");
         return std::vector<std::map<size_t, size_t>>();
     }
 
-
+    /**
+    * Returns, for each entity, an assignment vector
+    * from each word to the (local) table it is assigned to.
+    *
+    */
     std::vector<std::vector<size_t>>
     table_assignments(){
+        MICROSCOPES_DCHECK(false, "table_assignments not implemented");
         return std::vector<std::vector<size_t>>();
     }
 
