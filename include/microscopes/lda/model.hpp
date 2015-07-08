@@ -559,6 +559,17 @@ public:
         }
     }
 
+    inline std::vector<size_t>
+    dishes() const
+    {
+        return using_k;
+    }
+
+    inline std::vector<size_t>
+    tables(size_t eid){
+        return using_t[eid];
+    }
+
     std::vector<float>
     calc_f_k(size_t v){
         Eigen::VectorXf f_k(n_kv.size());
