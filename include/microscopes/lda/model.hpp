@@ -311,7 +311,7 @@ public:
             }
             t_new = create_table(j, k_new);
         }
-        seat_at_table(j, i, t_new);
+        add_table(j, t_new, i);
     }
 
     void
@@ -437,18 +437,17 @@ public:
 
 
     void
-    seat_at_table(size_t j, size_t i, size_t t_new){
-        t_ji[j][i] = t_new;
-        n_jt[j][t_new] += 1;
+    add_table(size_t ein, size_t t_new, size_t did){
+        t_ji[ein][did] = t_new;
+        n_jt[ein][t_new] += 1;
 
-        size_t k_new = k_jt[j][t_new];
+        size_t k_new = k_jt[ein][t_new];
         increment_n_k(k_new, 1);
 
-        size_t v = x_ji[j][i];
+        size_t v = x_ji[ein][did];
         increment_n_kv(k_new, v, 1);
-        n_jtv[j][t_new][v] += 1;
+        n_jtv[ein][t_new][v] += 1;
     }
-
 
     size_t
     create_dish(){
