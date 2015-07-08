@@ -27,7 +27,6 @@ namespace lda {
 typedef std::vector<std::shared_ptr<models::group>> group_type;
 
 
-
 class model_definition {
 public:
     model_definition(size_t n, size_t v)
@@ -73,20 +72,20 @@ public:
     }
 
     state(const model_definition &def,
-        float alpha,
-        float beta,
-        float gamma,
-        const std::vector<std::vector<size_t>> &docs,
-        common::rng_t &rng)
-            : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs) {
+          float alpha,
+          float beta,
+          float gamma,
+          const std::vector<std::vector<size_t>> &docs,
+          common::rng_t &rng)
+        : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs) {
         V = def.v();
         rng_ = rng;
-        for(size_t i = 0; i < x_ji.size(); ++i) {
+        for (size_t i = 0; i < x_ji.size(); ++i) {
             using_t.push_back({0});
         }
         dishes_ = {0};
 
-        for(size_t j = 0; j < x_ji.size(); ++j) {
+        for (size_t j = 0; j < x_ji.size(); ++j) {
             k_jt.push_back({0});
             n_jt.push_back({0});
 
@@ -102,7 +101,7 @@ public:
 
         n_kv.push_back(std::map<size_t, float>());
 
-        for(size_t i=0; i < docs.size(); i++){
+        for (size_t i = 0; i < docs.size(); i++) {
 
             t_ji.push_back(std::vector<size_t>(docs[i].size(), 0));
         }
@@ -110,7 +109,7 @@ public:
 
 
     inline std::vector<std::vector<ssize_t>>
-    assignments() const{
+    assignments() const {
         MICROSCOPES_DCHECK(false, "assignments not implemented");
         return std::vector<std::vector<ssize_t>>();
     }
@@ -121,7 +120,7 @@ public:
     *
     */
     std::vector<std::map<size_t, size_t>>
-    dish_assignments(){
+    dish_assignments() {
         MICROSCOPES_DCHECK(false, "dish_assignments not implemented");
         return std::vector<std::map<size_t, size_t>>();
     }
@@ -132,7 +131,7 @@ public:
     *
     */
     std::vector<std::vector<size_t>>
-    table_assignments(){
+    table_assignments() {
         MICROSCOPES_DCHECK(false, "table_assignments not implemented");
         return std::vector<std::vector<size_t>>();
     }
@@ -152,15 +151,15 @@ public:
 
 
     void
-    _inference(){
-        for (size_t j = 0; j < x_ji.size(); ++j){
-            for (size_t i = 0; i < x_ji[j].size(); ++i){
+    _inference() {
+        for (size_t j = 0; j < x_ji.size(); ++j) {
+            for (size_t i = 0; i < x_ji[j].size(); ++i) {
                 sampling_t(j, i);
             }
         }
-        for (size_t j = 0; j < x_ji.size(); ++j){
-            for (auto t: using_t[j]){
-                if(t != 0) {
+        for (size_t j = 0; j < x_ji.size(); ++j) {
+            for (auto t : using_t[j]) {
+                if (t != 0) {
                     sampling_k(j, t);
                 }
             }
@@ -169,18 +168,18 @@ public:
 
 
     std::vector<std::map<size_t, float>>
-    wordDist(){
+    wordDist() {
         // Distribution over words for each topic
         std::vector<std::map<size_t, float>> vec;
         vec.reserve(dishes_.size());
-        for(auto k: dishes_){
-            if(k==0) continue;
+        for (auto k : dishes_) {
+            if (k == 0) continue;
             vec.push_back(std::map<size_t, float>());
-            for(size_t v = 0; v < V; ++v) {
-                if(n_kv[k].find(v) != n_kv[k].end()){
+            for (size_t v = 0; v < V; ++v) {
+                if (n_kv[k].find(v) != n_kv[k].end()) {
                     vec.back()[v] = get_n_kv(k, v) / get_n_k(k);
                 }
-                else{
+                else {
                     vec.back()[v] = beta_ / get_n_k(k);
                 }
             }
@@ -189,25 +188,25 @@ public:
     }
 
     std::vector<std::vector<float>>
-    docDist(){
+    docDist() {
         // Distribution over topics for each document
         std::vector<std::vector<float>> theta;
         theta.reserve(k_jt.size());
         std::vector<float> am_k(m_k.begin(), m_k.end());
         am_k[0] = gamma_;
         double sum_am_dishes_ = 0;
-        for(auto k: dishes_){
+        for (auto k : dishes_) {
             sum_am_dishes_ += am_k[k];
         }
-        for(size_t i = 0; i < am_k.size(); ++i) {
+        for (size_t i = 0; i < am_k.size(); ++i) {
             am_k[i] *= alpha_ / sum_am_dishes_;
         }
 
-        for(size_t j = 0; j < k_jt.size(); j++){
+        for (size_t j = 0; j < k_jt.size(); j++) {
             std::vector<size_t> &n_jt_ = n_jt[j];
             std::vector<float> p_jk = am_k;
-            for(auto t: using_t[j]){
-                if(t == 0) continue;
+            for (auto t : using_t[j]) {
+                if (t == 0) continue;
                 size_t k = k_jt[j][t];
                 p_jk[k] += n_jt_[t];
             }
@@ -219,18 +218,18 @@ public:
     }
 
     double
-    perplexity(){
+    perplexity() {
         std::vector<std::map<size_t, float>> phi = wordDist();
         std::vector<std::vector<float>> theta = docDist();
         phi.insert(phi.begin(), std::map<size_t, float>());
         double log_likelihood = 0;
         size_t N = 0;
-        for(size_t j = 0; j < x_ji.size(); j++){
+        for (size_t j = 0; j < x_ji.size(); j++) {
             auto &py_x_ji = x_ji[j];
             auto &p_jk = theta[j];
-            for(auto &v: py_x_ji){
+            for (auto &v : py_x_ji) {
                 double word_prob = 0;
-                for(size_t i = 0; i < p_jk.size(); i++){
+                for (size_t i = 0; i < p_jk.size(); i++) {
                     auto p = p_jk[i];
                     auto &p_kv = phi[i];
                     word_prob += p * p_kv[v];
@@ -246,7 +245,7 @@ public:
 
 // private:
     void
-    sampling_t(size_t j, size_t i){
+    sampling_t(size_t j, size_t i) {
         remove_table(j, i);
         size_t v = x_ji[j][i];
         std::vector<float> f_k = calc_f_k(v);
@@ -272,7 +271,7 @@ public:
     }
 
     void
-    sampling_k(size_t j, size_t t){
+    sampling_k(size_t j, size_t t) {
         leave_from_dish(j, t);
         std::vector<float> p_k = calc_dish_posterior_t(j, t);
         util::validate_probability_vector(p_k);
@@ -287,7 +286,7 @@ public:
     }
 
     void
-    leave_from_dish(size_t j, size_t t){
+    leave_from_dish(size_t j, size_t t) {
         size_t k = k_jt[j][t];
         assert(k > 0);
         assert(m_k[k] > 0);
@@ -301,30 +300,30 @@ public:
     }
 
     void
-    validate_n_k_values(){
+    validate_n_k_values() {
         std::map<size_t, std::tuple<float, float>> values;
-        for(auto k: dishes_){
+        for (auto k : dishes_) {
             float n_kv_sum = 0;
-            for(size_t v = 0; v < V; v++){
+            for (size_t v = 0; v < V; v++) {
                 n_kv_sum += get_n_kv(k, v);
             }
             values[k] = std::tuple<float, float>(n_kv_sum, get_n_k(k));
         }
-        for(auto kv: values){
+        for (auto kv : values) {
             if (kv.first == 0) continue;
             assert(std::abs((std::get<0>(kv.second) - std::get<1>(kv.second))) < 0.01);
         }
     }
 
     std::vector<float>
-    calc_dish_posterior_t(size_t j, size_t t){
+    calc_dish_posterior_t(size_t j, size_t t) {
         std::vector<float> log_p_k(dishes_.size());
 
         auto k_old = k_jt[j][t];
         auto n_jt_val = n_jt[j][t];
-        for(size_t i = 0; i < dishes_.size(); i++){
+        for (size_t i = 0; i < dishes_.size(); i++) {
             auto k = dishes_[i];
-            if(k == 0) continue;
+            if (k == 0) continue;
             float n_k_val = (k == k_old) ? get_n_k(k) - n_jt[j][t] : get_n_k(k);
             assert(n_k_val > 0);
             log_p_k[i] = distributions::fast_log(m_k[k]) + distributions::fast_lgamma(n_k_val) - distributions::fast_lgamma(n_k_val + n_jt_val);
@@ -332,30 +331,30 @@ public:
         }
         log_p_k[0] = distributions::fast_log(gamma_) + distributions::fast_lgamma(V * beta_) - distributions::fast_lgamma(V * beta_ + n_jt[j][t]);
 
-        for(auto &kv: n_jtv[j][t]){
+        for (auto &kv : n_jtv[j][t]) {
             auto w = kv.first;
             auto n_jtw = kv.second;
             if (n_jtw == 0) continue;
             assert(n_jtw > 0);
 
             std::vector<float> n_kw(dishes_.size());
-            for(size_t i = 0; i < dishes_.size(); i++){
+            for (size_t i = 0; i < dishes_.size(); i++) {
                 n_kw[i] = get_n_kv(dishes_[i], w);
-                if(dishes_[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
+                if (dishes_[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
                 assert(i == 0 || n_kw[i] > 0);
             }
             n_kw[0] = 1; // # dummy for logarithm's warning
-            for(size_t i = 1; i < n_kw.size(); i++){
+            for (size_t i = 1; i < n_kw.size(); i++) {
                 log_p_k[i] += distributions::fast_lgamma(n_kw[i] + n_jtw) - distributions::fast_lgamma(n_kw[i]);
             }
             log_p_k[0] += distributions::fast_lgamma(beta_ + n_jtw) - distributions::fast_lgamma(beta_);
         }
-        for(auto x: log_p_k) assert(isfinite(x));
+        for (auto x : log_p_k) assert(isfinite(x));
 
         std::vector<float> p_k;
         p_k.reserve(dishes_.size());
         float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
-        for(auto log_p_k_value: log_p_k){
+        for (auto log_p_k_value : log_p_k) {
             p_k.push_back(exp(log_p_k_value - max_value));
         }
         util::normalize(p_k);
@@ -363,9 +362,9 @@ public:
     }
 
     std::vector<float>
-    calc_dish_posterior_w(const std::vector<float> &f_k){
+    calc_dish_posterior_w(const std::vector<float> &f_k) {
         Eigen::VectorXf p_k(dishes_.size());
-        for(size_t i = 0; i < dishes_.size(); ++i) {
+        for (size_t i = 0; i < dishes_.size(); ++i) {
             p_k(i) = m_k[dishes_[i]] * f_k[dishes_[i]];
         }
         p_k(0) = gamma_ / V;
@@ -374,11 +373,11 @@ public:
     }
 
     std::vector<float>
-    calc_table_posterior(size_t j, std::vector<float> &f_k){
+    calc_table_posterior(size_t j, std::vector<float> &f_k) {
         std::vector<size_t> using_table = using_t[j];
         Eigen::VectorXf p_t(using_table.size());
 
-        for(size_t i = 0; i < using_table.size(); i++){
+        for (size_t i = 0; i < using_table.size(); i++) {
             auto p = using_table[i];
             p_t(i) = n_jt[j][p] * f_k[k_jt[j][p]];
         }
@@ -393,7 +392,7 @@ public:
 
 
     void
-    seat_at_dish(size_t j, size_t t, size_t k_new){
+    seat_at_dish(size_t j, size_t t, size_t k_new) {
         m += 1;
         m_k[k_new] += 1;
 
@@ -409,7 +408,7 @@ public:
                 decrement_n_k(k_old, n_jt_val);
             }
             increment_n_k(k_new, n_jt_val);
-            for(auto kv: n_jtv[j][t]){
+            for (auto kv : n_jtv[j][t]) {
                 auto v = kv.first;
                 auto n = kv.second;
                 if (k_old != 0)
@@ -423,7 +422,7 @@ public:
 
 
     void
-    add_table(size_t ein, size_t t_new, size_t did){
+    add_table(size_t ein, size_t t_new, size_t did) {
         t_ji[ein][did] = t_new;
         n_jt[ein][t_new] += 1;
 
@@ -436,7 +435,7 @@ public:
     }
 
     size_t
-    create_dish(){
+    create_dish() {
         size_t k_new = dishes_.size();
         for (size_t i = 0; i < dishes_.size(); ++i)
         {
@@ -455,7 +454,7 @@ public:
             assert(k_new < n_kv.size());
         }
 
-        dishes_.insert(dishes_.begin()+k_new, k_new);
+        dishes_.insert(dishes_.begin() + k_new, k_new);
         n_k[k_new] = 0;
         n_kv[k_new] = std::map<size_t, float>();
         m_k[k_new] = 0;
@@ -482,7 +481,7 @@ public:
 
             n_jtv[ein].push_back(std::map<size_t, size_t>());
         }
-        using_t[ein].insert(using_t[ein].begin()+t_new, t_new);
+        using_t[ein].insert(using_t[ein].begin() + t_new, t_new);
         n_jt[ein][t_new] = 0;
         assert(k_new != 0);
         k_jt[ein][t_new] = k_new;
@@ -493,7 +492,7 @@ public:
     }
 
     void
-    remove_table(size_t eid, size_t tid){
+    remove_table(size_t eid, size_t tid) {
         size_t t = t_ji[eid][tid];
         if (t > 0)
         {
@@ -514,13 +513,13 @@ public:
     }
 
     inline size_t
-    tablesize(size_t eid, size_t tid) const{
+    tablesize(size_t eid, size_t tid) const {
         MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
         return n_jt[eid][tid];
     }
 
     void
-    delete_table(size_t eid, size_t tid){
+    delete_table(size_t eid, size_t tid) {
         size_t k = k_jt[eid][tid];
         util::removeFirst(using_t[eid], tid);
         m_k[k] -= 1;
@@ -533,7 +532,7 @@ public:
     }
 
     inline void
-    delete_dish(size_t did){
+    delete_dish(size_t did) {
         util::removeFirst(dishes_, did);
     }
 
@@ -544,15 +543,15 @@ public:
     }
 
     inline std::vector<size_t>
-    tables(size_t eid){
+    tables(size_t eid) {
         return using_t[eid];
     }
 
     std::vector<float>
-    calc_f_k(size_t v){
+    calc_f_k(size_t v) {
         Eigen::VectorXf f_k(n_kv.size());
 
-        for (size_t k=0; k < n_kv.size(); k++)
+        for (size_t k = 0; k < n_kv.size(); k++)
         {
             f_k(k) = get_n_kv(k, v) / get_n_k(k);
         }
@@ -561,9 +560,9 @@ public:
     }
 
     float
-    get_n_k(size_t k){
-        if (n_k[k] > 0){
-          return n_k[k];
+    get_n_k(size_t k) {
+        if (n_k[k] > 0) {
+            return n_k[k];
         }
         else {
             return V * beta_;
@@ -571,25 +570,25 @@ public:
     }
 
     void
-    increment_n_k(size_t k, float amount){
+    increment_n_k(size_t k, float amount) {
         n_k[k] += amount;
-        if (n_k[k] == amount){
+        if (n_k[k] == amount) {
             n_k[k] += V * beta_;
         }
     }
 
     void
-    decrement_n_k(size_t k, float amount){
+    decrement_n_k(size_t k, float amount) {
         n_k[k] -= amount;
-        if (n_k[k] == -amount){
+        if (n_k[k] == -amount) {
             n_k[k] += V * beta_;
         }
     }
 
     float
-    get_n_kv(size_t k, size_t v){
-        if ((n_kv[k].count(v) > 0 && n_kv[k][v] > 0) || k == 0){
-          return n_kv[k][v];
+    get_n_kv(size_t k, size_t v) {
+        if ((n_kv[k].count(v) > 0 && n_kv[k][v] > 0) || k == 0) {
+            return n_kv[k][v];
         }
         else {
             return beta_;
@@ -597,17 +596,17 @@ public:
     }
 
     void
-    increment_n_kv(size_t k, size_t v, float amount){
+    increment_n_kv(size_t k, size_t v, float amount) {
         n_kv[k][v] += amount;
-        if (n_kv[k][v] == amount){
+        if (n_kv[k][v] == amount) {
             n_kv[k][v] += beta_;
         }
     }
 
     void
-    decrement_n_kv(size_t k, size_t v, float amount){
+    decrement_n_kv(size_t k, size_t v, float amount) {
         n_kv[k][v] -= amount;
-        if (n_kv[k][v] == -amount){
+        if (n_kv[k][v] == -amount) {
             n_kv[k][v] += beta_;
         }
     }
@@ -622,17 +621,17 @@ public:
     nwords() const { return V; }
 
     inline size_t
-    nterms(size_t eid) const{
+    nterms(size_t eid) const {
         return x_ji[eid].size();
     }
 
     inline size_t
-    ntables(size_t eid) const{
+    ntables(size_t eid) const {
         return using_t[eid].size();
     }
 
     inline std::vector<size_t>
-    tables(size_t eid) const{
+    tables(size_t eid) const {
         return using_t[eid];
     }
 
