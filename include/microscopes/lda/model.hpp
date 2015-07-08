@@ -655,17 +655,25 @@ public:
         }
     }
 
-    inline size_t nentities() const { return x_ji.size(); }
-    inline size_t ntopics() const { return dishes_.size() - 1; }
-    inline size_t nwords() const { return V; }
+    inline size_t
+    nentities() const { return x_ji.size(); }
+
+    inline size_t
+    ntopics() const { return dishes_.size() - 1; }
+
+    inline size_t
+    nwords() const { return V; }
+
     inline size_t
     nterms(size_t eid) const{
         return x_ji[eid].size();
     }
+
     inline size_t
     ntables(size_t eid) const{
         return using_t[eid].size();
     }
+
     inline std::vector<size_t>
     tables(size_t eid) const{
         return using_t[eid];
