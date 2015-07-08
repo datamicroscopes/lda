@@ -92,7 +92,7 @@ public:
     float gamma_; // Hyperparameter on first level Dirichlet process
     common::rng_t rng_; // random number generator
     std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
-    std::vector<size_t> using_k; // dish(topic) index (k=0 means to draw a new dish)
+    std::vector<size_t> dishes_; // dish(topic) index (k=0 means to draw a new dish)
     const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
     std::vector<std::vector<size_t>> k_jt; // topics of document and table
     std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
@@ -122,7 +122,7 @@ public:
         for(size_t i = 0; i < x_ji.size(); ++i) {
             using_t.push_back({0});
         }
-        using_k = {0};
+        dishes_ = {0};
 
         for(size_t j = 0; j < x_ji.size(); ++j) {
             k_jt.push_back({0});
@@ -190,7 +190,7 @@ public:
 
     size_t
     usedDishes(){
-        return using_k.size() - 1;
+        return dishes_.size() - 1;
     }
 
 
@@ -198,8 +198,8 @@ public:
     wordDist(){
         // Distribution over words for each topic
         std::vector<std::map<size_t, float>> vec;
-        vec.reserve(using_k.size());
-        for(auto k: using_k){
+        vec.reserve(dishes_.size());
+        for(auto k: dishes_){
             if(k==0) continue;
             vec.push_back(std::map<size_t, float>());
             for(size_t v = 0; v < V; ++v) {
@@ -221,12 +221,12 @@ public:
         theta.reserve(k_jt.size());
         std::vector<float> am_k(m_k.begin(), m_k.end());
         am_k[0] = gamma_;
-        double sum_am_using_k = 0;
-        for(auto k: using_k){
-            sum_am_using_k += am_k[k];
+        double sum_am_dishes_ = 0;
+        for(auto k: dishes_){
+            sum_am_dishes_ += am_k[k];
         }
         for(size_t i = 0; i < am_k.size(); ++i) {
-            am_k[i] *= alpha_ / sum_am_using_k;
+            am_k[i] *= alpha_ / sum_am_dishes_;
         }
 
         for(size_t j = 0; j < k_jt.size(); j++){
@@ -237,7 +237,7 @@ public:
                 size_t k = k_jt[j][t];
                 p_jk[k] += n_jt_[t];
             }
-            p_jk = selectByIndex(p_jk, using_k);
+            p_jk = selectByIndex(p_jk, dishes_);
             normalize<float>(p_jk);
             theta.push_back(p_jk);
         }
@@ -287,7 +287,7 @@ public:
             std::vector<float> p_k = calc_dish_posterior_w(f_k);
             validate_probability_vector(p_k);
             size_t topic_index = common::util::sample_discrete(p_k, rng_);
-            size_t k_new = using_k[topic_index];
+            size_t k_new = dishes_[topic_index];
             if (k_new == 0)
             {
                 k_new = create_dish();
@@ -302,9 +302,9 @@ public:
         leave_from_dish(j, t);
         std::vector<float> p_k = calc_dish_posterior_t(j, t);
         validate_probability_vector(p_k);
-        assert(using_k.size() == p_k.size());
+        assert(dishes_.size() == p_k.size());
         size_t topic_index = common::util::sample_discrete(p_k, rng_);
-        size_t k_new = using_k[topic_index];
+        size_t k_new = dishes_[topic_index];
         if (k_new == 0)
         {
             k_new = create_dish();
@@ -329,7 +329,7 @@ public:
     void
     validate_n_k_values(){
         std::map<size_t, std::tuple<float, float>> values;
-        for(auto k: using_k){
+        for(auto k: dishes_){
             float n_kv_sum = 0;
             for(size_t v = 0; v < V; v++){
                 n_kv_sum += get_n_kv(k, v);
@@ -344,12 +344,12 @@ public:
 
     std::vector<float>
     calc_dish_posterior_t(size_t j, size_t t){
-        std::vector<float> log_p_k(using_k.size());
+        std::vector<float> log_p_k(dishes_.size());
 
         auto k_old = k_jt[j][t];
         auto n_jt_val = n_jt[j][t];
-        for(size_t i = 0; i < using_k.size(); i++){
-            auto k = using_k[i];
+        for(size_t i = 0; i < dishes_.size(); i++){
+            auto k = dishes_[i];
             if(k == 0) continue;
             float n_k_val = (k == k_old) ? get_n_k(k) - n_jt[j][t] : get_n_k(k);
             assert(n_k_val > 0);
@@ -364,10 +364,10 @@ public:
             if (n_jtw == 0) continue;
             assert(n_jtw > 0);
 
-            std::vector<float> n_kw(using_k.size());
-            for(size_t i = 0; i < using_k.size(); i++){
-                n_kw[i] = get_n_kv(using_k[i], w);
-                if(using_k[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
+            std::vector<float> n_kw(dishes_.size());
+            for(size_t i = 0; i < dishes_.size(); i++){
+                n_kw[i] = get_n_kv(dishes_[i], w);
+                if(dishes_[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
                 assert(i == 0 || n_kw[i] > 0);
             }
             n_kw[0] = 1; // # dummy for logarithm's warning
@@ -379,7 +379,7 @@ public:
         for(auto x: log_p_k) assert(isfinite(x));
 
         std::vector<float> p_k;
-        p_k.reserve(using_k.size());
+        p_k.reserve(dishes_.size());
         float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
         for(auto log_p_k_value: log_p_k){
             p_k.push_back(exp(log_p_k_value - max_value));
@@ -435,25 +435,25 @@ public:
 
     size_t
     create_dish(){
-        size_t k_new = using_k.size();
-        for (size_t i = 0; i < using_k.size(); ++i)
+        size_t k_new = dishes_.size();
+        for (size_t i = 0; i < dishes_.size(); ++i)
         {
-            if (i != using_k[i])
+            if (i != dishes_[i])
             {
                 k_new = i;
                 break;
             }
         }
-        if (k_new == using_k.size())
+        if (k_new == dishes_.size())
         {
             n_k.push_back(0);
             m_k.push_back(m_k[0]);
             n_kv.push_back(std::map<size_t, float>());
-            assert(k_new == using_k.back() + 1);
+            assert(k_new == dishes_.back() + 1);
             assert(k_new < n_kv.size());
         }
 
-        using_k.insert(using_k.begin()+k_new, k_new);
+        dishes_.insert(dishes_.begin()+k_new, k_new);
         n_k[k_new] = 0;
         n_kv[k_new] = std::map<size_t, float>();
         m_k[k_new] = 0;
@@ -492,9 +492,9 @@ public:
 
     std::vector<float>
     calc_dish_posterior_w(const std::vector<float> &f_k){
-        Eigen::VectorXf p_k(using_k.size());
-        for(size_t i = 0; i < using_k.size(); ++i) {
-            p_k(i) = m_k[using_k[i]] * f_k[using_k[i]];
+        Eigen::VectorXf p_k(dishes_.size());
+        for(size_t i = 0; i < dishes_.size(); ++i) {
+            p_k(i) = m_k[dishes_[i]] * f_k[dishes_[i]];
         }
         p_k(0) = gamma_ / V;
         p_k /= p_k.sum();
@@ -561,13 +561,13 @@ public:
 
     inline void
     delete_dish(size_t did){
-        removeFirst(using_k, did);
+        removeFirst(dishes_, did);
     }
 
     inline std::vector<size_t>
     dishes() const
     {
-        return using_k;
+        return dishes_;
     }
 
     inline std::vector<size_t>
@@ -640,7 +640,7 @@ public:
     }
 
     inline size_t nentities() const { return x_ji.size(); }
-    inline size_t ntopics() const { return using_k.size() - 1; }
+    inline size_t ntopics() const { return dishes_.size() - 1; }
     inline size_t nwords() const { return V; }
 
 };
