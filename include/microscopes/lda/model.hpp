@@ -321,7 +321,7 @@ public:
         m -= 1; // one less table
         if (m_k[k] == 0) // destroy table
         {
-            removeFirst(using_k, k);
+            delete_dish(k);
             k_jt[j][t] = 0;
         }
     }
@@ -555,8 +555,13 @@ public:
         assert(m_k[k] >= 0);
         if (m_k[k] == 0)
         {
-            removeFirst(using_k, k);
+            delete_dish(k);
         }
+    }
+
+    inline void
+    delete_dish(size_t did){
+        removeFirst(using_k, did);
     }
 
     inline std::vector<size_t>
