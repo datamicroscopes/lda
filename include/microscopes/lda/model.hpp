@@ -290,7 +290,7 @@ public:
 // private:
     void
     sampling_t(size_t j, size_t i){
-        leave_from_table(j, i);
+        remove_table(j, i);
         size_t v = x_ji[j][i];
         std::vector<float> f_k = calc_f_k(v);
         assert(f_k[0] == 0);
@@ -537,22 +537,22 @@ public:
 
 
     void
-    leave_from_table(size_t j, size_t i){
-        size_t t = t_ji[j][i];
+    remove_table(size_t eid, size_t tid){
+        size_t t = t_ji[eid][tid];
         if (t > 0)
         {
-            size_t k = k_jt[j][t];
+            size_t k = k_jt[eid][t];
             assert(k > 0);
             // decrease counters
-            size_t v = x_ji[j][i];
+            size_t v = x_ji[eid][tid];
             decrement_n_kv(k, v, 1);
             decrement_n_k(k, 1);
-            n_jt[j][t] -= 1;
-            n_jtv[j][t][v] -= 1;
+            n_jt[eid][t] -= 1;
+            n_jtv[eid][t][v] -= 1;
 
-            if (n_jt[j][t] == 0)
+            if (n_jt[eid][t] == 0)
             {
-                delete_table(j, t);
+                delete_table(eid, t);
             }
         }
     }

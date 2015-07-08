@@ -81,7 +81,7 @@ sequence4(double alpha, double beta, double gamma){
     state.leave_from_dish(2, 1);
     state.seat_at_dish(2, 1, 2);
 
-    state.leave_from_table(2, 0);
+    state.remove_table(2, 0);
     state.seat_at_table(2, 0, 2);
 
     state.leave_from_dish(0, 1);
@@ -93,7 +93,7 @@ sequence4(double alpha, double beta, double gamma){
     state.leave_from_dish(1, 1);
     state.seat_at_dish(1, 1, 2);
 
-    state.leave_from_table(2, 3);
+    state.remove_table(2, 3);
     auto k_new = state.create_dish();
     MICROSCOPES_CHECK(k_new == 1, "k_new is wrong in section 2");
     auto t_new = state.create_table(j, k_new);
@@ -203,7 +203,7 @@ sequence3(double alpha, double beta, double gamma){
     size_t i = 0;
     size_t v = docs[j][i];
 
-    state.leave_from_table(j, i);
+    state.remove_table(j, i);
 
     auto f_k = state.calc_f_k(v);
     MICROSCOPES_CHECK(f_k.size() == 3, "f_k is wrong size");
@@ -225,7 +225,7 @@ sequence3(double alpha, double beta, double gamma){
     j = 0;
     i = 1;
     v = docs[j][i];
-    state.leave_from_table(j, i);
+    state.remove_table(j, i);
     MICROSCOPES_CHECK(state.using_t[j].size() == 2, "using_t[j] is wrong size");
     MICROSCOPES_CHECK(state.using_t[j][0] == 0, "using_t[j][0] is wrong");
     MICROSCOPES_CHECK(state.using_t[j][1] == 1, "using_t[j][1] is wrong");
