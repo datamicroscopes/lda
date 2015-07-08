@@ -54,24 +54,24 @@ sequence4(double alpha, double beta, double gamma){
 
     // Section 1
     size_t j = 0;
-    size_t t1 = state.add_new_table(j, k1);
-    size_t t2 = state.add_new_table(j, k2);
+    size_t t1 = state.create_table(j, k1);
+    size_t t2 = state.create_table(j, k2);
     state.seat_at_table(j, 0, t1);
     state.seat_at_table(j, 1, t2);
     state.seat_at_table(j, 2, t2);
     state.seat_at_table(j, 3, t2);
 
     j = 1;
-    t1 = state.add_new_table(j, k1);
-    t2 = state.add_new_table(j, k2);
+    t1 = state.create_table(j, k1);
+    t2 = state.create_table(j, k2);
     state.seat_at_table(j, 0, t2);
     state.seat_at_table(j, 1, t2);
     state.seat_at_table(j, 2, t1);
     state.seat_at_table(j, 3, t2);
 
     j = 2;
-    t1 = state.add_new_table(j, k1);
-    t2 = state.add_new_table(j, k2);
+    t1 = state.create_table(j, k1);
+    t2 = state.create_table(j, k2);
     state.seat_at_table(j, 0, t1);
     state.seat_at_table(j, 1, t2);
     state.seat_at_table(j, 2, t2);
@@ -96,7 +96,7 @@ sequence4(double alpha, double beta, double gamma){
     state.leave_from_table(2, 3);
     auto k_new = state.add_new_dish();
     MICROSCOPES_CHECK(k_new == 1, "k_new is wrong in section 2");
-    auto t_new = state.add_new_table(j, k_new);
+    auto t_new = state.create_table(j, k_new);
     MICROSCOPES_CHECK(t_new == 1, "t_new is wrong in section 2");
     state.seat_at_table(2, 3, 1);
     // Section 3
@@ -141,24 +141,24 @@ sequence3(double alpha, double beta, double gamma){
 
     // Section 1
     size_t j = 0;
-    size_t t1 = state.add_new_table(j, k1);
-    size_t t2 = state.add_new_table(j, k2);
+    size_t t1 = state.create_table(j, k1);
+    size_t t2 = state.create_table(j, k2);
     state.seat_at_table(j, 0, t1);
     state.seat_at_table(j, 1, t2);
     state.seat_at_table(j, 2, t1);
     state.seat_at_table(j, 3, t1);
 
     j = 1;
-    t1 = state.add_new_table(j, k1);
-    t2 = state.add_new_table(j, k2);
+    t1 = state.create_table(j, k1);
+    t2 = state.create_table(j, k2);
     state.seat_at_table(j, 0, t1);
     state.seat_at_table(j, 1, t2);
     state.seat_at_table(j, 2, t2);
     state.seat_at_table(j, 3, t2);
 
     j = 2;
-    t1 = state.add_new_table(j, k1);
-    t2 = state.add_new_table(j, k2);
+    t1 = state.create_table(j, k1);
+    t2 = state.create_table(j, k2);
     state.seat_at_table(j, 0, t1);
     state.seat_at_table(j, 1, t2);
     state.seat_at_table(j, 2, t2);
@@ -255,7 +255,7 @@ sequence2(double alpha, double beta, double gamma){
     size_t k_new = state.add_new_dish();
     MICROSCOPES_CHECK(k_new == 1, "k_new is wrong");
     for(size_t j: {0, 1, 2}){
-        size_t t_new = state.add_new_table(j, k_new);
+        size_t t_new = state.create_table(j, k_new);
         MICROSCOPES_CHECK(t_new == 1, "j_new is wrong");
         for(size_t i: {0, 1, 2, 3}){
             state.seat_at_table(j, i, t_new);
@@ -315,7 +315,7 @@ sequence1(double alpha, double beta, double gamma){
 
     size_t k_new = state.add_new_dish();
     MICROSCOPES_CHECK(k_new == 1, "incorrectly created new dish");
-    size_t t_new = state.add_new_table(j, k_new);
+    size_t t_new = state.create_table(j, k_new);
     MICROSCOPES_CHECK(t_new == 1, "incorrectly created new table");
     MICROSCOPES_CHECK(state.k_jt[j][t_new] == 1, "incorrectly created new table");
 
@@ -393,7 +393,7 @@ sequence1(double alpha, double beta, double gamma){
     // Section 5
     k_new = 1; // TODO : calculate posterior of k
 
-    t_new = state.add_new_table(j, k_new);
+    t_new = state.create_table(j, k_new);
     MICROSCOPES_CHECK(t_new == 2, "t_new wrong in section 5");
     MICROSCOPES_CHECK(k_new == state.k_jt[j][t_new], "k_new wrong in section 5");
 
@@ -457,8 +457,8 @@ sequence1(double alpha, double beta, double gamma){
 
     // add x_10 into a new table with dish 1
     k_new = 1;
-    t_new = state.add_new_table(j, k_new);
-    MICROSCOPES_CHECK(t_new == 1, "add_new_table failed to set t_new");
+    t_new = state.create_table(j, k_new);
+    MICROSCOPES_CHECK(t_new == 1, "create_table failed to set t_new");
 
     MICROSCOPES_CHECK(assertSequenceEqual(state.using_t[j], std::vector<size_t> {0, 1}),
         "using_t[j] set incorrectly");

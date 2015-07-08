@@ -292,7 +292,7 @@ public:
             {
                 k_new = add_new_dish();
             }
-            t_new = add_new_table(j, k_new);
+            t_new = create_table(j, k_new);
         }
         seat_at_table(j, i, t_new);
     }
@@ -462,28 +462,28 @@ public:
     }
 
     size_t
-    add_new_table(size_t j, size_t k_new)
+    create_table(size_t ein, size_t k_new)
     {
-        size_t t_new = using_t[j].size();
-        for (size_t i = 0; i < using_t[j].size(); ++i)
+        size_t t_new = using_t[ein].size();
+        for (size_t i = 0; i < using_t[ein].size(); ++i)
         {
-            if (i != using_t[j][i])
+            if (i != using_t[ein][i])
             {
                 t_new = i;
                 break;
             }
         }
-        if (t_new == using_t[j].size())
+        if (t_new == using_t[ein].size())
         {
-            n_jt[j].push_back(0);
-            k_jt[j].push_back(0);
+            n_jt[ein].push_back(0);
+            k_jt[ein].push_back(0);
 
-            n_jtv[j].push_back(std::map<size_t, size_t>());
+            n_jtv[ein].push_back(std::map<size_t, size_t>());
         }
-        using_t[j].insert(using_t[j].begin()+t_new, t_new);
-        n_jt[j][t_new] = 0;
+        using_t[ein].insert(using_t[ein].begin()+t_new, t_new);
+        n_jt[ein][t_new] = 0;
         assert(k_new != 0);
-        k_jt[j][t_new] = k_new;
+        k_jt[ein][t_new] = k_new;
         m_k[k_new] += 1;
         m += 1;
 
