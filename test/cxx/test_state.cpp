@@ -49,8 +49,8 @@ sequence4(double alpha, double beta, double gamma){
     lda::model_definition def(3, V);
     lda::state state(def, alpha, beta, gamma, docs, r);
     auto Vbeta = V*beta;
-    size_t k1 = state.add_new_dish();
-    size_t k2 = state.add_new_dish();
+    size_t k1 = state.create_dish();
+    size_t k2 = state.create_dish();
 
     // Section 1
     size_t j = 0;
@@ -94,7 +94,7 @@ sequence4(double alpha, double beta, double gamma){
     state.seat_at_dish(1, 1, 2);
 
     state.leave_from_table(2, 3);
-    auto k_new = state.add_new_dish();
+    auto k_new = state.create_dish();
     MICROSCOPES_CHECK(k_new == 1, "k_new is wrong in section 2");
     auto t_new = state.create_table(j, k_new);
     MICROSCOPES_CHECK(t_new == 1, "t_new is wrong in section 2");
@@ -136,8 +136,8 @@ sequence3(double alpha, double beta, double gamma){
     lda::model_definition def(3, V);
     lda::state state(def, alpha, beta, gamma, docs, r);
 
-    size_t k1 = state.add_new_dish();
-    size_t k2 = state.add_new_dish();
+    size_t k1 = state.create_dish();
+    size_t k2 = state.create_dish();
 
     // Section 1
     size_t j = 0;
@@ -252,7 +252,7 @@ sequence2(double alpha, double beta, double gamma){
     lda::state state(def, alpha, beta, gamma, docs, r);
 
     // assign all words to table 1 and all tables to dish 1
-    size_t k_new = state.add_new_dish();
+    size_t k_new = state.create_dish();
     MICROSCOPES_CHECK(k_new == 1, "k_new is wrong");
     for(size_t j: {0, 1, 2}){
         size_t t_new = state.create_table(j, k_new);
@@ -313,7 +313,7 @@ sequence1(double alpha, double beta, double gamma){
     MICROSCOPES_CHECK(p_k.size() == 1, "p_k has wrong number of elements");
     MICROSCOPES_CHECK(assertAlmostEqual(p_k[0], 1), "p_k has wrong element");
 
-    size_t k_new = state.add_new_dish();
+    size_t k_new = state.create_dish();
     MICROSCOPES_CHECK(k_new == 1, "incorrectly created new dish");
     size_t t_new = state.create_table(j, k_new);
     MICROSCOPES_CHECK(t_new == 1, "incorrectly created new table");

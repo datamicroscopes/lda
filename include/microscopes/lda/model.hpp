@@ -290,7 +290,7 @@ public:
             size_t k_new = using_k[topic_index];
             if (k_new == 0)
             {
-                k_new = add_new_dish();
+                k_new = create_dish();
             }
             t_new = create_table(j, k_new);
         }
@@ -307,7 +307,7 @@ public:
         size_t k_new = using_k[topic_index];
         if (k_new == 0)
         {
-            k_new = add_new_dish();
+            k_new = create_dish();
         }
         seat_at_dish(j, t, k_new);
     }
@@ -434,7 +434,7 @@ public:
 
 
     size_t
-    add_new_dish(){
+    create_dish(){
         size_t k_new = using_k.size();
         for (size_t i = 0; i < using_k.size(); ++i)
         {
