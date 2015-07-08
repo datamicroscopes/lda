@@ -405,6 +405,35 @@ public:
         return p_k;
     }
 
+    std::vector<float>
+    calc_dish_posterior_w(const std::vector<float> &f_k){
+        Eigen::VectorXf p_k(dishes_.size());
+        for(size_t i = 0; i < dishes_.size(); ++i) {
+            p_k(i) = m_k[dishes_[i]] * f_k[dishes_[i]];
+        }
+        p_k(0) = gamma_ / V;
+        p_k /= p_k.sum();
+        return std::vector<float>(p_k.data(), p_k.data() + p_k.size());
+    }
+
+    std::vector<float>
+    calc_table_posterior(size_t j, std::vector<float> &f_k){
+        std::vector<size_t> using_table = using_t[j];
+        Eigen::VectorXf p_t(using_table.size());
+
+        for(size_t i = 0; i < using_table.size(); i++){
+            auto p = using_table[i];
+            p_t(i) = n_jt[j][p] * f_k[k_jt[j][p]];
+        }
+        Eigen::Map<Eigen::VectorXf> eigen_f_k(f_k.data(), f_k.size());
+        Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> eigen_m_k(m_k.data(), m_k.size());
+        float p_x_ji = gamma_ / V + eigen_f_k.dot(eigen_m_k.cast<float>());
+        p_t[0] = p_x_ji * alpha_ / (gamma_ + m);
+        p_t /= p_t.sum();
+        return std::vector<float>(p_t.data(), p_t.data() + p_t.size());
+    }
+
+
 
     void
     seat_at_dish(size_t j, size_t t, size_t k_new){
@@ -505,35 +534,6 @@ public:
 
         return t_new;
     }
-
-    std::vector<float>
-    calc_dish_posterior_w(const std::vector<float> &f_k){
-        Eigen::VectorXf p_k(dishes_.size());
-        for(size_t i = 0; i < dishes_.size(); ++i) {
-            p_k(i) = m_k[dishes_[i]] * f_k[dishes_[i]];
-        }
-        p_k(0) = gamma_ / V;
-        p_k /= p_k.sum();
-        return std::vector<float>(p_k.data(), p_k.data() + p_k.size());
-    }
-
-    std::vector<float>
-    calc_table_posterior(size_t j, std::vector<float> &f_k){
-        std::vector<size_t> using_table = using_t[j];
-        Eigen::VectorXf p_t(using_table.size());
-
-        for(size_t i = 0; i < using_table.size(); i++){
-            auto p = using_table[i];
-            p_t(i) = n_jt[j][p] * f_k[k_jt[j][p]];
-        }
-        Eigen::Map<Eigen::VectorXf> eigen_f_k(f_k.data(), f_k.size());
-        Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> eigen_m_k(m_k.data(), m_k.size());
-        float p_x_ji = gamma_ / V + eigen_f_k.dot(eigen_m_k.cast<float>());
-        p_t[0] = p_x_ji * alpha_ / (gamma_ + m);
-        p_t /= p_t.sum();
-        return std::vector<float>(p_t.data(), p_t.data() + p_t.size());
-    }
-
 
     void
     remove_table(size_t eid, size_t tid){
