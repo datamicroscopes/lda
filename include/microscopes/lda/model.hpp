@@ -7,6 +7,7 @@
 #include <microscopes/common/assert.hpp>
 #include <distributions/special.hpp>
 #include <distributions/models/dd.hpp>
+#include <microscopes/lda/util.hpp>
 #include <eigen3/Eigen/Dense>
 
 #include <math.h>
@@ -25,46 +26,7 @@ namespace lda {
 
 typedef std::vector<std::shared_ptr<models::group>> group_type;
 
-void
-validate_probability_vector(const std::vector<float> &p){
-    float sum = 0;
-    for(auto x: p){
-        assert(isfinite(x));
-        assert(x >= 0);
-        sum+=x;
-    }
-    assert(std::abs(1 - sum) < 0.01);
-}
 
-template<typename T> void
-removeFirst(std::vector<T> &v, T element){
-    auto it = std::find(v.begin(),v.end(), element);
-    if (it != v.end()) {
-      v.erase(it);
-    }
-}
-
-// http://stackoverflow.com/a/1267878/982745
-template< class T >
-std::vector<T> selectByIndex(const std::vector<T> &v, const std::vector<size_t> &index )  {
-    std::vector<T> new_v;
-    new_v.reserve(index.size());
-    for(size_t i: index){
-        new_v.push_back(v[i]);
-    }
-
-    return new_v;
-}
-
-template<class T>
-void
-normalize(std::vector<T> &v){
-    for(auto x: v) {
-        assert(isfinite(x));
-    }
-    Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, 1>> vec(v.data(), v.size());
-    vec /= vec.sum();
-}
 
 class model_definition {
 public:
@@ -249,8 +211,8 @@ public:
                 size_t k = k_jt[j][t];
                 p_jk[k] += n_jt_[t];
             }
-            p_jk = selectByIndex(p_jk, dishes_);
-            normalize<float>(p_jk);
+            p_jk = util::selectByIndex(p_jk, dishes_);
+            util::normalize<float>(p_jk);
             theta.push_back(p_jk);
         }
         return theta;
@@ -291,13 +253,13 @@ public:
         assert(f_k[0] == 0);
         std::vector<float> p_t = calc_table_posterior(j, f_k);
         // if len(p_t) > 1 and p_t[1] < 0: self.dump()
-        validate_probability_vector(p_t);
+        util::validate_probability_vector(p_t);
         size_t word = common::util::sample_discrete(p_t, rng_);
         size_t t_new = using_t[j][word];
         if (t_new == 0)
         {
             std::vector<float> p_k = calc_dish_posterior_w(f_k);
-            validate_probability_vector(p_k);
+            util::validate_probability_vector(p_k);
             size_t topic_index = common::util::sample_discrete(p_k, rng_);
             size_t k_new = dishes_[topic_index];
             if (k_new == 0)
@@ -313,7 +275,7 @@ public:
     sampling_k(size_t j, size_t t){
         leave_from_dish(j, t);
         std::vector<float> p_k = calc_dish_posterior_t(j, t);
-        validate_probability_vector(p_k);
+        util::validate_probability_vector(p_k);
         assert(dishes_.size() == p_k.size());
         size_t topic_index = common::util::sample_discrete(p_k, rng_);
         size_t k_new = dishes_[topic_index];
@@ -396,7 +358,7 @@ public:
         for(auto log_p_k_value: log_p_k){
             p_k.push_back(exp(log_p_k_value - max_value));
         }
-        normalize(p_k);
+        util::normalize(p_k);
         return p_k;
     }
 
@@ -560,7 +522,7 @@ public:
     void
     delete_table(size_t eid, size_t tid){
         size_t k = k_jt[eid][tid];
-        removeFirst(using_t[eid], tid);
+        util::removeFirst(using_t[eid], tid);
         m_k[k] -= 1;
         m -= 1;
         assert(m_k[k] >= 0);
@@ -572,7 +534,7 @@ public:
 
     inline void
     delete_dish(size_t did){
-        removeFirst(dishes_, did);
+        util::removeFirst(dishes_, did);
     }
 
     inline std::vector<size_t>
