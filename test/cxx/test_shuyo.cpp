@@ -59,7 +59,6 @@ test_compare_shuyo()
     for(unsigned i = 0; i < 1; ++i){
 
         state._inference();
-        std::cout << "K=" << state.usedDishes();
         std::cout << "   p=" << state.perplexity() << std::endl;
         std::cout << "iter " << i << std::endl;
     }

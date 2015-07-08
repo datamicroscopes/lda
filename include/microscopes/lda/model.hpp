@@ -205,11 +205,6 @@ public:
         }
     }
 
-    size_t
-    usedDishes(){
-        return dishes_.size() - 1;
-    }
-
 
     std::vector<std::map<size_t, float>>
     wordDist(){
