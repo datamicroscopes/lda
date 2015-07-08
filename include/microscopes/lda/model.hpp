@@ -190,7 +190,7 @@ public:
 
 
     void
-    inference(){
+    _inference(){
         for (size_t j = 0; j < x_ji.size(); ++j){
             for (size_t i = 0; i < x_ji[j].size(); ++i){
                 sampling_t(j, i);

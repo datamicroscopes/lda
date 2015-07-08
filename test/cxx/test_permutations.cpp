@@ -90,7 +90,7 @@ trial(const std::vector< std::vector<size_t>> &docs, size_t vocab_size,
     lda::model_definition def(docs.size(), vocab_size);
     lda::state state(def, alpha, beta, gamma, docs, r);
     for(size_t i = 0; i < max_steps; i++){
-        state.inference();
+        state._inference();
     }
     return state.perplexity();
 }

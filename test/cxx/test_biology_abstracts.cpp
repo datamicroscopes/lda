@@ -72,7 +72,7 @@ test_compare_biology_abstracts(size_t n_iterations)
 
     for(unsigned i = 0; i < n_iterations; ++i){
         std::cout << "inference step: " << i << std::endl;
-        state.inference();
+        state._inference();
         std::cout << "   K=" << state.usedDishes() << std::endl;
         std::cout << "   p=" << state.perplexity() << std::endl;
     }

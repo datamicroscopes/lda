@@ -15,7 +15,7 @@ cdef class state:
         self._thisptr = c_initialize(defn._thisptr.get()[0], 0.2, 0.01, 0.5, _data, r._thisptr[0])
 
     def _inference(self):
-        return self._thisptr.get().inference()
+        return self._thisptr.get()._inference()
 
     def _perplexity(self):
         return self._thisptr.get().perplexity()

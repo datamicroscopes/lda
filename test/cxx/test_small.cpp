@@ -40,7 +40,7 @@ test_small()
 
     for(unsigned i = 0; i < 100; ++i){
         std::cout << "inference step: " << i << std::endl;
-        state.inference();
+        state._inference();
         std::cout << "   K=" << state.usedDishes() << std::endl;
         std::cout << "   p=" << state.perplexity() << std::endl;
         std::map<size_t, int> count;
