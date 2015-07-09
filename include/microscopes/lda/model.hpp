@@ -180,10 +180,10 @@ public:
             vec.push_back(std::map<size_t, float>());
             for (size_t v = 0; v < V; ++v) {
                 if (n_kv[k].find(v) != n_kv[k].end()) {
-                    vec.back()[v] = get_n_kv(k, v) / get_n_k(k);
+                    vec.back()[v] = get_n_kv(k, v) / n_k_.get(k);
                 }
                 else {
-                    vec.back()[v] = beta_ / get_n_k(k);
+                    vec.back()[v] = beta_ / n_k_.get(k);
                 }
             }
         }
@@ -311,7 +311,7 @@ public:
             for (size_t v = 0; v < V; v++) {
                 n_kv_sum += get_n_kv(k, v);
             }
-            values[k] = std::tuple<float, float>(n_kv_sum, get_n_k(k));
+            values[k] = std::tuple<float, float>(n_kv_sum, n_k_.get(k));
         }
         for (auto kv : values) {
             if (kv.first == 0) continue;
@@ -328,7 +328,7 @@ public:
         for (size_t i = 0; i < dishes_.size(); i++) {
             auto k = dishes_[i];
             if (k == 0) continue;
-            float n_k_val = (k == k_old) ? get_n_k(k) - n_jt[j][t] : get_n_k(k);
+            float n_k_val = (k == k_old) ? n_k_.get(k) - n_jt[j][t] : n_k_.get(k);
             assert(n_k_val > 0);
             log_p_k[i] = distributions::fast_log(m_k[k]) + distributions::fast_lgamma(n_k_val) - distributions::fast_lgamma(n_k_val + n_jt_val);
             assert(isfinite(log_p_k[i]));
@@ -409,7 +409,7 @@ public:
 
             if (k_old != 0)
             {
-                decrement_n_k(k_old, n_jt_val);
+                n_k_.decr(k_old, n_jt_val);
             }
             n_k_.incr(k_new, n_jt_val);
             for (auto kv : n_jtv[j][t]) {
@@ -506,7 +506,7 @@ public:
             // decrease counters
             size_t v = x_ji[eid][tid];
             decrement_n_kv(k, v, 1);
-            decrement_n_k(k, 1);
+            n_k_.decr(k, 1);
             n_jt[eid][t] -= 1;
             n_jtv[eid][t][v] -= 1;
 
@@ -558,35 +558,12 @@ public:
 
         for (size_t k = 0; k < n_kv.size(); k++)
         {
-            f_k(k) = get_n_kv(k, v) / get_n_k(k);
+            f_k(k) = get_n_kv(k, v) / n_k_.get(k);
         }
 
         return std::vector<float>(f_k.data(), f_k.data() + f_k.size());
     }
 
-    float
-    get_n_k(size_t k) {
-        // if (n_k[k] > 0) {
-        //     return n_k[k];
-        // }
-        // else {
-        //     return V * beta_;
-        // }
-        // std::cout << " get - n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << std::endl;
-        return n_k_.get(k);
-
-    }
-
-    void
-    decrement_n_k(size_t k, float amount) {
-        // std::cout << "decr - n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << " amount " << amount << std::endl;
-        n_k_.decr(k, amount);
-        n_k[k] -= amount;
-        if (n_k[k] == -amount) {
-            n_k[k] += V * beta_;
-        }
-        // std::cout << "       n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << " amount " << amount << std::endl;
-    }
 
     float
     get_n_kv(size_t k, size_t v) {
