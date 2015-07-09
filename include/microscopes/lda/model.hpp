@@ -411,7 +411,7 @@ public:
             {
                 decrement_n_k(k_old, n_jt_val);
             }
-            increment_n_k(k_new, n_jt_val);
+            n_k_.incr(k_new, n_jt_val);
             for (auto kv : n_jtv[j][t]) {
                 auto v = kv.first;
                 auto n = kv.second;
@@ -431,7 +431,7 @@ public:
         n_jt[ein][t_new] += 1;
 
         size_t k_new = k_jt[ein][t_new];
-        increment_n_k(k_new, 1);
+        n_k_.incr(k_new, 1);
 
         size_t v = x_ji[ein][did];
         increment_n_kv(k_new, v, 1);
@@ -575,17 +575,6 @@ public:
         // std::cout << " get - n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << std::endl;
         return n_k_.get(k);
 
-    }
-
-    void
-    increment_n_k(size_t k, float amount) {
-        // std::cout << "incr - n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << " amount " << amount << std::endl;
-        n_k_.incr(k, amount);
-        n_k[k] += amount;
-        if (n_k[k] == amount) {
-            n_k[k] += V * beta_;
-        }
-        // std::cout << "       n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << " amount " << amount << std::endl;
     }
 
     void
