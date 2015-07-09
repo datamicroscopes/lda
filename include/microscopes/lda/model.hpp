@@ -1,3 +1,4 @@
+#pragma once
 #include <microscopes/models/base.hpp>
 #include <microscopes/common/entity_state.hpp>
 #include <microscopes/common/group_manager.hpp>
@@ -60,6 +61,7 @@ public:
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
     std::vector<size_t> m_k; // number of tables for each topic
     std::vector<float> n_k; // number of terms for each topic ( + beta * V )
+    util::defaultdict<size_t, float> n_k_; // number of terms for each topic ( + beta * V )
     std::vector<std::map<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
     std::vector<std::vector<size_t>> t_ji; // table for each document and term (-1 means not-assigned)
 
@@ -77,7 +79,8 @@ public:
           float gamma,
           const std::vector<std::vector<size_t>> &docs,
           common::rng_t &rng)
-        : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs) {
+        : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
+          n_k_(util::defaultdict<size_t, float>(beta * def.v())) {
         V = def.v();
         rng_ = rng;
         for (size_t i = 0; i < x_ji.size(); ++i) {
@@ -98,7 +101,7 @@ public:
         m = 0;
         m_k = std::vector<size_t> {1};
         n_k = std::vector<float> {0};
-
+        // n_k_ = util::defaultdict<size_t, float>(beta_ * V);
         n_kv.push_back(std::map<size_t, float>());
 
         for (size_t i = 0; i < docs.size(); i++) {
@@ -301,6 +304,7 @@ public:
 
     void
     validate_n_k_values() {
+        return;
         std::map<size_t, std::tuple<float, float>> values;
         for (auto k : dishes_) {
             float n_kv_sum = 0;
@@ -456,6 +460,7 @@ public:
 
         dishes_.insert(dishes_.begin() + k_new, k_new);
         n_k[k_new] = 0;
+        n_k_.set(k_new, beta_ * V);
         n_kv[k_new] = std::map<size_t, float>();
         m_k[k_new] = 0;
         return k_new;
@@ -561,28 +566,37 @@ public:
 
     float
     get_n_k(size_t k) {
-        if (n_k[k] > 0) {
-            return n_k[k];
-        }
-        else {
-            return V * beta_;
-        }
+        // if (n_k[k] > 0) {
+        //     return n_k[k];
+        // }
+        // else {
+        //     return V * beta_;
+        // }
+        // std::cout << " get - n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << std::endl;
+        return n_k_.get(k);
+
     }
 
     void
     increment_n_k(size_t k, float amount) {
+        // std::cout << "incr - n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << " amount " << amount << std::endl;
+        n_k_.incr(k, amount);
         n_k[k] += amount;
         if (n_k[k] == amount) {
             n_k[k] += V * beta_;
         }
+        // std::cout << "       n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << " amount " << amount << std::endl;
     }
 
     void
     decrement_n_k(size_t k, float amount) {
+        // std::cout << "decr - n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << " amount " << amount << std::endl;
+        n_k_.decr(k, amount);
         n_k[k] -= amount;
         if (n_k[k] == -amount) {
             n_k[k] += V * beta_;
         }
+        // std::cout << "       n_k[k] " << n_k[k] << "   n_k_.get(k) " << n_k_.get(k) << " k " << k << " amount " << amount << std::endl;
     }
 
     float
