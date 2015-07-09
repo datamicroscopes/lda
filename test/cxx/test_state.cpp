@@ -265,20 +265,20 @@ sequence2(double alpha, double beta, double gamma){
         "n_k[0] is wrong");
     MICROSCOPES_CHECK(assertAlmostEqual(state.n_k.get(1), beta*V+12),
         "n_k[1] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][0], beta + 3),
-        "n_kv[1][0] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][1], beta + 3),
-        "n_kv[1][1] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][2], beta + 1),
-        "n_kv[1][2] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][3], beta + 1),
-        "n_kv[1][3] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][4], beta + 1),
-        "n_kv[1][4] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][5], beta + 2),
-        "n_kv[1][5] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][6], beta + 1),
-        "n_kv[1][6] is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[1].get(0), beta + 3),
+        "n_kv_[1].get(0) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[1].get(1), beta + 3),
+        "n_kv_[1].get(1) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[1].get(2), beta + 1),
+        "n_kv_[1].get(2) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[1].get(3), beta + 1),
+        "n_kv_[1].get(3) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[1].get(4), beta + 1),
+        "n_kv_[1].get(4) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[1].get(5), beta + 2),
+        "n_kv_[1].get(5) is wrong");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[1].get(6), beta + 1),
+        "n_kv_[1].get(6) is wrong");
 
     state.leave_from_dish(0, 1); // decreate m and m_k only
     MICROSCOPES_CHECK(state.m == 2, "state.m != 2");
@@ -333,8 +333,8 @@ sequence1(double alpha, double beta, double gamma){
         "t_ji[j][i] wrng after sitting at table");
     MICROSCOPES_CHECK(state.n_jt[j][t_new] == 1,
         "n_jt[j][t_new] wrong after sitting at table");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[k_new][v], beta+1),
-        "n_kv[k_new][v] wrong after sitting at table");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[k_new].get(v), beta+1),
+        "n_kv_[k_new].get(v) wrong after sitting at table");
 
     // Section 2
     i = 1; // the existed table
@@ -359,8 +359,8 @@ sequence1(double alpha, double beta, double gamma){
     state.add_table(j, t_new, i);
     MICROSCOPES_CHECK(state.t_ji[j][i] == t_new, "state.t_ji[j][i] notset to t_new");
     MICROSCOPES_CHECK(state.n_jt[j][t_new] == 2, "state.n_jt[j][t_new] incremented");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[k_new][v], beta+1),
-        "n_kv[k_new][v] correct");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[k_new].get(v), beta+1),
+        "n_kv_[k_new].get(v) correct");
 
     // Section 4
     i = 2;
@@ -407,8 +407,8 @@ sequence1(double alpha, double beta, double gamma){
     state.add_table(j, t_new, i);
     MICROSCOPES_CHECK(state.t_ji[j][i] == t_new, "t_ji wrong in section 5");
     MICROSCOPES_CHECK(state.n_jt[j][t_new] == 1, "n_jt wrong in section 5");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[k_new][v], beta+1),
-        "n_kv[k_new][v] wrong in section 5");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[k_new].get(v), beta+1),
+        "n_kv_[k_new].get(v) wrong in section 5");
 
     // Section 6
     i = 3;
@@ -437,8 +437,8 @@ sequence1(double alpha, double beta, double gamma){
     state.add_table(j, t_new, i);
     MICROSCOPES_CHECK(state.t_ji[j][i] == t_new, "t_new is wrong");
     MICROSCOPES_CHECK(state.n_jt[j][t_new] == 3, "n_jt[j][t_new] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[k_new][v], beta + 1),
-        "n_kv[k_new][v] isn't beta + 1");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[k_new].get(v), beta + 1),
+        "n_kv_[k_new].get(v) isn't beta + 1");
 
 
     j = 1;
@@ -469,7 +469,7 @@ sequence1(double alpha, double beta, double gamma){
     state.add_table(j, t_new, i);
     MICROSCOPES_CHECK(state.t_ji[j][i] == 1, "t_ji[j][i] set incorrectly");
     MICROSCOPES_CHECK(state.n_jt[j][t_new] == 1, "n_jt[j][t_new] set incorrectly");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[k_new][v], beta+2), "n_kv[k_new][v]");
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv_[k_new].get(v), beta+2), "n_kv[k_new].get(v)");
 }
 
 static void
