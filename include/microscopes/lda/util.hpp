@@ -86,5 +86,10 @@ namespace util{
                 map[t] = default_value - by;
             }
         }
+
+        bool
+        contains(T t){
+            return map.count(t) > 0;
+        }
     };
 }
