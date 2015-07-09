@@ -42,4 +42,49 @@ namespace util{
         Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, 1>> vec(v.data(), v.size());
         vec /= vec.sum();
     }
+
+    template<class T, class J>
+    class defaultdict{
+        J default_value;
+        std::map<T, J> map;
+    public:
+        defaultdict(J val){
+            default_value = val;
+            map = std::map<T, J>();
+        }
+
+        J get(T t) {
+            if(map.count(t) > 0){
+                return map[t];
+            }
+            else{
+                return default_value;
+            }
+        }
+
+        void
+        set(T t, J j){
+            map[t] = j;
+        }
+
+        void
+        incr(T t, J by){
+            if(map.count(t) > 0){
+                map[t] += by;
+            }
+            else{
+                map[t] = by + default_value;
+            }
+        }
+
+        void
+        decr(T t, J by){
+            if(map.count(t) > 0){
+                map[t] -= by;
+            }
+            else{
+                map[t] = default_value - by;
+            }
+        }
+    };
 }
