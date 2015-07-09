@@ -60,7 +60,7 @@ public:
     std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
     std::vector<size_t> m_k; // number of tables for each topic
-    util::defaultdict<size_t, float> n_k_; // number of terms for each topic ( + beta * V )
+    util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
     std::vector<std::map<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
     std::vector<std::vector<size_t>> t_ji; // table for each document and term (-1 means not-assigned)
 
@@ -79,7 +79,7 @@ public:
           const std::vector<std::vector<size_t>> &docs,
           common::rng_t &rng)
         : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
-          n_k_(util::defaultdict<size_t, float>(beta * def.v())) {
+          n_k(util::defaultdict<size_t, float>(beta * def.v())) {
         V = def.v();
         rng_ = rng;
         for (size_t i = 0; i < x_ji.size(); ++i) {
@@ -99,7 +99,6 @@ public:
         }
         m = 0;
         m_k = std::vector<size_t> {1};
-        // n_k_ = util::defaultdict<size_t, float>(beta_ * V);
         n_kv.push_back(std::map<size_t, float>());
 
         for (size_t i = 0; i < docs.size(); i++) {
@@ -178,10 +177,10 @@ public:
             vec.push_back(std::map<size_t, float>());
             for (size_t v = 0; v < V; ++v) {
                 if (n_kv[k].find(v) != n_kv[k].end()) {
-                    vec.back()[v] = get_n_kv(k, v) / n_k_.get(k);
+                    vec.back()[v] = get_n_kv(k, v) / n_k.get(k);
                 }
                 else {
-                    vec.back()[v] = beta_ / n_k_.get(k);
+                    vec.back()[v] = beta_ / n_k.get(k);
                 }
             }
         }
@@ -309,7 +308,7 @@ public:
             for (size_t v = 0; v < V; v++) {
                 n_kv_sum += get_n_kv(k, v);
             }
-            values[k] = std::tuple<float, float>(n_kv_sum, n_k_.get(k));
+            values[k] = std::tuple<float, float>(n_kv_sum, n_k.get(k));
         }
         for (auto kv : values) {
             if (kv.first == 0) continue;
@@ -326,7 +325,7 @@ public:
         for (size_t i = 0; i < dishes_.size(); i++) {
             auto k = dishes_[i];
             if (k == 0) continue;
-            float n_k_val = (k == k_old) ? n_k_.get(k) - n_jt[j][t] : n_k_.get(k);
+            float n_k_val = (k == k_old) ? n_k.get(k) - n_jt[j][t] : n_k.get(k);
             assert(n_k_val > 0);
             log_p_k[i] = distributions::fast_log(m_k[k]) + distributions::fast_lgamma(n_k_val) - distributions::fast_lgamma(n_k_val + n_jt_val);
             assert(isfinite(log_p_k[i]));
@@ -407,9 +406,9 @@ public:
 
             if (k_old != 0)
             {
-                n_k_.decr(k_old, n_jt_val);
+                n_k.decr(k_old, n_jt_val);
             }
-            n_k_.incr(k_new, n_jt_val);
+            n_k.incr(k_new, n_jt_val);
             for (auto kv : n_jtv[j][t]) {
                 auto v = kv.first;
                 auto n = kv.second;
@@ -429,7 +428,7 @@ public:
         n_jt[ein][t_new] += 1;
 
         size_t k_new = k_jt[ein][t_new];
-        n_k_.incr(k_new, 1);
+        n_k.incr(k_new, 1);
 
         size_t v = x_ji[ein][did];
         increment_n_kv(k_new, v, 1);
@@ -456,7 +455,7 @@ public:
         }
 
         dishes_.insert(dishes_.begin() + k_new, k_new);
-        n_k_.set(k_new, beta_ * V);
+        n_k.set(k_new, beta_ * V);
         n_kv[k_new] = std::map<size_t, float>();
         m_k[k_new] = 0;
         return k_new;
@@ -502,7 +501,7 @@ public:
             // decrease counters
             size_t v = x_ji[eid][tid];
             decrement_n_kv(k, v, 1);
-            n_k_.decr(k, 1);
+            n_k.decr(k, 1);
             n_jt[eid][t] -= 1;
             n_jtv[eid][t][v] -= 1;
 
@@ -554,7 +553,7 @@ public:
 
         for (size_t k = 0; k < n_kv.size(); k++)
         {
-            f_k(k) = get_n_kv(k, v) / n_k_.get(k);
+            f_k(k) = get_n_kv(k, v) / n_k.get(k);
         }
 
         return std::vector<float>(f_k.data(), f_k.data() + f_k.size());

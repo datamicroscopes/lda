@@ -261,9 +261,9 @@ sequence2(double alpha, double beta, double gamma){
             state.add_table(j, t_new, i);
         }
     }
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_k_.get(0), beta*V),
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_k.get(0), beta*V),
         "n_k[0] is wrong");
-    MICROSCOPES_CHECK(assertAlmostEqual(state.n_k_.get(1), beta*V+12),
+    MICROSCOPES_CHECK(assertAlmostEqual(state.n_k.get(1), beta*V+12),
         "n_k[1] is wrong");
     MICROSCOPES_CHECK(assertAlmostEqual(state.n_kv[1][0], beta + 3),
         "n_kv[1][0] is wrong");
