@@ -60,7 +60,6 @@ public:
     std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
     std::vector<size_t> m_k; // number of tables for each topic
-    std::vector<float> n_k; // number of terms for each topic ( + beta * V )
     util::defaultdict<size_t, float> n_k_; // number of terms for each topic ( + beta * V )
     std::vector<std::map<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
     std::vector<std::vector<size_t>> t_ji; // table for each document and term (-1 means not-assigned)
@@ -100,7 +99,6 @@ public:
         }
         m = 0;
         m_k = std::vector<size_t> {1};
-        n_k = std::vector<float> {0};
         // n_k_ = util::defaultdict<size_t, float>(beta_ * V);
         n_kv.push_back(std::map<size_t, float>());
 
@@ -451,7 +449,6 @@ public:
         }
         if (k_new == dishes_.size())
         {
-            n_k.push_back(0);
             m_k.push_back(m_k[0]);
             n_kv.push_back(std::map<size_t, float>());
             assert(k_new == dishes_.back() + 1);
@@ -459,7 +456,6 @@ public:
         }
 
         dishes_.insert(dishes_.begin() + k_new, k_new);
-        n_k[k_new] = 0;
         n_k_.set(k_new, beta_ * V);
         n_kv[k_new] = std::map<size_t, float>();
         m_k[k_new] = 0;
