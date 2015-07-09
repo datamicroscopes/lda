@@ -1,4 +1,5 @@
 #include <microscopes/lda/model.hpp>
+#include <microscopes/lda/kernels.hpp>
 #include <microscopes/lda/random_docs.hpp>
 #include <microscopes/common/macros.hpp>
 #include <microscopes/common/recarray/dataview.hpp>
@@ -13,6 +14,7 @@ using namespace distributions;
 using namespace microscopes;
 using namespace microscopes::common;
 using namespace microscopes::common::recarray;
+using namespace microscopes::kernels;
 
 
 bool assertAlmostEqual(double a, double b, double epislon)
@@ -104,7 +106,7 @@ sequence4(double alpha, double beta, double gamma){
     size_t t = 1;
     state.leave_from_dish(j, t);
 
-    auto p_k = state.calc_dish_posterior_t(j, t);
+    auto p_k = calc_dish_posterior_t(state, j, t);
     float p0 = gamma / V;
     float p1 = 1 * beta / (V * beta + 1);
     float p2 = 4 * (beta + 2) / (Vbeta + 10);
@@ -118,7 +120,7 @@ sequence4(double alpha, double beta, double gamma){
     t = 2;
     state.leave_from_dish(j, t);
 
-    p_k = state.calc_dish_posterior_t(j, t);
+    p_k = calc_dish_posterior_t(state, j, t);
     p0 = gamma * beta * beta * beta / (Vbeta * (Vbeta + 1) * (Vbeta + 2));
     p1 = 2 * (beta + 0) * beta * beta / ((Vbeta + 2) * (Vbeta + 3) * (Vbeta + 4));
     p2 = 3 * (beta + 2) * beta * beta / ((Vbeta + 7) * (Vbeta + 8) * (Vbeta + 9));
@@ -205,12 +207,12 @@ sequence3(double alpha, double beta, double gamma){
 
     state.remove_table(j, i);
 
-    auto f_k = state.calc_f_k(v);
+    auto f_k = calc_f_k(state, v);
     MICROSCOPES_CHECK(f_k.size() == 3, "f_k is wrong size");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], (beta+2)/(V*beta+4)), "f_k[1] is wrong in section 4");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[2], (beta+0)/(V*beta+7)), "f_k[2] is wrong in section 4");
 
-    auto p_t = state.calc_table_posterior(j, f_k);
+    auto p_t = calc_table_posterior(state, j, f_k);
     MICROSCOPES_CHECK(p_t.size() == 3, "p_t is wrong size");
     double p1 = 2*f_k[1];
     double p2 = 1*f_k[2];
@@ -230,12 +232,12 @@ sequence3(double alpha, double beta, double gamma){
     MICROSCOPES_CHECK(state.using_t[j][0] == 0, "using_t[j][0] is wrong");
     MICROSCOPES_CHECK(state.using_t[j][1] == 1, "using_t[j][1] is wrong");
 
-    f_k = state.calc_f_k(v);
+    f_k = calc_f_k(state, v);
     MICROSCOPES_CHECK(f_k.size() == 3, "f_k is wrong size in section 5");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], (beta+0)/(V*beta+5)), "f_k[1] is wrong in section 5");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[2], (beta+2)/(V*beta+6)), "f_k[2] is wrong in section 5");
 
-    p_t = state.calc_table_posterior(j, f_k);
+    p_t = calc_table_posterior(state, j, f_k);
     MICROSCOPES_CHECK(p_t.size() == 2, "p_t is wrong size in section 5");
     p1 = 3*f_k[1];
     p0 = alpha / (5+gamma) * (3*f_k[1] + 2*f_k[2] + gamma/V);
@@ -304,12 +306,12 @@ sequence1(double alpha, double beta, double gamma){
     size_t v = docs[j][i];
     MICROSCOPES_CHECK(v == 0, "data wrong");
 
-    std::vector<float> f_k = state.calc_f_k(v);
-    std::vector<float> p_t = state.calc_table_posterior(j, f_k);
+    std::vector<float> f_k = calc_f_k(state, v);
+    std::vector<float> p_t = calc_table_posterior(state, j, f_k);
     MICROSCOPES_CHECK(assertSequenceEqual(p_t, std::vector<float> {1.}),
         "table posterior wrong");
 
-    std::vector<float> p_k = state.calc_dish_posterior_w(f_k);
+    std::vector<float> p_k = calc_dish_posterior_w(state, f_k);
     MICROSCOPES_CHECK(p_k.size() == 1, "p_k has wrong number of elements");
     MICROSCOPES_CHECK(assertAlmostEqual(p_k[0], 1), "p_k has wrong element");
 
@@ -341,11 +343,11 @@ sequence1(double alpha, double beta, double gamma){
     v = docs[j][i];
     MICROSCOPES_CHECK(v == 1, "we're not crazy");
 
-    f_k = state.calc_f_k(v);
+    f_k = calc_f_k(state, v);
     MICROSCOPES_CHECK(f_k.size() == 2, "calc_f_k is wrong len when i = 1");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], beta / (V*beta+1)),
         "f_k[1] is wrong 2");
-    p_t = state.calc_table_posterior(j, f_k);
+    p_t = calc_table_posterior(state, j, f_k);
     MICROSCOPES_CHECK(p_t.size() == 2, "p_t is wrong len when i = 1");
     double p0 = alpha / (1 + gamma) * (beta / (V * beta + 1) + gamma / V);
     double p1 = 1 * beta / (V * beta + 1);
@@ -367,12 +369,12 @@ sequence1(double alpha, double beta, double gamma){
     v = docs[j][i];
     MICROSCOPES_CHECK(v == 2, "doc is corrupted :'''(");
 
-    f_k = state.calc_f_k(v);
+    f_k = calc_f_k(state, v);
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[0], 0),
         "f_k[0] is wrong");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], (beta + 0) / (V*beta+2)),
         "f_k[1] is wrong 4");
-    p_t = state.calc_table_posterior(j, f_k);
+    p_t = calc_table_posterior(state, j, f_k);
     MICROSCOPES_CHECK(p_t.size()==2, "p_t wrong size");
     p0 = alpha / (1 + gamma) * (beta / (V * beta + 2) + gamma / V);
     p1 = 2 * beta / (V * beta + 2);
@@ -381,7 +383,7 @@ sequence1(double alpha, double beta, double gamma){
     MICROSCOPES_CHECK(assertAlmostEqual(p_t[1], p1 / (p0 + p1)),
         "p_t[1] is wrong 2"); // 0.94074527
 
-    p_k = state.calc_dish_posterior_w(f_k);
+    p_k = calc_dish_posterior_w(state, f_k);
     MICROSCOPES_CHECK(p_k.size() == 2, "p_k is wrong size in section 4");
     p0 = gamma / V;
     p1 = 1 * f_k[1];
@@ -415,13 +417,13 @@ sequence1(double alpha, double beta, double gamma){
     v = docs[j][i];
     MICROSCOPES_CHECK(v == 3, "doc is corrupted :(");
 
-    f_k = state.calc_f_k(v);
+    f_k = calc_f_k(state, v);
     MICROSCOPES_CHECK(f_k.size() == 2, "f_k is wront length");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[0], 0),
         "f_k[0] is wrong");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], beta / (V*beta+3)),
         "f_k[1] is wrong 3");
-    p_t = state.calc_table_posterior(j, f_k);
+    p_t = calc_table_posterior(state, j, f_k);
     MICROSCOPES_CHECK(p_t.size()==3, "p_t wrong size");
     p0 = alpha / (2 + gamma) * (2 * beta / (V * beta + 3) + gamma / V);
     p1 = 2 * beta / (V * beta + 3);
@@ -446,12 +448,12 @@ sequence1(double alpha, double beta, double gamma){
     v = docs[j][i];
     MICROSCOPES_CHECK(v == 0, "docs are corrupted");
 
-    f_k = state.calc_f_k(v);
+    f_k = calc_f_k(state, v);
     MICROSCOPES_CHECK(f_k.size() == 2, "f_k is the wrong size");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[0], 0), "f_k[0] is wrong");
     MICROSCOPES_CHECK(assertAlmostEqual(f_k[1], (beta + 1)/(V*beta+4)), "f_k[1] is wrong 1");
 
-    p_t = state.calc_table_posterior(j, f_k);
+    p_t = calc_table_posterior(state, j, f_k);
     MICROSCOPES_CHECK(p_t.size(), "p_t is the wrong right size");
     MICROSCOPES_CHECK(assertAlmostEqual(p_t[0], 1), "p_T[0] is wrong");
 
