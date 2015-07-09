@@ -62,6 +62,7 @@ public:
     std::vector<size_t> m_k; // number of tables for each topic
     util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
     std::vector<std::map<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
+    std::vector<util::defaultdict<size_t, float>> n_kv_; // number of terms for each topic and vocabulary ( + beta )
     std::vector<std::vector<size_t>> t_ji; // table for each document and term (-1 means not-assigned)
 
 
@@ -100,7 +101,7 @@ public:
         m = 0;
         m_k = std::vector<size_t> {1};
         n_kv.push_back(std::map<size_t, float>());
-
+        n_kv_.push_back(util::defaultdict<size_t, float>(beta_));
         for (size_t i = 0; i < docs.size(); i++) {
 
             t_ji.push_back(std::vector<size_t>(docs[i].size(), 0));
@@ -450,6 +451,7 @@ public:
         {
             m_k.push_back(m_k[0]);
             n_kv.push_back(std::map<size_t, float>());
+            n_kv_.push_back(util::defaultdict<size_t, float>(beta_));
             assert(k_new == dishes_.back() + 1);
             assert(k_new < n_kv.size());
         }
@@ -562,16 +564,21 @@ public:
 
     float
     get_n_kv(size_t k, size_t v) {
-        if ((n_kv[k].count(v) > 0 && n_kv[k][v] > 0) || k == 0) {
+        if(k == 0){
             return n_kv[k][v];
         }
-        else {
-            return beta_;
-        }
+        return n_kv_[k].get(v);
+        // if ((n_kv[k].count(v) > 0 && n_kv[k][v] > 0) || k == 0) {
+        //     return n_kv[k][v];
+        // }
+        // else {
+        //     return beta_;
+        // }
     }
 
     void
     increment_n_kv(size_t k, size_t v, float amount) {
+        n_kv_[k].incr(v, amount);
         n_kv[k][v] += amount;
         if (n_kv[k][v] == amount) {
             n_kv[k][v] += beta_;
@@ -580,6 +587,7 @@ public:
 
     void
     decrement_n_kv(size_t k, size_t v, float amount) {
+        n_kv_[k].decr(v, amount);
         n_kv[k][v] -= amount;
         if (n_kv[k][v] == -amount) {
             n_kv[k][v] += beta_;
