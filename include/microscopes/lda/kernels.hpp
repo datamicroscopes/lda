@@ -1,5 +1,4 @@
 #include <microscopes/lda/model.hpp>
-// #include <microscopes/common/util.hpp>
 
 
 namespace microscopes {

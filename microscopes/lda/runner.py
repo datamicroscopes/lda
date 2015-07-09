@@ -5,6 +5,7 @@ from microscopes.common import validator
 from microscopes.common.rng import rng
 from microscopes.common.variadic._dataview import abstract_dataview
 from microscopes.lda.definition import model_definition
+from microscopes.lda.kernels import lda_crp_gibbs
 from microscopes.lda.model import state
 
 import itertools as it
@@ -49,4 +50,4 @@ class runner(object):
         validator.validate_positive(niters, param_name='niters')
 
         for _ in xrange(niters):
-            pass
+            lda_crp_gibbs(self._latent)
