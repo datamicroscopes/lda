@@ -61,7 +61,7 @@ public:
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
     std::vector<size_t> m_k; // number of tables for each topic
     util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
-    std::vector<util::defaultdict<size_t, float>> n_kv_; // number of terms for each topic and vocabulary ( + beta )
+    std::vector<util::defaultdict<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
     std::vector<std::vector<size_t>> t_ji; // table for each document and term (-1 means not-assigned)
 
 
@@ -99,7 +99,7 @@ public:
         }
         m = 0;
         m_k = std::vector<size_t> {1};
-        n_kv_.push_back(util::defaultdict<size_t, float>(beta_));
+        n_kv.push_back(util::defaultdict<size_t, float>(beta_));
         for (size_t i = 0; i < docs.size(); i++) {
 
             t_ji.push_back(std::vector<size_t>(docs[i].size(), 0));
@@ -175,8 +175,8 @@ public:
             if (k == 0) continue;
             vec.push_back(std::map<size_t, float>());
             for (size_t v = 0; v < V; ++v) {
-                if (n_kv_[k].contains(v)) {
-                    vec.back()[v] = n_kv_[k].get(v) / n_k.get(k);
+                if (n_kv[k].contains(v)) {
+                    vec.back()[v] = n_kv[k].get(v) / n_k.get(k);
                 }
                 else {
                     vec.back()[v] = beta_ / n_k.get(k);
@@ -305,7 +305,7 @@ public:
         for (auto k : dishes_) {
             float n_kv_sum = 0;
             for (size_t v = 0; v < V; v++) {
-                n_kv_sum += n_kv_[k].get(v);
+                n_kv_sum += n_kv[k].get(v);
             }
             values[k] = std::tuple<float, float>(n_kv_sum, n_k.get(k));
         }
@@ -339,7 +339,7 @@ public:
 
             std::vector<float> n_kw(dishes_.size());
             for (size_t i = 0; i < dishes_.size(); i++) {
-                n_kw[i] = n_kv_[dishes_[i]].get(w);
+                n_kw[i] = n_kv[dishes_[i]].get(w);
                 if (dishes_[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
                 assert(i == 0 || n_kw[i] > 0);
             }
@@ -413,9 +413,9 @@ public:
                 auto n = kv.second;
                 if (k_old != 0)
                 {
-                    n_kv_[k_old].decr(v, n);
+                    n_kv[k_old].decr(v, n);
                 }
-                n_kv_[k_new].incr(v, n);
+                n_kv[k_new].incr(v, n);
             }
         }
     }
@@ -430,7 +430,7 @@ public:
         n_k.incr(k_new, 1);
 
         size_t v = x_ji[ein][did];
-        n_kv_[k_new].incr(v, 1);
+        n_kv[k_new].incr(v, 1);
         n_jtv[ein][t_new][v] += 1;
     }
 
@@ -448,14 +448,14 @@ public:
         if (k_new == dishes_.size())
         {
             m_k.push_back(m_k[0]);
-            n_kv_.push_back(util::defaultdict<size_t, float>(beta_));
+            n_kv.push_back(util::defaultdict<size_t, float>(beta_));
             assert(k_new == dishes_.back() + 1);
-            assert(k_new < n_kv_.size());
+            assert(k_new < n_kv.size());
         }
 
         dishes_.insert(dishes_.begin() + k_new, k_new);
         n_k.set(k_new, beta_ * V);
-        n_kv_[k_new] = util::defaultdict<size_t, float>(beta_);
+        n_kv[k_new] = util::defaultdict<size_t, float>(beta_);
         m_k[k_new] = 0;
         return k_new;
 
@@ -499,7 +499,7 @@ public:
             assert(k > 0);
             // decrease counters
             size_t v = x_ji[eid][tid];
-            n_kv_[k].decr(v, 1);
+            n_kv[k].decr(v, 1);
             n_k.decr(k, 1);
             n_jt[eid][t] -= 1;
             n_jtv[eid][t][v] -= 1;
@@ -548,49 +548,17 @@ public:
 
     std::vector<float>
     calc_f_k(size_t v) {
-        Eigen::VectorXf f_k(n_kv_.size());
+        Eigen::VectorXf f_k(n_kv.size());
 
-        f_k(0) = (n_kv_[0].get(v) - beta_) / n_k.get(0);
-        for (size_t k = 1; k < n_kv_.size(); k++)
+        f_k(0) = (n_kv[0].get(v) - beta_) / n_k.get(0);
+        for (size_t k = 1; k < n_kv.size(); k++)
         {
-            f_k(k) = n_kv_[k].get(v) / n_k.get(k);
+            f_k(k) = n_kv[k].get(v) / n_k.get(k);
         }
 
         return std::vector<float>(f_k.data(), f_k.data() + f_k.size());
     }
 
-
-    // float
-    // get_n_kv(size_t k, size_t v) {
-    //     if(k == 0){
-    //         return n_kv_[k].get(v) - beta_;
-    //     }
-    //     return n_kv_[k].get(v);
-    //     // if ((n_kv[k].count(v) > 0 && n_kv[k][v] > 0) || k == 0) {
-    //     //     return n_kv[k][v];
-    //     // }
-    //     // else {
-    //     //     return beta_;
-    //     // }
-    // }
-
-    // void
-    // increment_n_kv(size_t k, size_t v, float amount) {
-    //     n_kv_[k].incr(v, amount);
-    //     n_kv[k][v] += amount;
-    //     if (n_kv[k][v] == amount) {
-    //         n_kv[k][v] += beta_;
-    //     }
-    // }
-
-    // void
-    // decrement_n_kv(size_t k, size_t v, float amount) {
-    //     n_kv_[k].decr(v, amount);
-    //     n_kv[k][v] -= amount;
-    //     if (n_kv[k][v] == -amount) {
-    //         n_kv[k][v] += beta_;
-    //     }
-    // }
 
     inline size_t
     nentities() const { return x_ji.size(); }
