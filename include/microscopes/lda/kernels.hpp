@@ -4,12 +4,6 @@
 
 namespace microscopes {
 namespace kernels {
-    void
-    lda_crp_gibbs(microscopes::lda::state &state, common::rng_t &rng)
-    {
-
-    }
-
     std::vector<float>
     calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t) {
         std::vector<float> log_p_k(state.dishes_.size());
@@ -98,8 +92,62 @@ namespace kernels {
         return std::vector<float>(p_t.data(), p_t.data() + p_t.size());
     }
 
+    void
+    sampling_t(microscopes::lda::state &state, size_t j, size_t i) {
+        state.remove_table(j, i);
+        size_t v = state.x_ji[j][i];
+        std::vector<float> f_k = calc_f_k(state, v);
+        assert(f_k[0] == 0);
+        std::vector<float> p_t = calc_table_posterior(state, j, f_k);
+        // if len(p_t) > 1 and p_t[1] < 0: self.dump()
+        util::validate_probability_vector(p_t);
+        size_t word = common::util::sample_discrete(p_t, state.rng_);
+        size_t t_new = state.using_t[j][word];
+        if (t_new == 0)
+        {
+            std::vector<float> p_k = calc_dish_posterior_w(state, f_k);
+            util::validate_probability_vector(p_k);
+            size_t topic_index = common::util::sample_discrete(p_k, state.rng_);
+            size_t k_new = state.dishes_[topic_index];
+            if (k_new == 0)
+            {
+                k_new = state.create_dish();
+            }
+            t_new = state.create_table(j, k_new);
+        }
+        state.add_table(j, t_new, i);
+    }
 
-
+    void
+    sampling_k(microscopes::lda::state &state, size_t j, size_t t) {
+        state.leave_from_dish(j, t);
+        std::vector<float> p_k = calc_dish_posterior_t(state, j, t);
+        util::validate_probability_vector(p_k);
+        assert(state.dishes_.size() == p_k.size());
+        size_t topic_index = common::util::sample_discrete(p_k, state.rng_);
+        size_t k_new = state.dishes_[topic_index];
+        if (k_new == 0)
+        {
+            k_new = state.create_dish();
+        }
+        state.seat_at_dish(j, t, k_new);
+    }
+    void
+    lda_crp_gibbs(microscopes::lda::state &state)
+    {
+        for (size_t j = 0; j < state.x_ji.size(); ++j) {
+            for (size_t i = 0; i < state.x_ji[j].size(); ++i) {
+                sampling_t(state, j, i);
+            }
+        }
+        for (size_t j = 0; j < state.x_ji.size(); ++j) {
+            for (auto t : state.using_t[j]) {
+                if (t != 0) {
+                    sampling_k(state, j, t);
+                }
+            }
+        }
+    }
 
 }
 }

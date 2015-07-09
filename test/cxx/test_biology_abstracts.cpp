@@ -5,6 +5,7 @@
 #include <microscopes/common/recarray/dataview.hpp>
 #include <microscopes/models/distributions.hpp>
 #include <microscopes/common/random_fwd.hpp>
+#include <microscopes/lda/kernels.hpp>
 
 #include <random>
 #include <iostream>
@@ -72,7 +73,7 @@ test_compare_biology_abstracts(size_t n_iterations)
 
     for(unsigned i = 0; i < n_iterations; ++i){
         std::cout << "inference step: " << i << std::endl;
-        state._inference();
+        microscopes::kernels::lda_crp_gibbs(state);
         std::cout << "   K=" << state.dishes_.size() - 1 << std::endl;
         std::cout << "   p=" << state.perplexity() << std::endl;
     }

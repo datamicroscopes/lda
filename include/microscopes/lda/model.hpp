@@ -148,24 +148,6 @@ public:
     }
 
 
-
-    void
-    _inference() {
-        for (size_t j = 0; j < x_ji.size(); ++j) {
-            for (size_t i = 0; i < x_ji[j].size(); ++i) {
-                sampling_t(j, i);
-            }
-        }
-        for (size_t j = 0; j < x_ji.size(); ++j) {
-            for (auto t : using_t[j]) {
-                if (t != 0) {
-                    sampling_k(j, t);
-                }
-            }
-        }
-    }
-
-
     std::vector<std::map<size_t, float>>
     wordDist() {
         // Distribution over words for each topic
@@ -243,46 +225,6 @@ public:
 
 
 // private:
-    void
-    sampling_t(size_t j, size_t i) {
-        remove_table(j, i);
-        size_t v = x_ji[j][i];
-        std::vector<float> f_k = calc_f_k(v);
-        assert(f_k[0] == 0);
-        std::vector<float> p_t = calc_table_posterior(j, f_k);
-        // if len(p_t) > 1 and p_t[1] < 0: self.dump()
-        util::validate_probability_vector(p_t);
-        size_t word = common::util::sample_discrete(p_t, rng_);
-        size_t t_new = using_t[j][word];
-        if (t_new == 0)
-        {
-            std::vector<float> p_k = calc_dish_posterior_w(f_k);
-            util::validate_probability_vector(p_k);
-            size_t topic_index = common::util::sample_discrete(p_k, rng_);
-            size_t k_new = dishes_[topic_index];
-            if (k_new == 0)
-            {
-                k_new = create_dish();
-            }
-            t_new = create_table(j, k_new);
-        }
-        add_table(j, t_new, i);
-    }
-
-    void
-    sampling_k(size_t j, size_t t) {
-        leave_from_dish(j, t);
-        std::vector<float> p_k = calc_dish_posterior_t(j, t);
-        util::validate_probability_vector(p_k);
-        assert(dishes_.size() == p_k.size());
-        size_t topic_index = common::util::sample_discrete(p_k, rng_);
-        size_t k_new = dishes_[topic_index];
-        if (k_new == 0)
-        {
-            k_new = create_dish();
-        }
-        seat_at_dish(j, t, k_new);
-    }
 
     void
     leave_from_dish(size_t j, size_t t) {
@@ -314,81 +256,6 @@ public:
             assert(std::abs((std::get<0>(kv.second) - std::get<1>(kv.second))) < 0.01);
         }
     }
-
-    std::vector<float>
-    calc_dish_posterior_t(size_t j, size_t t) {
-        std::vector<float> log_p_k(dishes_.size());
-
-        auto k_old = k_jt[j][t];
-        auto n_jt_val = n_jt[j][t];
-        for (size_t i = 0; i < dishes_.size(); i++) {
-            auto k = dishes_[i];
-            if (k == 0) continue;
-            float n_k_val = (k == k_old) ? n_k.get(k) - n_jt[j][t] : n_k.get(k);
-            assert(n_k_val > 0);
-            log_p_k[i] = distributions::fast_log(m_k[k]) + distributions::fast_lgamma(n_k_val) - distributions::fast_lgamma(n_k_val + n_jt_val);
-            assert(isfinite(log_p_k[i]));
-        }
-        log_p_k[0] = distributions::fast_log(gamma_) + distributions::fast_lgamma(V * beta_) - distributions::fast_lgamma(V * beta_ + n_jt[j][t]);
-
-        for (auto &kv : n_jtv[j][t]) {
-            auto w = kv.first;
-            auto n_jtw = kv.second;
-            if (n_jtw == 0) continue;
-            assert(n_jtw > 0);
-
-            std::vector<float> n_kw(dishes_.size());
-            for (size_t i = 0; i < dishes_.size(); i++) {
-                n_kw[i] = n_kv[dishes_[i]].get(w);
-                if (dishes_[i] == k_jt[j][t]) n_kw[i] -= n_jtw;
-                assert(i == 0 || n_kw[i] > 0);
-            }
-            n_kw[0] = 1; // # dummy for logarithm's warning
-            for (size_t i = 1; i < n_kw.size(); i++) {
-                log_p_k[i] += distributions::fast_lgamma(n_kw[i] + n_jtw) - distributions::fast_lgamma(n_kw[i]);
-            }
-            log_p_k[0] += distributions::fast_lgamma(beta_ + n_jtw) - distributions::fast_lgamma(beta_);
-        }
-        for (auto x : log_p_k) assert(isfinite(x));
-
-        std::vector<float> p_k;
-        p_k.reserve(dishes_.size());
-        float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
-        for (auto log_p_k_value : log_p_k) {
-            p_k.push_back(exp(log_p_k_value - max_value));
-        }
-        util::normalize(p_k);
-        return p_k;
-    }
-
-    std::vector<float>
-    calc_dish_posterior_w(const std::vector<float> &f_k) {
-        Eigen::VectorXf p_k(dishes_.size());
-        for (size_t i = 0; i < dishes_.size(); ++i) {
-            p_k(i) = m_k[dishes_[i]] * f_k[dishes_[i]];
-        }
-        p_k(0) = gamma_ / V;
-        p_k /= p_k.sum();
-        return std::vector<float>(p_k.data(), p_k.data() + p_k.size());
-    }
-
-    std::vector<float>
-    calc_table_posterior(size_t j, std::vector<float> &f_k) {
-        std::vector<size_t> using_table = using_t[j];
-        Eigen::VectorXf p_t(using_table.size());
-
-        for (size_t i = 0; i < using_table.size(); i++) {
-            auto p = using_table[i];
-            p_t(i) = n_jt[j][p] * f_k[k_jt[j][p]];
-        }
-        Eigen::Map<Eigen::VectorXf> eigen_f_k(f_k.data(), f_k.size());
-        Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> eigen_m_k(m_k.data(), m_k.size());
-        float p_x_ji = gamma_ / V + eigen_f_k.dot(eigen_m_k.cast<float>());
-        p_t[0] = p_x_ji * alpha_ / (gamma_ + m);
-        p_t /= p_t.sum();
-        return std::vector<float>(p_t.data(), p_t.data() + p_t.size());
-    }
-
 
 
     void
@@ -545,20 +412,6 @@ public:
     tables(size_t eid) {
         return using_t[eid];
     }
-
-    std::vector<float>
-    calc_f_k(size_t v) {
-        Eigen::VectorXf f_k(n_kv.size());
-
-        f_k(0) = (n_kv[0].get(v) - beta_) / n_k.get(0);
-        for (size_t k = 1; k < n_kv.size(); k++)
-        {
-            f_k(k) = n_kv[k].get(v) / n_k.get(k);
-        }
-
-        return std::vector<float>(f_k.data(), f_k.data() + f_k.size());
-    }
-
 
     inline size_t
     nentities() const { return x_ji.size(); }

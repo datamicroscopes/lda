@@ -1,4 +1,5 @@
 #include <microscopes/lda/model.hpp>
+#include <microscopes/lda/kernels.hpp>
 #include <microscopes/lda/random_docs.hpp>
 #include <microscopes/common/macros.hpp>
 #include <microscopes/common/recarray/dataview.hpp>
@@ -24,7 +25,7 @@ sequence_random(double alpha, double beta, double gamma, size_t seed){
     lda::model_definition def(3, V);
     lda::state state(def, alpha, beta, gamma, docs, r);
     for(unsigned i = 0; i < 10; ++i){
-        state._inference();
+        microscopes::kernels::lda_crp_gibbs(state);
     }
     state.validate_n_k_values();
     std::cout << "perplexity: " << state.perplexity() << std::endl;

@@ -1,4 +1,5 @@
 #include <microscopes/lda/model.hpp>
+#include <microscopes/lda/kernels.hpp>
 #include <microscopes/lda/random_docs.hpp>
 #include <microscopes/common/macros.hpp>
 #include <microscopes/common/recarray/dataview.hpp>
@@ -90,7 +91,7 @@ trial(const std::vector< std::vector<size_t>> &docs, size_t vocab_size,
     lda::model_definition def(docs.size(), vocab_size);
     lda::state state(def, alpha, beta, gamma, docs, r);
     for(size_t i = 0; i < max_steps; i++){
-        state._inference();
+        microscopes::kernels::lda_crp_gibbs(state);
     }
     return state.perplexity();
 }

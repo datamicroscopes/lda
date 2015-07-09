@@ -1,4 +1,5 @@
 #include <microscopes/lda/model.hpp>
+#include <microscopes/lda/kernels.hpp>
 #include <microscopes/lda/data.hpp>
 #include <microscopes/lda/random_docs.hpp>
 #include <microscopes/common/macros.hpp>
@@ -40,7 +41,7 @@ test_small()
 
     for(unsigned i = 0; i < 100; ++i){
         std::cout << "inference step: " << i << std::endl;
-        state._inference();
+        microscopes::kernels::lda_crp_gibbs(state);
         std::cout << "   p=" << state.perplexity() << std::endl;
         std::map<size_t, int> count;
         for(auto k_j: state.k_jt){
