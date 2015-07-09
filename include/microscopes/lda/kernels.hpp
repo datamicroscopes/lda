@@ -4,7 +4,7 @@
 namespace microscopes {
 namespace kernels {
     std::vector<float>
-    calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t) {
+    calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rng) {
         std::vector<float> log_p_k(state.dishes_.size());
 
         auto k_old = state.k_jt[j][t];
@@ -50,7 +50,7 @@ namespace kernels {
     }
 
     std::vector<float>
-    calc_dish_posterior_w(microscopes::lda::state &state, const std::vector<float> &f_k) {
+    calc_dish_posterior_w(microscopes::lda::state &state, const std::vector<float> &f_k, common::rng_t &rng) {
         Eigen::VectorXf p_k(state.dishes_.size());
         for (size_t i = 0; i < state.dishes_.size(); ++i) {
             p_k(i) = state.m_k[state.dishes_[i]] * f_k[state.dishes_[i]];
@@ -62,7 +62,7 @@ namespace kernels {
 
 
     std::vector<float>
-    calc_f_k(microscopes::lda::state &state, size_t v) {
+    calc_f_k(microscopes::lda::state &state, size_t v, common::rng_t &rng) {
         Eigen::VectorXf f_k(state.n_kv.size());
 
         f_k(0) = (state.n_kv[0].get(v) - state.beta_) / state.n_k.get(0);
@@ -75,7 +75,7 @@ namespace kernels {
     }
 
     std::vector<float>
-    calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float> &f_k) {
+    calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float> &f_k, common::rng_t &rng) {
         std::vector<size_t> using_table = state.using_t[j];
         Eigen::VectorXf p_t(using_table.size());
 
@@ -92,21 +92,21 @@ namespace kernels {
     }
 
     void
-    sampling_t(microscopes::lda::state &state, size_t j, size_t i) {
+    sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rng) {
         state.remove_table(j, i);
         size_t v = state.x_ji[j][i];
-        std::vector<float> f_k = calc_f_k(state, v);
+        std::vector<float> f_k = calc_f_k(state, v, rng);
         assert(f_k[0] == 0);
-        std::vector<float> p_t = calc_table_posterior(state, j, f_k);
+        std::vector<float> p_t = calc_table_posterior(state, j, f_k, rng);
         // if len(p_t) > 1 and p_t[1] < 0: self.dump()
         util::validate_probability_vector(p_t);
-        size_t word = common::util::sample_discrete(p_t, state.rng_);
+        size_t word = common::util::sample_discrete(p_t, rng);
         size_t t_new = state.using_t[j][word];
         if (t_new == 0)
         {
-            std::vector<float> p_k = calc_dish_posterior_w(state, f_k);
+            std::vector<float> p_k = calc_dish_posterior_w(state, f_k, rng);
             util::validate_probability_vector(p_k);
-            size_t topic_index = common::util::sample_discrete(p_k, state.rng_);
+            size_t topic_index = common::util::sample_discrete(p_k, rng);
             size_t k_new = state.dishes_[topic_index];
             if (k_new == 0)
             {
@@ -118,12 +118,12 @@ namespace kernels {
     }
 
     void
-    sampling_k(microscopes::lda::state &state, size_t j, size_t t) {
+    sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rng) {
         state.leave_from_dish(j, t);
-        std::vector<float> p_k = calc_dish_posterior_t(state, j, t);
+        std::vector<float> p_k = calc_dish_posterior_t(state, j, t, rng);
         util::validate_probability_vector(p_k);
         assert(state.dishes_.size() == p_k.size());
-        size_t topic_index = common::util::sample_discrete(p_k, state.rng_);
+        size_t topic_index = common::util::sample_discrete(p_k, rng);
         size_t k_new = state.dishes_[topic_index];
         if (k_new == 0)
         {
@@ -132,17 +132,17 @@ namespace kernels {
         state.seat_at_dish(j, t, k_new);
     }
     void
-    lda_crp_gibbs(microscopes::lda::state &state)
+    lda_crp_gibbs(microscopes::lda::state &state, common::rng_t &rng)
     {
         for (size_t j = 0; j < state.x_ji.size(); ++j) {
             for (size_t i = 0; i < state.x_ji[j].size(); ++i) {
-                sampling_t(state, j, i);
+                sampling_t(state, j, i, rng);
             }
         }
         for (size_t j = 0; j < state.x_ji.size(); ++j) {
             for (auto t : state.using_t[j]) {
                 if (t != 0) {
-                    sampling_k(state, j, t);
+                    sampling_k(state, j, t, rng);
                 }
             }
         }

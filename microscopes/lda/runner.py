@@ -50,4 +50,4 @@ class runner(object):
         validator.validate_positive(niters, param_name='niters')
 
         for _ in xrange(niters):
-            lda_crp_gibbs(self._latent)
+            lda_crp_gibbs(self._latent, r)

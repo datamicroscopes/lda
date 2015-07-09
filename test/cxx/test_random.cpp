@@ -25,7 +25,7 @@ sequence_random(double alpha, double beta, double gamma, size_t seed){
     lda::model_definition def(3, V);
     lda::state state(def, alpha, beta, gamma, docs, r);
     for(unsigned i = 0; i < 10; ++i){
-        microscopes::kernels::lda_crp_gibbs(state);
+        microscopes::kernels::lda_crp_gibbs(state, r);
     }
     state.validate_n_k_values();
     std::cout << "perplexity: " << state.perplexity() << std::endl;

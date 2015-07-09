@@ -52,7 +52,6 @@ public:
     float alpha_; //  Hyperparamter on second level Dirichlet process
     float beta_; // Hyperparameter on base Dirichlet process
     float gamma_; // Hyperparameter on first level Dirichlet process
-    common::rng_t rng_; // random number generator
     std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
     std::vector<size_t> dishes_; // dish(topic) index (k=0 means to draw a new dish)
     const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
@@ -81,7 +80,6 @@ public:
         : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
           n_k(util::defaultdict<size_t, float>(beta * def.v())) {
         V = def.v();
-        rng_ = rng;
         for (size_t i = 0; i < x_ji.size(); ++i) {
             using_t.push_back({0});
         }
