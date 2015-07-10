@@ -14,7 +14,7 @@ using namespace distributions;
 using namespace microscopes;
 using namespace microscopes::common;
 using namespace microscopes::common::recarray;
-using namespace microscopes::kernels;
+using namespace microscopes::kernels::lda_crp;
 
 
 bool assertAlmostEqual(double a, double b, double epislon)
