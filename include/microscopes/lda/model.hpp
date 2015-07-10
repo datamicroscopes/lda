@@ -1,31 +1,17 @@
 #pragma once
-#include <microscopes/models/base.hpp>
-#include <microscopes/common/entity_state.hpp>
-#include <microscopes/common/group_manager.hpp>
-#include <microscopes/common/variadic/dataview.hpp>
+
 #include <microscopes/common/util.hpp>
-#include <microscopes/common/typedefs.hpp>
 #include <microscopes/common/assert.hpp>
-#include <distributions/special.hpp>
-#include <distributions/models/dd.hpp>
 #include <microscopes/lda/util.hpp>
-#include <eigen3/Eigen/Dense>
 
 #include <math.h>
 #include <assert.h>
 #include <vector>
 #include <set>
-#include <functional>
 #include <map>
-#include <memory>
-#include <sstream>
-#include <utility>
-#include <stdexcept>
 
 namespace microscopes {
 namespace lda {
-
-typedef std::vector<std::shared_ptr<models::group>> group_type;
 
 
 class model_definition {
