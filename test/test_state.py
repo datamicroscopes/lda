@@ -2,7 +2,6 @@ from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
 from microscopes.lda.model import initialize
 from microscopes.lda.testutil import toy_dataset
-from microscopes.common.variadic.dataview import numpy_dataview
 
 from nose.tools import assert_equals
 
