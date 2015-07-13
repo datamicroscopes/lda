@@ -18,7 +18,8 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         size_t nwords()
         size_t nterms(size_t) except +
 
-        vector[map[size_t, size_t]] dish_assignments()
+        vector[vector[size_t]] assignments()
+        vector[vector[size_t]] dish_assignments()
         vector[vector[size_t]] table_assignments()
 
         float score_assignment()

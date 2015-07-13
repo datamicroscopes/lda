@@ -20,6 +20,12 @@ cdef class state:
     def nentities(self):
         return self._thisptr.get().nentities()
 
+    def ntopics(self):
+        return self._thisptr.get().ntopics()
+
+    def assignments(self):
+        return self._thisptr.get()[0].assignments()
+
     def dish_assignments(self):
         return self._thisptr.get()[0].dish_assignments()
 

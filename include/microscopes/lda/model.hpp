@@ -91,10 +91,20 @@ public:
     }
 
 
-    inline std::vector<std::vector<ssize_t>>
-    assignments() const {
-        MICROSCOPES_DCHECK(false, "assignments not implemented");
-        return std::vector<std::vector<ssize_t>>();
+    std::vector<std::vector<size_t>>
+    assignments() {
+        std::vector<std::vector<size_t>> ret;
+        ret.resize(nentities());
+
+        for (size_t eid = 0; eid < nentities(); eid++) {
+            ret[eid].resize(t_ji[eid].size());
+            for (size_t did = 0; did < t_ji[eid].size(); did++) {
+                auto table = t_ji[eid][did];
+                ret[eid][did] = k_jt[eid][table];
+            }
+        }
+        return ret;
+
     }
 
     /**
@@ -102,10 +112,9 @@ public:
     * table IDs -> (global) dish assignments
     *
     */
-    std::vector<std::map<size_t, size_t>>
+    std::vector<std::vector<size_t>>
     dish_assignments() {
-        MICROSCOPES_DCHECK(false, "dish_assignments not implemented");
-        return std::vector<std::map<size_t, size_t>>();
+        return k_jt;
     }
 
     /**
@@ -115,8 +124,7 @@ public:
     */
     std::vector<std::vector<size_t>>
     table_assignments() {
-        MICROSCOPES_DCHECK(false, "table_assignments not implemented");
-        return std::vector<std::vector<size_t>>();
+        return t_ji;
     }
 
     float
