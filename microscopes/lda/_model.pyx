@@ -14,7 +14,7 @@ cdef class state:
         cdef vector[vector[size_t]] _data = deepcopy(data)
         self._thisptr = c_initialize(defn._thisptr.get()[0], 0.2, 0.01, 0.5, _data, r._thisptr[0])
 
-    def _perplexity(self):
+    def perplexity(self):
         return self._thisptr.get().perplexity()
 
     def nentities(self):
@@ -33,9 +33,11 @@ cdef class state:
         return self._thisptr.get()[0].table_assignments()
 
     def score_assignment(self):
+        raise NotImplementedError()
         return self._thisptr.get()[0].score_assignment()
 
     def score_data(self, rng r):
+        raise NotImplementedError()
         return self._thisptr.get()[0].score_data(r._thisptr[0])
 
 
