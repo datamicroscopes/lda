@@ -42,7 +42,6 @@ public:
     std::vector<util::defaultdict<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
     std::vector<std::vector<size_t>> t_ji; // table for each document and term (-1 means not-assigned)
 
-
     template <class... Args>
     static inline std::shared_ptr<state>
     initialize(Args &&... args)
@@ -56,8 +55,6 @@ public:
           float gamma,
           const std::vector<std::vector<size_t>> &docs,
           common::rng_t &);
-
-
 
     std::vector<std::vector<size_t>>
     assignments();
@@ -87,10 +84,10 @@ public:
     score_data(common::rng_t &rng) const;
 
     std::vector<std::map<size_t, float>>
-    wordDist();
+    word_distribution();
 
     std::vector<std::vector<float>>
-    docDist();
+    document_distribution();
 
     double
     perplexity();

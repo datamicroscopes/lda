@@ -167,7 +167,7 @@ sequence3(double alpha, double beta, double gamma){
     state.add_table(j, t2, 3);
 
     // Section 2
-    std::vector<std::map<size_t, float>> phi = state.wordDist();
+    std::vector<std::map<size_t, float>> phi = state.word_distribution();
     MICROSCOPES_CHECK(phi.size() == 2, "phi is wrong size");
     MICROSCOPES_CHECK(assertAlmostEqual(phi[0][0], (beta+3)/(V*beta+5)), "phi[0][0] is wrong in section 2");
     MICROSCOPES_CHECK(assertAlmostEqual(phi[0][2], (beta+1)/(V*beta+5)), "phi[0][2] is wrong in section 2");
@@ -184,7 +184,7 @@ sequence3(double alpha, double beta, double gamma){
     }
 
     // Section 3
-    std::vector<std::vector<float>> theta = state.docDist();
+    std::vector<std::vector<float>> theta = state.document_distribution();
     MICROSCOPES_CHECK(theta.size() == 3, "theta is wrong size");
     for(auto inner_theta: theta){
         MICROSCOPES_CHECK(inner_theta.size() == 3, "inner_theta is wrong size");

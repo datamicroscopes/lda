@@ -91,7 +91,7 @@ microscopes::lda::state::score_data(common::rng_t &rng) const
 
 
 std::vector<std::map<size_t, float>>
-microscopes::lda::state::wordDist() {
+microscopes::lda::state::word_distribution() {
     // Distribution over words for each topic
     std::vector<std::map<size_t, float>> vec;
     vec.reserve(dishes_.size());
@@ -111,7 +111,7 @@ microscopes::lda::state::wordDist() {
 }
 
 std::vector<std::vector<float>>
-microscopes::lda::state::docDist() {
+microscopes::lda::state::document_distribution  () {
     // Distribution over topics for each document
     std::vector<std::vector<float>> theta;
     theta.reserve(restaurants_.size());
@@ -142,8 +142,8 @@ microscopes::lda::state::docDist() {
 
 double
 microscopes::lda::state::perplexity() {
-    std::vector<std::map<size_t, float>> phi = wordDist();
-    std::vector<std::vector<float>> theta = docDist();
+    std::vector<std::map<size_t, float>> phi = word_distribution();
+    std::vector<std::vector<float>> theta = document_distribution();
     phi.insert(phi.begin(), std::map<size_t, float>());
     double log_likelihood = 0;
     size_t N = 0;
