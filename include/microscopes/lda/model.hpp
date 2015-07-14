@@ -16,14 +16,7 @@ namespace lda {
 
 class model_definition {
 public:
-    model_definition(size_t n, size_t v)
-        : n_(n), v_(v)
-    {
-        MICROSCOPES_DCHECK(n > 0, "no docs");
-        MICROSCOPES_DCHECK(v > 0, "no terms");
-    }
-
-
+    model_definition(size_t, size_t);
     inline size_t n() const { return n_; }
     inline size_t v() const { return v_; }
 private:
