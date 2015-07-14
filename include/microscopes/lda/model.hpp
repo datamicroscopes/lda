@@ -3,6 +3,8 @@
 #include <microscopes/common/util.hpp>
 #include <microscopes/common/assert.hpp>
 #include <microscopes/lda/util.hpp>
+#include <microscopes/common/group_manager.hpp>
+#include <distributions/models/dd.hpp>
 
 #include <math.h>
 #include <assert.h>
@@ -26,6 +28,9 @@ private:
 
 class state {
 public:
+    static const size_t MaxVocabularySize = 0x10000;
+    typedef distributions::DirichletDiscrete<MaxVocabularySize> DirichletDiscrete;
+
     size_t V; // Size of vocabulary
     size_t m; // Total number of active tables
     float alpha_; //  Hyperparamter on second level Dirichlet process
