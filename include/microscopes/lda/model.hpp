@@ -34,7 +34,7 @@ public:
     std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
     std::vector<size_t> dishes_; // dish(topic) index (k=0 means to draw a new dish)
     const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
-    std::vector<std::vector<size_t>> k_jt; // topics of document and table
+    std::vector<std::vector<size_t>> restaurants_; // topics of document and table
     std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
     std::vector<size_t> m_k; // number of tables for each topic
@@ -65,7 +65,7 @@ public:
         dishes_ = {0};
 
         for (size_t j = 0; j < x_ji.size(); ++j) {
-            k_jt.push_back({0});
+            restaurants_.push_back({0});
             n_jt.push_back({0});
 
             n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
@@ -93,7 +93,7 @@ public:
             ret[eid].resize(t_ji[eid].size());
             for (size_t did = 0; did < t_ji[eid].size(); did++) {
                 auto table = t_ji[eid][did];
-                ret[eid][did] = k_jt[eid][table];
+                ret[eid][did] = restaurants_[eid][table];
             }
         }
         return ret;
@@ -107,7 +107,7 @@ public:
     */
     std::vector<std::vector<size_t>>
     dish_assignments() {
-        return k_jt;
+        return restaurants_;
     }
 
     /**
@@ -157,7 +157,7 @@ public:
     docDist() {
         // Distribution over topics for each document
         std::vector<std::vector<float>> theta;
-        theta.reserve(k_jt.size());
+        theta.reserve(restaurants_.size());
         std::vector<float> am_k(m_k.begin(), m_k.end());
         am_k[0] = gamma_;
         double sum_am_dishes_ = 0;
@@ -168,12 +168,12 @@ public:
             am_k[i] *= alpha_ / sum_am_dishes_;
         }
 
-        for (size_t j = 0; j < k_jt.size(); j++) {
+        for (size_t j = 0; j < restaurants_.size(); j++) {
             std::vector<size_t> &n_jt_ = n_jt[j];
             std::vector<float> p_jk = am_k;
             for (auto t : using_t[j]) {
                 if (t == 0) continue;
-                size_t k = k_jt[j][t];
+                size_t k = restaurants_[j][t];
                 p_jk[k] += n_jt_[t];
             }
             p_jk = util::selectByIndex(p_jk, dishes_);
@@ -213,7 +213,7 @@ public:
 
     void
     leave_from_dish(size_t j, size_t t) {
-        size_t k = k_jt[j][t];
+        size_t k = restaurants_[j][t];
         assert(k > 0);
         assert(m_k[k] > 0);
         m_k[k] -= 1; // one less table for topic k
@@ -221,7 +221,7 @@ public:
         if (m_k[k] == 0) // destroy table
         {
             delete_dish(k);
-            k_jt[j][t] = 0;
+            restaurants_[j][t] = 0;
         }
     }
 
@@ -248,11 +248,11 @@ public:
         m += 1;
         m_k[k_new] += 1;
 
-        size_t k_old = k_jt[j][t];
+        size_t k_old = restaurants_[j][t];
         if (k_new != k_old)
         {
             assert(k_new != 0);
-            k_jt[j][t] = k_new;
+            restaurants_[j][t] = k_new;
             float n_jt_val = n_jt[j][t];
 
             if (k_old != 0)
@@ -278,7 +278,7 @@ public:
         t_ji[ein][did] = t_new;
         n_jt[ein][t_new] += 1;
 
-        size_t k_new = k_jt[ein][t_new];
+        size_t k_new = restaurants_[ein][t_new];
         n_k.incr(k_new, 1);
 
         size_t v = x_ji[ein][did];
@@ -328,14 +328,14 @@ public:
         if (t_new == using_t[ein].size())
         {
             n_jt[ein].push_back(0);
-            k_jt[ein].push_back(0);
+            restaurants_[ein].push_back(0);
 
             n_jtv[ein].push_back(std::map<size_t, size_t>());
         }
         using_t[ein].insert(using_t[ein].begin() + t_new, t_new);
         n_jt[ein][t_new] = 0;
         assert(k_new != 0);
-        k_jt[ein][t_new] = k_new;
+        restaurants_[ein][t_new] = k_new;
         m_k[k_new] += 1;
         m += 1;
 
@@ -347,7 +347,7 @@ public:
         size_t t = t_ji[eid][tid];
         if (t > 0)
         {
-            size_t k = k_jt[eid][t];
+            size_t k = restaurants_[eid][t];
             assert(k > 0);
             // decrease counters
             size_t v = x_ji[eid][tid];
@@ -371,7 +371,7 @@ public:
 
     void
     delete_table(size_t eid, size_t tid) {
-        size_t k = k_jt[eid][tid];
+        size_t k = restaurants_[eid][tid];
         util::removeFirst(using_t[eid], tid);
         m_k[k] -= 1;
         m -= 1;

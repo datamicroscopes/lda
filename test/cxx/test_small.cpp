@@ -44,12 +44,12 @@ test_small()
         microscopes::kernels::lda_crp_gibbs(state, r);
         std::cout << "   p=" << state.perplexity() << std::endl;
         std::map<size_t, int> count;
-        for(auto k_j: state.k_jt){
+        for(auto k_j: state.restaurants_){
             for(auto k: k_j){
                 count[k]++;
             }
         }
-        std::cout << "k_jt count  " << count << std::endl;
+        std::cout << "restaurants_ count  " << count << std::endl;
     }
     std::cout << "FINI!" << std::endl;
 }

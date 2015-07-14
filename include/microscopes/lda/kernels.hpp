@@ -10,7 +10,7 @@ std::vector<float>
 calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rng) {
     std::vector<float> log_p_k(state.dishes_.size());
 
-    auto k_old = state.k_jt[j][t];
+    auto k_old = state.restaurants_[j][t];
     auto n_jt_val = state.n_jt[j][t];
     for (size_t i = 0; i < state.dishes_.size(); i++) {
         auto k = state.dishes_[i];
@@ -31,7 +31,7 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
         std::vector<float> n_kw(state.dishes_.size());
         for (size_t i = 0; i < state.dishes_.size(); i++) {
             n_kw[i] = state.n_kv[state.dishes_[i]].get(w);
-            if (state.dishes_[i] == state.k_jt[j][t]) n_kw[i] -= n_jtw;
+            if (state.dishes_[i] == state.restaurants_[j][t]) n_kw[i] -= n_jtw;
             assert(i == 0 || n_kw[i] > 0);
         }
         n_kw[0] = 1; // # dummy for logarithm's warning
@@ -84,7 +84,7 @@ calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float
 
     for (size_t i = 0; i < using_table.size(); i++) {
         auto p = using_table[i];
-        p_t(i) = state.n_jt[j][p] * f_k[state.k_jt[j][p]];
+        p_t(i) = state.n_jt[j][p] * f_k[state.restaurants_[j][p]];
     }
     Eigen::Map<Eigen::VectorXf> eigen_f_k(f_k.data(), f_k.size());
     Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> eigen_m_k(state.m_k.data(), state.m_k.size());

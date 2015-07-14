@@ -319,7 +319,7 @@ sequence1(double alpha, double beta, double gamma){
     MICROSCOPES_CHECK(k_new == 1, "incorrectly created new dish");
     size_t t_new = state.create_table(j, k_new);
     MICROSCOPES_CHECK(t_new == 1, "incorrectly created new table");
-    MICROSCOPES_CHECK(state.k_jt[j][t_new] == 1, "incorrectly created new table");
+    MICROSCOPES_CHECK(state.restaurants_[j][t_new] == 1, "incorrectly created new table");
 
     MICROSCOPES_CHECK(
         assertSequenceEqual(state.using_t[j], std::vector<size_t> {0, 1}),
@@ -397,7 +397,7 @@ sequence1(double alpha, double beta, double gamma){
 
     t_new = state.create_table(j, k_new);
     MICROSCOPES_CHECK(t_new == 2, "t_new wrong in section 5");
-    MICROSCOPES_CHECK(k_new == state.k_jt[j][t_new], "k_new wrong in section 5");
+    MICROSCOPES_CHECK(k_new == state.restaurants_[j][t_new], "k_new wrong in section 5");
 
     MICROSCOPES_CHECK(
         assertSequenceEqual(state.using_t[j], std::vector<size_t> {0, 1, 2}),
