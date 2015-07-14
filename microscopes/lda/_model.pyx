@@ -32,6 +32,13 @@ cdef class state:
     def table_assignments(self):
         return self._thisptr.get()[0].table_assignments()
 
+    def document_distribution(self):
+        return self._thisptr.get()[0].document_distribution()
+
+    def word_distribution(self, rng r):
+        raise NotImplementedError()
+        return self._thisptr.get()[0].word_distribution()
+
     def score_assignment(self):
         raise NotImplementedError()
         return self._thisptr.get()[0].score_assignment()
