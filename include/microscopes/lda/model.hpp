@@ -37,7 +37,8 @@ public:
     float beta_; // Hyperparameter on base Dirichlet process
     float gamma_; // Hyperparameter on first level Dirichlet process
     std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
-    std::vector<size_t> dishes_; // dish(topic) index (k=0 means to draw a new dish)
+    std::vector<size_t> dishes_index; // dish(topic) index (k=0 means to draw a new dish)
+    common::simple_group_manager<DirichletDiscrete::Group> dishes_group;
     const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
     std::vector<std::vector<size_t>> restaurants_; // topics of document and table
     std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
@@ -123,15 +124,15 @@ public:
 
     inline size_t tablesize(size_t eid, size_t tid) const { return n_jt[eid][tid]; }
 
-    inline void delete_dish(size_t did) { util::removeFirst(dishes_, did); }
+    inline void delete_dish(size_t did) { util::removeFirst(dishes_index, did); }
 
-    inline std::vector<size_t> dishes() const { return dishes_; }
+    inline std::vector<size_t> dishes() const { return dishes_index; }
 
     inline std::vector<size_t> tables(size_t eid) { return using_t[eid]; }
 
     inline size_t nentities() const { return x_ji.size(); }
 
-    inline size_t ntopics() const { return dishes_.size() - 1; }
+    inline size_t ntopics() const { return dishes_index.size() - 1; }
 
     inline size_t nwords() const { return V; }
 

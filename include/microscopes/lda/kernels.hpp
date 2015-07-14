@@ -8,12 +8,12 @@ namespace kernels {
 namespace lda_crp {
 std::vector<float>
 calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rng) {
-    std::vector<float> log_p_k(state.dishes_.size());
+    std::vector<float> log_p_k(state.dishes_index.size());
 
     auto k_old = state.restaurants_[j][t];
     auto n_jt_val = state.n_jt[j][t];
-    for (size_t i = 0; i < state.dishes_.size(); i++) {
-        auto k = state.dishes_[i];
+    for (size_t i = 0; i < state.dishes_index.size(); i++) {
+        auto k = state.dishes_index[i];
         if (k == 0) continue;
         float n_k_val = (k == k_old) ? state.n_k.get(k) - state.n_jt[j][t] : state.n_k.get(k);
         assert(n_k_val > 0);
@@ -28,10 +28,10 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
         if (n_jtw == 0) continue;
         assert(n_jtw > 0);
 
-        std::vector<float> n_kw(state.dishes_.size());
-        for (size_t i = 0; i < state.dishes_.size(); i++) {
-            n_kw[i] = state.n_kv[state.dishes_[i]].get(w);
-            if (state.dishes_[i] == state.restaurants_[j][t]) n_kw[i] -= n_jtw;
+        std::vector<float> n_kw(state.dishes_index.size());
+        for (size_t i = 0; i < state.dishes_index.size(); i++) {
+            n_kw[i] = state.n_kv[state.dishes_index[i]].get(w);
+            if (state.dishes_index[i] == state.restaurants_[j][t]) n_kw[i] -= n_jtw;
             assert(i == 0 || n_kw[i] > 0);
         }
         n_kw[0] = 1; // # dummy for logarithm's warning
@@ -43,7 +43,7 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
     for (auto x : log_p_k) assert(isfinite(x));
 
     std::vector<float> p_k;
-    p_k.reserve(state.dishes_.size());
+    p_k.reserve(state.dishes_index.size());
     float max_value = *std::max_element(log_p_k.begin(), log_p_k.end());
     for (auto log_p_k_value : log_p_k) {
         p_k.push_back(exp(log_p_k_value - max_value));
@@ -54,9 +54,9 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
 
 std::vector<float>
 calc_dish_posterior_w(microscopes::lda::state &state, const std::vector<float> &f_k, common::rng_t &rng) {
-    Eigen::VectorXf p_k(state.dishes_.size());
-    for (size_t i = 0; i < state.dishes_.size(); ++i) {
-        p_k(i) = state.m_k[state.dishes_[i]] * f_k[state.dishes_[i]];
+    Eigen::VectorXf p_k(state.dishes_index.size());
+    for (size_t i = 0; i < state.dishes_index.size(); ++i) {
+        p_k(i) = state.m_k[state.dishes_index[i]] * f_k[state.dishes_index[i]];
     }
     p_k(0) = state.gamma_ / state.V;
     p_k /= p_k.sum();
@@ -110,7 +110,7 @@ sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rn
         std::vector<float> p_k = calc_dish_posterior_w(state, f_k, rng);
         util::validate_probability_vector(p_k);
         size_t topic_index = common::util::sample_discrete(p_k, rng);
-        size_t k_new = state.dishes_[topic_index];
+        size_t k_new = state.dishes_index[topic_index];
         if (k_new == 0)
         {
             k_new = state.create_dish();
@@ -125,9 +125,9 @@ sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rn
     state.leave_from_dish(j, t);
     std::vector<float> p_k = calc_dish_posterior_t(state, j, t, rng);
     util::validate_probability_vector(p_k);
-    assert(state.dishes_.size() == p_k.size());
+    assert(state.dishes_index.size() == p_k.size());
     size_t topic_index = common::util::sample_discrete(p_k, rng);
-    size_t k_new = state.dishes_[topic_index];
+    size_t k_new = state.dishes_index[topic_index];
     if (k_new == 0)
     {
         k_new = state.create_dish();
