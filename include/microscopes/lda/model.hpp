@@ -338,12 +338,6 @@ public:
         }
     }
 
-    inline size_t
-    tablesize(size_t eid, size_t tid) const {
-        MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
-        return n_jt[eid][tid];
-    }
-
     void
     delete_table(size_t eid, size_t tid) {
         size_t k = restaurants_[eid][tid];
@@ -355,6 +349,12 @@ public:
         {
             delete_dish(k);
         }
+    }
+
+    inline size_t
+    tablesize(size_t eid, size_t tid) const {
+        MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
+        return n_jt[eid][tid];
     }
 
     inline void
