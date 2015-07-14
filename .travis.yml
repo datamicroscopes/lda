@@ -4,7 +4,7 @@ python:
 notifications:
   email: false
   slack:
-    secure: I5/FD8tMEMQCeAAtYiUrPVg0U5j6AyoIyEpWtDbS7kHDqu7eG9qNZhFjcy/qxOHmv6xKeJPyNR8iuoQm5y0OVxkvwC7iI02EHCgcH7BSvwMvXcXiYTH0JM0SwySnfW6pJkbwfs9AT06UlNrYqXDatqNUTIhLajsDQWAeSmd2wwM=
+    secure: GTVOuQvLJwVkIDsoAq7peVMdj27dtbTw7aVJ6n/Go09BVS8kCCrLfV+dxcH990JP/rtXqs0w++MmF9NxKm28wF+MdHAiHCOJxR4mcwsy9NuO+KoYysfmbmUVzZydgoys0jD+nS2zlwHq4C+/+a7Let7+5YOdt56sVLFS2Ll6G+E=
 before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -qq
