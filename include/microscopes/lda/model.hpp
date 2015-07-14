@@ -78,12 +78,13 @@ public:
     std::vector<std::vector<size_t>>
     table_assignments();
 
+    // Not implemented
     float
     score_assignment() const;
 
+    // Not implemented
     float
     score_data(common::rng_t &rng) const;
-
 
     std::vector<std::map<size_t, float>>
     wordDist();
@@ -94,8 +95,6 @@ public:
     double
     perplexity();
 
-// private:
-
     void
     leave_from_dish(size_t j, size_t t);
 
@@ -104,7 +103,6 @@ public:
 
     void
     seat_at_dish(size_t j, size_t t, size_t k_new);
-
 
     void
     add_table(size_t ein, size_t t_new, size_t did);
@@ -121,51 +119,25 @@ public:
     void
     delete_table(size_t eid, size_t tid);
 
-    inline size_t
-    tablesize(size_t eid, size_t tid) const {
-        MICROSCOPES_DCHECK(eid < nentities(), "invalid eid");
-        return n_jt[eid][tid];
-    }
+    inline size_t tablesize(size_t eid, size_t tid) const { return n_jt[eid][tid]; }
 
-    inline void
-    delete_dish(size_t did) {
-        util::removeFirst(dishes_, did);
-    }
+    inline void delete_dish(size_t did) { util::removeFirst(dishes_, did); }
 
-    inline std::vector<size_t>
-    dishes() const
-    {
-        return dishes_;
-    }
+    inline std::vector<size_t> dishes() const { return dishes_; }
 
-    inline std::vector<size_t>
-    tables(size_t eid) {
-        return using_t[eid];
-    }
+    inline std::vector<size_t> tables(size_t eid) { return using_t[eid]; }
 
-    inline size_t
-    nentities() const { return x_ji.size(); }
+    inline size_t nentities() const { return x_ji.size(); }
 
-    inline size_t
-    ntopics() const { return dishes_.size() - 1; }
+    inline size_t ntopics() const { return dishes_.size() - 1; }
 
-    inline size_t
-    nwords() const { return V; }
+    inline size_t nwords() const { return V; }
 
-    inline size_t
-    nterms(size_t eid) const {
-        return x_ji[eid].size();
-    }
+    inline size_t nterms(size_t eid) const { return x_ji[eid].size(); }
 
-    inline size_t
-    ntables(size_t eid) const {
-        return using_t[eid].size();
-    }
+    inline size_t ntables(size_t eid) const { return using_t[eid].size(); }
 
-    inline std::vector<size_t>
-    tables(size_t eid) const {
-        return using_t[eid];
-    }
+    inline std::vector<size_t> tables(size_t eid) const { return using_t[eid]; }
 
 };
 
