@@ -28,9 +28,6 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         float score_data(rng_t &)
 
 
-
-
-
 cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state":
     shared_ptr[state] initialize(const model_definition &,
                                  float,
