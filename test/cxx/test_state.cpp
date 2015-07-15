@@ -325,8 +325,8 @@ sequence1(double alpha, double beta, double gamma){
         assertSequenceEqual(state.using_t[j], std::vector<size_t> {0, 1}),
         "using_t[j] wrong after sitting at table");
     MICROSCOPES_CHECK(
-        assertSequenceEqual(state.dishes_index, std::vector<size_t> {0, 1}),
-        "dishes_index wrong after sitting at table");
+        assertSequenceEqual(state.dishes_, std::vector<size_t> {0, 1}),
+        "dishes_ wrong after sitting at table");
     MICROSCOPES_CHECK(state.n_jt[j][t_new] == 0,
         "n_jt[j][t_new] wrong after sitting at table");
 
@@ -403,8 +403,8 @@ sequence1(double alpha, double beta, double gamma){
         assertSequenceEqual(state.using_t[j], std::vector<size_t> {0, 1, 2}),
         "using_t[j] wrong after sitting at table in section 5");
     MICROSCOPES_CHECK(
-        assertSequenceEqual(state.dishes_index, std::vector<size_t> {0, 1}),
-        "dishes_index wrong after sitting at table");
+        assertSequenceEqual(state.dishes_, std::vector<size_t> {0, 1}),
+        "dishes_ wrong after sitting at table");
 
     state.add_table(j, t_new, i);
     MICROSCOPES_CHECK(state.t_ji[j][i] == t_new, "t_ji wrong in section 5");
@@ -464,8 +464,8 @@ sequence1(double alpha, double beta, double gamma){
 
     MICROSCOPES_CHECK(assertSequenceEqual(state.using_t[j], std::vector<size_t> {0, 1}),
         "using_t[j] set incorrectly");
-    MICROSCOPES_CHECK(assertSequenceEqual(state.dishes_index, std::vector<size_t> {0, 1}),
-        "dishes_index set incorrectly");
+    MICROSCOPES_CHECK(assertSequenceEqual(state.dishes_, std::vector<size_t> {0, 1}),
+        "dishes_ set incorrectly");
     MICROSCOPES_CHECK(state.n_jt[j][t_new] == 0, "n_jt[j][t_new] set incorrectly");
 
     state.add_table(j, t_new, i);

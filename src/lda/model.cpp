@@ -20,9 +20,7 @@ microscopes::lda::state::state(const model_definition &def,
     for (size_t i = 0; i < x_ji.size(); ++i) {
         using_t.push_back({0});
     }
-    dishes_index = {0};
-    auto p = dishes_index.create_group();
-    p.second.group_.init(shared_, rng);
+    dishes_ = {0};
 
     for (size_t j = 0; j < x_ji.size(); ++j) {
         restaurants_.push_back({0});
@@ -96,8 +94,8 @@ std::vector<std::map<size_t, float>>
 microscopes::lda::state::word_distribution() {
     // Distribution over words for each topic
     std::vector<std::map<size_t, float>> vec;
-    vec.reserve(dishes_index.size());
-    for (auto k : dishes_index) {
+    vec.reserve(dishes_.size());
+    for (auto k : dishes_) {
         if (k == 0) continue;
         vec.push_back(std::map<size_t, float>());
         for (size_t v = 0; v < V; ++v) {
@@ -119,12 +117,12 @@ microscopes::lda::state::document_distribution  () {
     theta.reserve(restaurants_.size());
     std::vector<float> am_k(m_k.begin(), m_k.end());
     am_k[0] = gamma_;
-    double sum_am_dishes_index = 0;
-    for (auto k : dishes_index) {
-        sum_am_dishes_index += am_k[k];
+    double sum_am_dishes_ = 0;
+    for (auto k : dishes_) {
+        sum_am_dishes_ += am_k[k];
     }
     for (size_t i = 0; i < am_k.size(); ++i) {
-        am_k[i] *= alpha_ / sum_am_dishes_index;
+        am_k[i] *= alpha_ / sum_am_dishes_;
     }
 
     for (size_t j = 0; j < restaurants_.size(); j++) {
@@ -135,7 +133,7 @@ microscopes::lda::state::document_distribution  () {
             size_t k = restaurants_[j][t];
             p_jk[k] += n_jt_[t];
         }
-        p_jk = util::selectByIndex(p_jk, dishes_index);
+        p_jk = util::selectByIndex(p_jk, dishes_);
         util::normalize<float>(p_jk);
         theta.push_back(p_jk);
     }
@@ -188,7 +186,7 @@ void
 microscopes::lda::state::validate_n_k_values() {
     return;
     std::map<size_t, std::tuple<float, float>> values;
-    for (auto k : dishes_index) {
+    for (auto k : dishes_) {
         float n_kv_sum = 0;
         for (size_t v = 0; v < V; v++) {
             n_kv_sum += n_kv[k].get(v);
@@ -247,24 +245,24 @@ microscopes::lda::state::add_table(size_t ein, size_t t_new, size_t did) {
 
 size_t
 microscopes::lda::state::create_dish() {
-    size_t k_new = dishes_index.size();
-    for (size_t i = 0; i < dishes_index.size(); ++i)
+    size_t k_new = dishes_.size();
+    for (size_t i = 0; i < dishes_.size(); ++i)
     {
-        if (i != dishes_index[i])
+        if (i != dishes_[i])
         {
             k_new = i;
             break;
         }
     }
-    if (k_new == dishes_index.size())
+    if (k_new == dishes_.size())
     {
         m_k.push_back(m_k[0]);
         n_kv.push_back(util::defaultdict<size_t, float>(beta_));
-        assert(k_new == dishes_index.back() + 1);
+        assert(k_new == dishes_.back() + 1);
         assert(k_new < n_kv.size());
     }
 
-    dishes_index.insert(dishes_index.begin() + k_new, k_new);
+    dishes_.insert(dishes_.begin() + k_new, k_new);
     n_k.set(k_new, beta_ * V);
     n_kv[k_new] = util::defaultdict<size_t, float>(beta_);
     m_k[k_new] = 0;
