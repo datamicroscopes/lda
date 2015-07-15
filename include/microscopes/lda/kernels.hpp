@@ -101,7 +101,7 @@ sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rn
     std::vector<float> f_k = calc_f_k(state, v, rng);
     assert(f_k[0] == 0);
     std::vector<float> p_t = calc_table_posterior(state, j, f_k, rng);
-    // if len(p_t) > 1 and p_t[1] < 0: self.dump()
+
     util::validate_probability_vector(p_t);
     size_t word = common::util::sample_discrete(p_t, rng);
     size_t t_new = state.using_t[j][word];
