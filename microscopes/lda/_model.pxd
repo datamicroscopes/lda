@@ -21,5 +21,5 @@ cdef class state:
     Instead, use `initialize`.
     """
     cdef shared_ptr[c_state] _thisptr
-    # cdef model_definition _defn
+    cdef model_definition _defn
     # cdef abstract_dataview _data
