@@ -74,7 +74,7 @@ test_compare_biology_abstracts(size_t n_iterations)
     for(unsigned i = 0; i < n_iterations; ++i){
         std::cout << "inference step: " << i << std::endl;
         microscopes::kernels::lda_crp_gibbs(state, r);
-        std::cout << "   K=" << state.dishes_.size() - 1 << std::endl;
+        std::cout << "   K=" << state.ntopics() << std::endl;
         std::cout << "   p=" << state.perplexity() << std::endl;
     }
     std::cout << "FINI!" << std::endl;
