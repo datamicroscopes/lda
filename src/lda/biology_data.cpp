@@ -1,4 +1,4 @@
-#include <microscopes/lda/data.hpp>
+#include <microscopes/lda/biology_data.hpp>
 #include <vector>
 
 namespace data{
