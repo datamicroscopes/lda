@@ -12,7 +12,7 @@ cdef class state:
     """
     def __cinit__(self, model_definition defn, vector[vector[size_t]] data, rng r, **kwargs):
         cdef vector[vector[size_t]] _data = deepcopy(data)
-        self._thisptr = c_initialize(defn._thisptr.get()[0], 0.2, 0.01, 0.5, _data, r._thisptr[0])
+        self._thisptr = c_initialize(defn._thisptr.get()[0], .1, .5, .1, _data, r._thisptr[0])
 
     def perplexity(self):
         return self._thisptr.get().perplexity()
