@@ -1,4 +1,5 @@
 # cython: embedsignature=True
+from microscopes.common import validator
 from cython.operator cimport dereference as deref
 from copy import deepcopy
 
@@ -11,6 +12,25 @@ cdef class state:
     This class is not meant to be sub-classed.
     """
     def __cinit__(self, model_definition defn, vector[vector[size_t]] data, rng r, **kwargs):
+        self._defn = defn
+
+        valid_kwargs = ('dish_hps', 'vocab_hp',
+                        'initial_dishes',
+                        'topic_assignments',
+                        'dish_assignments',
+                        'table_assignments',)
+        validator.validate_kwargs(kwargs, valid_kwargs)
+
+        validator.validate_len(data, defn.n, "data")
+
+        dish_hps = kwargs.get('dish_hps', None)
+        if dish_hps is None:
+            dish_hps = {'alpha': 0.1, 'gamma': 0.1}
+        validator.validate_kwargs(dish_hps, ('alpha', 'gamma',))
+
+        vocab_hp = kwargs.get('vocab_hp', 0.5)
+        validator.validate_positive(vocab_hp)
+
         cdef vector[vector[size_t]] _data = deepcopy(data)
         self._thisptr = c_initialize(defn._thisptr.get()[0], .1, .5, .1, _data, r._thisptr[0])
 
@@ -61,5 +81,7 @@ def initialize(model_definition defn,
     defn : model definition
     data : variadic dataview
     rng : random state
+    vocab_hp : parameter on symmetric Dirichlet prior over topic distributions (beta)
+    dish_hps : concentration parameters on base (alpha) and second-level (gamma) Dirichlet processes
     """
     return state(defn=defn, data=data, r=r, **kwargs)
