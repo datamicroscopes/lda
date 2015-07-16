@@ -12,8 +12,11 @@ cdef class state:
     This class is not meant to be sub-classed.
     """
     def __cinit__(self, model_definition defn, vector[vector[size_t]] data, rng r, **kwargs):
+        # Save and validate model definition
         self._defn = defn
+        validator.validate_len(data, defn.n, "data")
 
+        # Validate kwargs
         valid_kwargs = ('dish_hps', 'vocab_hp',
                         'initial_dishes',
                         'topic_assignments',
@@ -21,8 +24,7 @@ cdef class state:
                         'table_assignments',)
         validator.validate_kwargs(kwargs, valid_kwargs)
 
-        validator.validate_len(data, defn.n, "data")
-
+        # Save and validate hyperparameters
         dish_hps = kwargs.get('dish_hps', None)
         if dish_hps is None:
             dish_hps = {'alpha': 0.1, 'gamma': 0.1}
