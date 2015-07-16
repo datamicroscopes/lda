@@ -60,7 +60,9 @@ cdef class state:
         return self._thisptr.get()[0].table_assignments()
 
     def document_distribution(self):
-        return self._thisptr.get()[0].document_distribution()
+        doc_distribution = self._thisptr.get()[0].document_distribution()
+        # Remove dummy topic
+        return [topic_distribution[1:] for topic_distribution in doc_distribution]
 
     def word_distribution(self, rng r):
         return self._thisptr.get()[0].word_distribution()
