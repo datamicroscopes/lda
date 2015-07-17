@@ -38,8 +38,8 @@ public:
     std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
     std::vector<size_t> m_k; // number of tables for each topic
-    util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
-    std::vector<util::defaultdict<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
+    lda_util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
+    std::vector<lda_util::defaultdict<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
     std::vector<std::vector<size_t>> t_ji; // table for each document and term (-1 means not-assigned)
 
     template <class... Args>
@@ -118,7 +118,7 @@ public:
 
     inline size_t tablesize(size_t eid, size_t tid) const { return n_jt[eid][tid]; }
 
-    inline void delete_dish(size_t did) { util::removeFirst(dishes_, did); }
+    inline void delete_dish(size_t did) { lda_util::removeFirst(dishes_, did); }
 
     inline std::vector<size_t> dishes() const { return dishes_; }
 

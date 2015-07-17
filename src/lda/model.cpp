@@ -15,7 +15,7 @@ microscopes::lda::state::state(const model_definition &def,
       const std::vector<std::vector<size_t>> &docs,
       common::rng_t &rng)
     : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
-      n_k(util::defaultdict<size_t, float>(beta * def.v())) {
+      n_k(lda_util::defaultdict<size_t, float>(beta * def.v())) {
     V = def.v();
     for (size_t i = 0; i < x_ji.size(); ++i) {
         using_t.push_back({0});
@@ -34,7 +34,7 @@ microscopes::lda::state::state(const model_definition &def,
     }
     m = 0;
     m_k = std::vector<size_t> {1};
-    n_kv.push_back(util::defaultdict<size_t, float>(beta_));
+    n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
     for (size_t i = 0; i < docs.size(); i++) {
 
         t_ji.push_back(std::vector<size_t>(docs[i].size(), 0));
@@ -133,8 +133,8 @@ microscopes::lda::state::document_distribution  () {
             size_t k = restaurants_[j][t];
             p_jk[k] += n_jt_[t];
         }
-        p_jk = util::selectByIndex(p_jk, dishes_);
-        util::normalize<float>(p_jk);
+        p_jk = lda_util::selectByIndex(p_jk, dishes_);
+        lda_util::normalize<float>(p_jk);
         theta.push_back(p_jk);
     }
     return theta;
@@ -257,14 +257,14 @@ microscopes::lda::state::create_dish() {
     if (k_new == dishes_.size())
     {
         m_k.push_back(m_k[0]);
-        n_kv.push_back(util::defaultdict<size_t, float>(beta_));
+        n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
         assert(k_new == dishes_.back() + 1);
         assert(k_new < n_kv.size());
     }
 
     dishes_.insert(dishes_.begin() + k_new, k_new);
     n_k.set(k_new, beta_ * V);
-    n_kv[k_new] = util::defaultdict<size_t, float>(beta_);
+    n_kv[k_new] = lda_util::defaultdict<size_t, float>(beta_);
     m_k[k_new] = 0;
     return k_new;
 
@@ -323,7 +323,7 @@ microscopes::lda::state::remove_table(size_t eid, size_t tid) {
 void
 microscopes::lda::state::delete_table(size_t eid, size_t tid) {
     size_t k = restaurants_[eid][tid];
-    util::removeFirst(using_t[eid], tid);
+    lda_util::removeFirst(using_t[eid], tid);
     m_k[k] -= 1;
     m -= 1;
     assert(m_k[k] >= 0);

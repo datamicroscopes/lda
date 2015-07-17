@@ -48,7 +48,7 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
     for (auto log_p_k_value : log_p_k) {
         p_k.push_back(exp(log_p_k_value - max_value));
     }
-    util::normalize(p_k);
+   lda_util::normalize(p_k);
     return p_k;
 }
 
@@ -102,13 +102,13 @@ sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rn
     assert(f_k[0] == 0);
     std::vector<float> p_t = calc_table_posterior(state, j, f_k, rng);
 
-    util::validate_probability_vector(p_t);
+   lda_util::validate_probability_vector(p_t);
     size_t word = common::util::sample_discrete(p_t, rng);
     size_t t_new = state.using_t[j][word];
     if (t_new == 0)
     {
         std::vector<float> p_k = calc_dish_posterior_w(state, f_k, rng);
-        util::validate_probability_vector(p_k);
+       lda_util::validate_probability_vector(p_k);
         size_t topic_index = common::util::sample_discrete(p_k, rng);
         size_t k_new = state.dishes_[topic_index];
         if (k_new == 0)
@@ -124,7 +124,7 @@ void
 sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rng) {
     state.leave_from_dish(j, t);
     std::vector<float> p_k = calc_dish_posterior_t(state, j, t, rng);
-    util::validate_probability_vector(p_k);
+   lda_util::validate_probability_vector(p_k);
     assert(state.dishes_.size() == p_k.size());
     size_t topic_index = common::util::sample_discrete(p_k, rng);
     size_t k_new = state.dishes_[topic_index];
