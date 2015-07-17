@@ -13,3 +13,4 @@
 /microscopes/**/*.so
 /microscopes_lda.egg-info
 /microscopes/lda/githash.txt
+*.json
