@@ -30,9 +30,7 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
 
 cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state":
     shared_ptr[state] initialize(const model_definition &,
-                                 float,
-                                 float,
-                                 float,
+                                 float, float, float,
                                  size_t,
                                  vector[vector[size_t]] &,
                                  rng_t &) except +
