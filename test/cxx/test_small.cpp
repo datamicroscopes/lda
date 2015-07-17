@@ -1,6 +1,5 @@
 #include <microscopes/lda/model.hpp>
 #include <microscopes/lda/kernels.hpp>
-#include <microscopes/lda/data.hpp>
 #include <microscopes/lda/random_docs.hpp>
 #include <microscopes/common/macros.hpp>
 #include <microscopes/common/recarray/dataview.hpp>
