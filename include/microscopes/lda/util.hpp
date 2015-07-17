@@ -1,8 +1,8 @@
 #pragma once
 
-namespace util{
+namespace lda_util {
 
-    void
+    inline void
     validate_probability_vector(const std::vector<float> &p){
         float sum = 0;
         for(auto x: p){
