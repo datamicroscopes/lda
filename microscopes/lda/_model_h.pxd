@@ -33,5 +33,6 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state"
                                  float,
                                  float,
                                  float,
+                                 size_t,
                                  vector[vector[size_t]] &,
                                  rng_t &) except +

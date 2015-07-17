@@ -35,7 +35,7 @@ test_small()
     std::cout << "creating model definition...";
     std::vector<std::vector<size_t>> docs = {{0, 1}, {2, 3}};
     lda::model_definition def(docs.size(), num_unique_words_in_docs(docs));
-    lda::state state(def, .5, .01, .5, docs, r);
+    lda::state state(def, .5, .01, .5, 1, docs, r);
     std::cout << " complete" << std::endl;
 
     for(unsigned i = 0; i < 100; ++i){

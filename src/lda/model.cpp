@@ -12,6 +12,7 @@ microscopes::lda::state::state(const model_definition &def,
       float alpha,
       float beta,
       float gamma,
+      size_t initial_dishes,
       const std::vector<std::vector<size_t>> &docs,
       common::rng_t &rng)
     : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
@@ -20,11 +21,13 @@ microscopes::lda::state::state(const model_definition &def,
     for (size_t i = 0; i < x_ji.size(); ++i) {
         using_t.push_back({0});
     }
-    dishes_ = {0};
+    MICROSCOPES_DCHECK(initial_dishes == 1, "Initial dishes currently must be 1.")
+    dishes_ = microscopes::common::util::range(initial_dishes);
 
     for (size_t j = 0; j < x_ji.size(); ++j) {
         restaurants_.push_back({0});
-        n_jt.push_back({0});
+        size_t dish = common::util::sample_choice(dishes_, rng);
+        n_jt.push_back({dish});
 
         n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
         for (size_t t = 0; t < using_t[j].size(); ++t)

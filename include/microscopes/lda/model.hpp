@@ -53,6 +53,7 @@ public:
           float alpha,
           float beta,
           float gamma,
+          size_t initial_dishes,
           const std::vector<std::vector<size_t>> &docs,
           common::rng_t &);
 

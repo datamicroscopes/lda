@@ -33,11 +33,16 @@ cdef class state:
         vocab_hp = kwargs.get('vocab_hp', 0.5)
         validator.validate_positive(vocab_hp)
 
+        # Get initial dishes
+        initial_dishes = 1
+
+
         cdef vector[vector[size_t]] _data = deepcopy(data)
         self._thisptr = c_initialize(defn._thisptr.get()[0],
                                      dish_hps['alpha'],
                                      vocab_hp,
                                      dish_hps['gamma'],
+                                     initial_dishes,
                                      _data,
                                      r._thisptr[0])
 

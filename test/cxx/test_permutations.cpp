@@ -89,7 +89,7 @@ trial(const std::vector< std::vector<size_t>> &docs, size_t vocab_size,
       double alpha, double beta, double gamma, common::rng_t &r){
     size_t max_steps = 1000;
     lda::model_definition def(docs.size(), vocab_size);
-    lda::state state(def, alpha, beta, gamma, docs, r);
+    lda::state state(def, alpha, beta, gamma, 1, docs, r);
     for(size_t i = 0; i < max_steps; i++){
         microscopes::kernels::lda_crp_gibbs(state, r);
     }
