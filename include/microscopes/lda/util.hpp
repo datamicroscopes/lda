@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microscopes/common/assert.hpp>
+#include <math.h>
 
 namespace lda_util {
 
@@ -8,7 +8,7 @@ namespace lda_util {
     valid_probability_vector(const std::vector<float> &p){
         float sum = 0;
         for(auto x: p){
-            if(isfinite(x) == false) return false;
+            if(std::isfinite(x) == false) return false;
             if(x < 0) return false;
             sum+=x;
         }
