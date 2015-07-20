@@ -1,16 +1,18 @@
 #pragma once
 
+#include <microscopes/common/assert.hpp>
+
 namespace lda_util {
 
-    inline void
-    validate_probability_vector(const std::vector<float> &p){
+    inline bool
+    valid_probability_vector(const std::vector<float> &p){
         float sum = 0;
         for(auto x: p){
-            assert(isfinite(x));
-            assert(x >= 0);
+            if(isfinite(x) == false) return false;
+            if(x < 0) return false;
             sum+=x;
         }
-        assert(std::abs(1 - sum) < 0.01);
+        return (std::abs(1 - sum) < 0.01);
     }
 
     template<typename T> void

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <microscopes/lda/model.hpp>
+#include <microscopes/common/macros.hpp>
 
 namespace microscopes {
 namespace kernels {
