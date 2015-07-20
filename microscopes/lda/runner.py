@@ -37,7 +37,7 @@ class runner(object):
 
 
     def run(self, r, niters=10000):
-        """Run the specified mixturemodel kernel for `niters`, in a single
+        """Run the specified lda kernel for `niters`, in a single
         thread.
 
         Parameters
