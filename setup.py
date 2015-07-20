@@ -236,13 +236,17 @@ with open('README.md') as f:
     long_description = f.read()
 
 
-version = None
-with open(join_path(basedir, '__init__.py')) as fp:
-    for line in fp:
-        if re.match("_version_base\s+=\s+'\S+'$", line):
-            version = line.split()[-1].strip("'")
-if not version:
-    raise RuntimeError("could not determine version")
+def get_version():
+    version = None
+    with open(join_path(basedir, '__init__.py')) as fp:
+        for line in fp:
+            if re.match("_version_base\s+=\s+'\S+'$", line):
+                version = line.split()[-1].strip("'")
+    if not version:
+        raise RuntimeError("could not determine version")
+    return version
+
+version = get_version()
 
 setup(version=version,
       name='microscopes-lda',
