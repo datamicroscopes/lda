@@ -1,5 +1,7 @@
 #pragma once
 
+#include <microscopes/common/assert.hpp>
+
 namespace lda_util {
 
     inline bool
