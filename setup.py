@@ -24,6 +24,9 @@ CYTHON_MODULES = ['microscopes.lda._model',
                   'microscopes.lda.kernels',
                   'microscopes.lda.biology_data']
 
+LIBRARY_DEPENDENCIES = ["microscopes_common", "microscopes_lda",
+                        "protobuf", "distributions_shared"]
+
 
 def get_git_sha1():
     try:
@@ -216,8 +219,7 @@ def make_extension(module_name):
         sources=sources,
         language="c++",
         include_dirs=include_dirs,
-        libraries=["microscopes_common", "microscopes_lda",
-                   "protobuf", "distributions_shared"],
+        libraries=LIBRARY_DEPENDENCIES,
         library_dirs=library_dirs,
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args)
