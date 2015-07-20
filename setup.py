@@ -7,7 +7,7 @@ from Cython.Build import cythonize
 import Cython.Compiler.Options
 Cython.Compiler.Options.fail_fast = True
 from cython import __version__ as cython_version
-from pkg_resources import parse_version as V
+from pkg_resources import parse_version
 from os.path import join as join_path
 
 import numpy
@@ -29,7 +29,7 @@ def get_git_sha1():
     try:
         import git
         required_version = '0.3.7'
-        if V(git.__version__) < V(required_version):
+        if parse_version(git.__version__) < parse_version(required_version):
             raise ImportError('could not import gitpython>=%s' % required_version)
     except ImportError as e:
         print >>sys.stderr, e
