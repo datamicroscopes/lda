@@ -187,8 +187,6 @@ extra_compile_args = [
 math_opt_flags = [
     '-mfpmath=sse',
     '-msse4.1',
-    #'-ffast-math',
-    #'-funsafe-math-optimizations',
 ]
 if not debug_build:
     extra_compile_args.extend(math_opt_flags)
