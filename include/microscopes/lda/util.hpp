@@ -1,7 +1,5 @@
 #pragma once
 
-#include <microscopes/common/assert.hpp>
-
 namespace lda_util {
 
     inline bool
@@ -40,9 +38,6 @@ namespace lda_util {
     template<class T>
     void
     normalize(std::vector<T> &v){
-        for(auto x: v) {
-            assert(isfinite(x));
-        }
         Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, 1>> vec(v.data(), v.size());
         vec /= vec.sum();
     }
