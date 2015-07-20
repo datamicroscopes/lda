@@ -13,6 +13,7 @@ requirements:
     - cython >=0.20.2
     - distributions >=2.0.23
     - libprotobuf
+    - nose
     - eigen3
     - microscopes-common
   run:
@@ -21,6 +22,7 @@ requirements:
     - scipy
     - distributions >=2.0.23
     - libprotobuf
+    - nose
     - protobuf
     - microscopes-common
 
