@@ -5,7 +5,6 @@
 #include <microscopes/lda/util.hpp>
 
 #include <math.h>
-#include <assert.h>
 #include <vector>
 #include <set>
 #include <map>

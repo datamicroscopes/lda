@@ -174,8 +174,8 @@ microscopes::lda::state::perplexity() {
 void
 microscopes::lda::state::leave_from_dish(size_t j, size_t t) {
     size_t k = restaurants_[j][t];
-    assert(k > 0);
-    assert(m_k[k] > 0);
+    MICROSCOPES_DCHECK(k > 0, "k < = 0");
+    MICROSCOPES_DCHECK(m_k[k] > 0, "m_k[k] <= 0");
     m_k[k] -= 1; // one less table for topic k
     m -= 1; // one less table
     if (m_k[k] == 0) // destroy table
@@ -198,7 +198,8 @@ microscopes::lda::state::validate_n_k_values() {
     }
     for (auto kv : values) {
         if (kv.first == 0) continue;
-        assert(std::abs((std::get<0>(kv.second) - std::get<1>(kv.second))) < 0.01);
+        MICROSCOPES_CHECK(std::abs((std::get<0>(kv.second) - std::get<1>(kv.second))) < 0.01,
+                          "n_kv doesn't match n_k");
     }
 }
 
@@ -211,7 +212,7 @@ microscopes::lda::state::seat_at_dish(size_t j, size_t t, size_t k_new) {
     size_t k_old = restaurants_[j][t];
     if (k_new != k_old)
     {
-        assert(k_new != 0);
+        MICROSCOPES_DCHECK(k_new != 0, "k_new is 0");
         restaurants_[j][t] = k_new;
         float n_jt_val = n_jt[j][t];
 
@@ -261,8 +262,8 @@ microscopes::lda::state::create_dish() {
     {
         m_k.push_back(m_k[0]);
         n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
-        assert(k_new == dishes_.back() + 1);
-        assert(k_new < n_kv.size());
+        MICROSCOPES_DCHECK(k_new == dishes_.back() + 1, "bad k_new (1)");
+        MICROSCOPES_DCHECK(k_new < n_kv.size(), "bad k_new (2)");
     }
 
     dishes_.insert(dishes_.begin() + k_new, k_new);
@@ -294,7 +295,7 @@ microscopes::lda::state::create_table(size_t ein, size_t k_new)
     }
     using_t[ein].insert(using_t[ein].begin() + t_new, t_new);
     n_jt[ein][t_new] = 0;
-    assert(k_new != 0);
+    MICROSCOPES_DCHECK(k_new != 0, "k_new ");
     restaurants_[ein][t_new] = k_new;
     m_k[k_new] += 1;
     m += 1;
@@ -308,7 +309,7 @@ microscopes::lda::state::remove_table(size_t eid, size_t tid) {
     if (t > 0)
     {
         size_t k = restaurants_[eid][t];
-        assert(k > 0);
+        MICROSCOPES_DCHECK(k > 0, "k <= 0");
         // decrease counters
         size_t v = x_ji[eid][tid];
         n_kv[k].decr(v, 1);
@@ -329,7 +330,7 @@ microscopes::lda::state::delete_table(size_t eid, size_t tid) {
     lda_util::removeFirst(using_t[eid], tid);
     m_k[k] -= 1;
     m -= 1;
-    assert(m_k[k] >= 0);
+    MICROSCOPES_DCHECK(m_k[k] >= 0, "m_k[k] < 0");
     if (m_k[k] == 0)
     {
         delete_dish(k);

@@ -14,9 +14,9 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
         auto k = state.dishes_[i];
         if (k == 0) continue;
         float n_k_val = (k == k_old) ? state.n_k.get(k) - state.n_jt[j][t] : state.n_k.get(k);
-        assert(n_k_val > 0);
+        MICROSCOPES_DCHECK(n_k_val > 0, "n_k_val isn't positive");
         log_p_k[i] = distributions::fast_log(state.m_k[k]) + distributions::fast_lgamma(n_k_val) - distributions::fast_lgamma(n_k_val + n_jt_val);
-        assert(isfinite(log_p_k[i]));
+        MICROSCOPES_DCHECK(isfinite(log_p_k[i]), "log_p_k isn't finite");
     }
     log_p_k[0] = distributions::fast_log(state.gamma_) + distributions::fast_lgamma(state.V * state.beta_) - distributions::fast_lgamma(state.V * state.beta_ + state.n_jt[j][t]);
 
@@ -24,21 +24,22 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
         auto w = kv.first;
         auto n_jtw = kv.second;
         if (n_jtw == 0) continue;
-        assert(n_jtw > 0);
+        MICROSCOPES_DCHECK(n_jtw > 0, "n_jtw isn't positive");
 
         std::vector<float> n_kw(state.dishes_.size());
         for (size_t i = 0; i < state.dishes_.size(); i++) {
             n_kw[i] = state.n_kv[state.dishes_[i]].get(w);
             if (state.dishes_[i] == state.restaurants_[j][t]) n_kw[i] -= n_jtw;
-            assert(i == 0 || n_kw[i] > 0);
+            MICROSCOPES_DCHECK(i == 0 || n_kw[i] > 0, "n_kw[i] <= 0");
         }
         n_kw[0] = 1; // # dummy for logarithm's warning
         for (size_t i = 1; i < n_kw.size(); i++) {
             log_p_k[i] += distributions::fast_lgamma(n_kw[i] + n_jtw) - distributions::fast_lgamma(n_kw[i]);
+            MICROSCOPES_DCHECK(isfinite(log_p_k[i]), "log_p_k isn't finite");
         }
+
         log_p_k[0] += distributions::fast_lgamma(state.beta_ + n_jtw) - distributions::fast_lgamma(state.beta_);
     }
-    for (auto x : log_p_k) assert(isfinite(x));
 
     std::vector<float> p_k;
     p_k.reserve(state.dishes_.size());
@@ -96,7 +97,7 @@ sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rn
     state.remove_table(j, i);
     size_t v = state.x_ji[j][i];
     std::vector<float> f_k = calc_f_k(state, v, rng);
-    assert(f_k[0] == 0);
+    MICROSCOPES_DCHECK(f_k[0] == 0, "f_k[0] != 0");
     std::vector<float> p_t = calc_table_posterior(state, j, f_k, rng);
 
     MICROSCOPES_DCHECK(lda_util::valid_probability_vector(p_t), "Invalid p_t");
@@ -122,7 +123,7 @@ sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rn
     state.leave_from_dish(j, t);
     std::vector<float> p_k = calc_dish_posterior_t(state, j, t, rng);
     MICROSCOPES_DCHECK(lda_util::valid_probability_vector(p_k), "Invalid p_k");
-    assert(state.dishes_.size() == p_k.size());
+    MICROSCOPES_DCHECK(state.dishes_.size() == p_k.size(), "p_k is wrong size");
     size_t topic_index = common::util::sample_discrete(p_k, rng);
     size_t k_new = state.dishes_[topic_index];
     if (k_new == 0)
