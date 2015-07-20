@@ -19,6 +19,12 @@ import re
 from subprocess import Popen, PIPE
 
 
+CYTHON_MODULES = ['microscopes.lda._model',
+                  'microscopes.lda.definition',
+                  'microscopes.lda.kernels',
+                  'microscopes.lda.biology_data']
+
+
 def get_git_sha1():
     try:
         import git
@@ -214,12 +220,8 @@ def make_extension(module_name):
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args)
 
-extensions = cythonize([
-    make_extension('microscopes.lda._model'),
-    make_extension('microscopes.lda.definition'),
-    make_extension('microscopes.lda.kernels'),
-    make_extension('microscopes.lda.biology_data'),
-], include_path=[include_paths['microscopes_common_cython_inc']])
+extensions = cythonize([make_extension(module) for module in CYTHON_MODULES],
+                       include_path=[include_paths['microscopes_common_cython_inc']])
 
 with open('README.md') as f:
     long_description = f.read()
