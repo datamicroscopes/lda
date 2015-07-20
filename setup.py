@@ -178,33 +178,42 @@ def load_dependencies(basedir):
     return include_dirs, library_dirs, include_paths
 
 
+def build_extra_compile_args():
+    extra_compile_args = [
+        '-std=c++0x',
+        '-Wno-unused-function',
+    ]
+    # taken from distributions
+    math_opt_flags = [
+        '-mfpmath=sse',
+        '-msse4.1',
+    ]
+    if not is_debug_build():
+        extra_compile_args.extend(math_opt_flags)
+    if is_clang():
+        extra_compile_args.extend([
+            '-mmacosx-version-min=10.7',  # for anaconda
+            '-stdlib=libc++',
+            '-Wno-deprecated-register',
+        ])
+    if is_debug_build():
+        extra_compile_args.append('-DDEBUG_MODE')
+
+    return extra_compile_args
+
+
+def build_extra_link_args():
+    extra_link_args = []
+    if 'EXTRA_LINK_ARGS' in os.environ:
+        extra_link_args.append(os.environ['EXTRA_LINK_ARGS'])
+    return extra_link_args
+
 basedir = join_path(os.path.dirname(__file__), 'microscopes', 'lda')
 include_dirs, library_dirs, include_paths = load_dependencies(basedir)
-
-extra_compile_args = [
-    '-std=c++0x',
-    '-Wno-unused-function',
-]
-# taken from distributions
-math_opt_flags = [
-    '-mfpmath=sse',
-    '-msse4.1',
-]
-if not is_debug_build():
-    extra_compile_args.extend(math_opt_flags)
-if is_clang():
-    extra_compile_args.extend([
-        '-mmacosx-version-min=10.7',  # for anaconda
-        '-stdlib=libc++',
-        '-Wno-deprecated-register',
-    ])
-if is_debug_build():
-    extra_compile_args.append('-DDEBUG_MODE')
+extra_compile_args = build_extra_compile_args()
+extra_link_args = build_extra_link_args()
 
 
-extra_link_args = []
-if 'EXTRA_LINK_ARGS' in os.environ:
-    extra_link_args.append(os.environ['EXTRA_LINK_ARGS'])
 
 
 def make_extension(module_name):
