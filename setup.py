@@ -96,23 +96,25 @@ def find_cython_dependency(dirname):
                 return ret
     return None
 
-clang = False
-if sys.platform.lower().startswith('darwin'):
-    clang = True
 
-so_ext = 'dylib' if clang else 'so'
+def is_debug_build():
+    return 'DEBUG' in os.environ
 
-min_cython_version = '0.20.2' if clang else '0.20.1'
-if LooseVersion(cython_version) < LooseVersion(min_cython_version):
-    raise ValueError(
-        'cython support requires cython>={}'.format(min_cython_version))
 
-cc = os.environ.get('CC', None)
-cxx = os.environ.get('CXX', None)
-debug_build = 'DEBUG' in os.environ
+def is_clang():
+    return sys.platform.lower().startswith('darwin')
 
 
 def load_dependencies(basedir):
+    so_ext = 'dylib' if is_clang() else 'so'
+
+    min_cython_version = '0.20.2' if is_clang() else '0.20.1'
+    if LooseVersion(cython_version) < LooseVersion(min_cython_version):
+        raise ValueError(
+            'cython support requires cython>={}'.format(min_cython_version))
+
+    cc = os.environ.get('CC', None)
+    cxx = os.environ.get('CXX', None)
     distributions_lib, distributions_inc = find_dependency(
         'libdistributions_shared.{}'.format(so_ext), 'distributions')
     microscopes_common_lib, microscopes_common_inc = find_dependency(
@@ -129,7 +131,7 @@ def load_dependencies(basedir):
         githashfile = join_path(basedir, 'githash.txt')
         with open(githashfile, 'w') as fp:
             print >>fp, sha1
-    elif debug_build:
+    elif is_debug_build():
         raise RuntimeError("OFFICIAL_BUILD and DEBUG both set")
 
     if distributions_inc is not None:
@@ -150,7 +152,7 @@ def load_dependencies(basedir):
         print 'Using CC={}'.format(cc)
     if cxx is not None:
         print 'Using CXX={}'.format(cxx)
-    if debug_build:
+    if is_debug_build():
         print 'Debug build'
 
     include_dirs = [numpy.get_include()]
@@ -188,15 +190,15 @@ math_opt_flags = [
     '-mfpmath=sse',
     '-msse4.1',
 ]
-if not debug_build:
+if not is_debug_build():
     extra_compile_args.extend(math_opt_flags)
-if clang:
+if is_clang():
     extra_compile_args.extend([
         '-mmacosx-version-min=10.7',  # for anaconda
         '-stdlib=libc++',
         '-Wno-deprecated-register',
     ])
-if debug_build:
+if is_debug_build():
     extra_compile_args.append('-DDEBUG_MODE')
 
 
