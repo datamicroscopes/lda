@@ -99,7 +99,6 @@ def initialize(model_definition defn, data, rng r, **kwargs):
     dish_hps : concentration parameters on base (alpha) and second-level (gamma) Dirichlet processes
     """
     cdef vector[vector[size_t]] numeric_docs = _initialize_data(data)
-    print "numeric_docs", numeric_docs
     return state(defn=defn, data=numeric_docs, r=r, **kwargs)
 
 cdef vector[vector[size_t]] _initialize_data(docs):
