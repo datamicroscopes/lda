@@ -23,3 +23,4 @@ def test_alpha_numeric():
     prng = rng()
     s = initialize(defn, docs, prng)
     assert_equals(s.nentities(), len(docs))
+    assert_equals(s.nwords(), 6)
