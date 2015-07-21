@@ -1,6 +1,9 @@
 # Change Log
 
 ## [Unreleased]
+### Added
+- Documents can now be any list-of-list of hashable objects
+
 ### Removed
 - Removed biology abstract test script and data
 
