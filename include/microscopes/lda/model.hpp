@@ -26,7 +26,6 @@ private:
 class state {
 public:
     size_t V; // Size of vocabulary
-    size_t m; // Total number of active tables
     float alpha_; //  Hyperparamter on second level Dirichlet process
     float beta_; // Hyperparameter on base Dirichlet process
     float gamma_; // Hyperparameter on first level Dirichlet process
@@ -135,6 +134,8 @@ public:
     inline size_t ntables(size_t eid) const { return using_t[eid].size(); }
 
     inline std::vector<size_t> tables(size_t eid) const { return using_t[eid]; }
+
+    inline int m() const { return std::accumulate(m_k.begin(), m_k.end(), 0); }
 
 };
 

@@ -31,7 +31,6 @@ microscopes::lda::state::state(const model_definition &def,
 
         create_table(j, dishes_[0]);
     }
-    m = 0;
     m_k = std::vector<size_t> {1};
     n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
     for (size_t i = 0; i < docs.size(); i++) {
@@ -173,7 +172,6 @@ microscopes::lda::state::leave_from_dish(size_t j, size_t t) {
     MICROSCOPES_DCHECK(k > 0, "k < = 0");
     MICROSCOPES_DCHECK(m_k[k] > 0, "m_k[k] <= 0");
     m_k[k] -= 1; // one less table for topic k
-    m -= 1; // one less table
     if (m_k[k] == 0) // destroy table
     {
         delete_dish(k);
@@ -202,7 +200,6 @@ microscopes::lda::state::validate_n_k_values() {
 
 void
 microscopes::lda::state::seat_at_dish(size_t j, size_t t, size_t k_new) {
-    m += 1;
     m_k[k_new] += 1;
 
     size_t k_old = restaurants_[j][t];
@@ -295,7 +292,6 @@ microscopes::lda::state::create_table(size_t ein, size_t k_new)
     restaurants_[ein][t_new] = k_new;
     if (k_new != 0){
         m_k[k_new] += 1;
-        m += 1;
     }
 
     return t_new;
@@ -327,7 +323,6 @@ microscopes::lda::state::delete_table(size_t eid, size_t tid) {
     size_t k = restaurants_[eid][tid];
     lda_util::removeFirst(using_t[eid], tid);
     m_k[k] -= 1;
-    m -= 1;
     MICROSCOPES_DCHECK(m_k[k] >= 0, "m_k[k] < 0");
     if (m_k[k] == 0)
     {

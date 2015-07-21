@@ -87,7 +87,7 @@ calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float
     Eigen::Map<Eigen::VectorXf> eigen_f_k(f_k.data(), f_k.size());
     Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> eigen_m_k(state.m_k.data(), state.m_k.size());
     float p_x_ji = state.gamma_ / state.V + eigen_f_k.dot(eigen_m_k.cast<float>());
-    p_t[0] = p_x_ji * state.alpha_ / (state.gamma_ + state.m);
+    p_t[0] = p_x_ji * state.alpha_ / (state.gamma_ + state.ntables());
     p_t /= p_t.sum();
     return std::vector<float>(p_t.data(), p_t.data() + p_t.size());
 }
