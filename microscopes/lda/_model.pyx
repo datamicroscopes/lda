@@ -2,6 +2,7 @@
 from microscopes.common import validator
 from cython.operator cimport dereference as deref
 from copy import deepcopy
+from itertools import chain
 
 cdef class state:
     """The underlying state of an HDP-LDA
@@ -84,10 +85,7 @@ cdef class state:
 def bind(state s, **kwargs):
     pass
 
-def initialize(model_definition defn,
-               vector[vector[size_t]] data,
-               rng r,
-               **kwargs):
+def initialize(model_definition defn, data, rng r, **kwargs):
     """Initialize state to a random, valid point in the state space
     Parameters
     ----------
@@ -97,4 +95,14 @@ def initialize(model_definition defn,
     vocab_hp : parameter on symmetric Dirichlet prior over topic distributions (beta)
     dish_hps : concentration parameters on base (alpha) and second-level (gamma) Dirichlet processes
     """
-    return state(defn=defn, data=data, r=r, **kwargs)
+    cdef vector[vector[size_t]] numeric_docs = _initialize_data(data)
+    print "numeric_docs", numeric_docs
+    return state(defn=defn, data=numeric_docs, r=r, **kwargs)
+
+cdef vector[vector[size_t]] _initialize_data(docs):
+    vocab = chain.from_iterable(docs)
+    word_to_int = { word: i for i, word in enumerate(vocab)}
+    numeric_docs = []
+    for doc in docs:
+        numeric_docs.append([word_to_int[word] for word in doc])
+    return numeric_docs
