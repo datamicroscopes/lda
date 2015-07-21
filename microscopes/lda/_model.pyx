@@ -103,6 +103,9 @@ def initialize(model_definition defn, data, rng r, **kwargs):
     return state(defn=defn, data=numeric_docs, r=r, **kwargs)
 
 cdef vector[vector[size_t]] _initialize_data(docs):
+    """Convert docs (list of list of hashable items) to list of list of
+    positive integers.
+    """
     vocab = chain.from_iterable(docs)
     word_to_int = { word: i for i, word in enumerate(vocab)}
     numeric_docs = []
