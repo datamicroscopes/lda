@@ -56,6 +56,9 @@ cdef class state:
     def ntopics(self):
         return self._thisptr.get().ntopics()
 
+    def nwords(self):
+        return self._thisptr.get().nwords()
+
     def assignments(self):
         return self._thisptr.get()[0].assignments()
 
