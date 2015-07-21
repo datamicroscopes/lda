@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Added
 - Documents can now be any list-of-list of hashable objects
+- Expose nwords method of state object to Python layer
 
 ### Removed
 - Removed biology abstract test script and data
