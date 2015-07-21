@@ -18,13 +18,12 @@ microscopes::lda::state::state(const model_definition &def,
     : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
       n_k(lda_util::defaultdict<size_t, float>(beta * def.v())) {
     V = def.v();
-    for (size_t i = 0; i < x_ji.size(); ++i) {
-        using_t.push_back({0});
-    }
+
     MICROSCOPES_DCHECK(initial_dishes == 1, "Initial dishes currently must be 1.");
     dishes_ = microscopes::common::util::range(initial_dishes);
 
     for (size_t j = 0; j < x_ji.size(); ++j) {
+        using_t.push_back({0});
         restaurants_.push_back({0});
         size_t dish = common::util::sample_choice(dishes_, rng);
         n_jt.push_back({dish});
