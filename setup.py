@@ -22,7 +22,7 @@ from subprocess import Popen, PIPE
 CYTHON_MODULES = ['microscopes.lda._model',
                   'microscopes.lda.definition',
                   'microscopes.lda.kernels',
-                  'microscopes.lda.biology_data']
+                  ]
 
 LIBRARY_DEPENDENCIES = ["microscopes_common", "microscopes_lda",
                         "protobuf", "distributions_shared"]
