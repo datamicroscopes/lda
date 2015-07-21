@@ -23,16 +23,13 @@ microscopes::lda::state::state(const model_definition &def,
     dishes_ = microscopes::common::util::range(initial_dishes);
 
     for (size_t j = 0; j < x_ji.size(); ++j) {
-        using_t.push_back({0});
-        restaurants_.push_back({0});
-        size_t dish = common::util::sample_choice(dishes_, rng);
-        n_jt.push_back({dish});
-
+        // Initialize indicies and counts
+        using_t.push_back(std::vector<size_t>());
+        n_jt.push_back(std::vector<size_t>());
+        restaurants_.push_back(std::vector<size_t>());
         n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
-        for (size_t t = 0; t < using_t[j].size(); ++t)
-        {
-            n_jtv[j].push_back(std::map<size_t, size_t>());
-        }
+
+        create_table(j, dishes_[0]);
     }
     m = 0;
     m_k = std::vector<size_t> {1};
@@ -294,10 +291,12 @@ microscopes::lda::state::create_table(size_t ein, size_t k_new)
     }
     using_t[ein].insert(using_t[ein].begin() + t_new, t_new);
     n_jt[ein][t_new] = 0;
-    MICROSCOPES_DCHECK(k_new != 0, "k_new ");
+    // MICROSCOPES_DCHECK(k_new != 0, "k_new ");
     restaurants_[ein][t_new] = k_new;
-    m_k[k_new] += 1;
-    m += 1;
+    if (k_new != 0){
+        m_k[k_new] += 1;
+        m += 1;
+    }
 
     return t_new;
 }
