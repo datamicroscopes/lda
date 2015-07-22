@@ -19,20 +19,27 @@ microscopes::lda::state::state(const model_definition &def,
       n_k(lda_util::defaultdict<size_t, float>(beta * def.v())) {
     V = def.v();
 
-    MICROSCOPES_DCHECK(initial_dishes == 1, "Initial dishes currently must be 1.");
-    dishes_ = microscopes::common::util::range(initial_dishes);
+    auto dish_pool = microscopes::common::util::range(initial_dishes);
+
+    // Dummy dish
+    m_k = std::vector<size_t> {1};
+    n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
+    dishes_ = {0};
 
     for (size_t j = 0; j < x_ji.size(); ++j) {
-        // Initialize indicies and counts
+        // Initialize indicies and counts for entity
         using_t.push_back(std::vector<size_t>());
         n_jt.push_back(std::vector<size_t>());
         restaurants_.push_back(std::vector<size_t>());
         n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
 
-        create_table(j, dishes_[0]);
+        auto dish = common::util::sample_choice(dish_pool, rng);
+        if (dish > dishes_.back()){
+            dish = create_dish();
+        }
+        create_table(j, dish);
     }
-    m_k = std::vector<size_t> {1};
-    n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
+    std::cout << "dishes_ " << dishes_ << std::endl;
     for (size_t i = 0; i < docs.size(); i++) {
 
         t_ji.push_back(std::vector<size_t>(docs[i].size(), 0));
