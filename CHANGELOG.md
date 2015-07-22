@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+
+## [0.2.1] - 2015-07-22
 ### Added
 - Documents can now be any list-of-list of hashable objects
 - Expose nwords method of state object to Python layer
