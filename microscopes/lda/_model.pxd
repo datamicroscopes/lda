@@ -2,9 +2,6 @@ from cython.operator cimport dereference as deref
 from libcpp.vector cimport vector
 from libc.stddef cimport size_t
 
-from microscopes.common.variadic._dataview cimport (
-    abstract_dataview,
-)
 from microscopes.common._rng cimport rng
 from microscopes.lda._model_h cimport (
     state as c_state,
