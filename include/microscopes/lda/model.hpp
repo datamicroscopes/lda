@@ -135,7 +135,7 @@ public:
 
     inline std::vector<size_t> tables(size_t eid) const { return using_t[eid]; }
 
-    inline int m() const { return std::accumulate(m_k.begin(), m_k.end(), 0); }
+    inline int ntables() const { return std::accumulate(m_k.begin()+1, m_k.end(), 0); }
 
 };
 
