@@ -30,7 +30,7 @@ microscopes::lda::state::state(const model_definition &def,
             did = create_dish();
         }
         create_table(eid, did);
-        t_ji.push_back(std::vector<size_t>(nterms(eid), 0));
+        table_doc_word.push_back(std::vector<size_t>(nterms(eid), 0));
     }
 }
 
@@ -48,9 +48,9 @@ microscopes::lda::state::assignments() {
     ret.resize(nentities());
 
     for (size_t eid = 0; eid < nentities(); eid++) {
-        ret[eid].resize(t_ji[eid].size());
-        for (size_t did = 0; did < t_ji[eid].size(); did++) {
-            auto table = t_ji[eid][did];
+        ret[eid].resize(table_doc_word[eid].size());
+        for (size_t did = 0; did < table_doc_word[eid].size(); did++) {
+            auto table = table_doc_word[eid][did];
             ret[eid][did] = restaurants_[eid][table];
         }
     }
@@ -75,7 +75,7 @@ microscopes::lda::state::dish_assignments() {
 */
 std::vector<std::vector<size_t>>
 microscopes::lda::state::table_assignments() {
-    return t_ji;
+    return table_doc_word;
 }
 
 float
@@ -232,7 +232,7 @@ microscopes::lda::state::seat_at_dish(size_t j, size_t t, size_t k_new) {
 
 void
 microscopes::lda::state::add_table(size_t ein, size_t t_new, size_t did) {
-    t_ji[ein][did] = t_new;
+    table_doc_word[ein][did] = t_new;
     n_jt[ein][t_new] += 1;
 
     size_t k_new = restaurants_[ein][t_new];
@@ -302,7 +302,7 @@ microscopes::lda::state::create_table(size_t ein, size_t k_new)
 
 void
 microscopes::lda::state::remove_table(size_t eid, size_t tid) {
-    size_t t = t_ji[eid][tid];
+    size_t t = table_doc_word[eid][tid];
     if (t > 0)
     {
         size_t k = restaurants_[eid][t];

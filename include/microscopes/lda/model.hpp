@@ -38,7 +38,7 @@ public:
     std::vector<size_t> m_k; // number of tables for each topic
     lda_util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
     std::vector<lda_util::defaultdict<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
-    std::vector<std::vector<size_t>> t_ji; // table for each document and term (-1 means not-assigned)
+    std::vector<std::vector<size_t>> table_doc_word; // table for each document and term (-1 means not-assigned)
 
     template <class... Args>
     static inline std::shared_ptr<state>
