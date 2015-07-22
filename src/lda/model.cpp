@@ -21,29 +21,25 @@ microscopes::lda::state::state(const model_definition &def,
 
     auto dish_pool = microscopes::common::util::range(initial_dishes);
 
-    // Dummy dish
-    m_k = std::vector<size_t> {1};
-    n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
-    dishes_ = {0};
+    create_dish(); // Dummy dish
+    for (size_t eid = 0; eid < nentities(); ++eid) {
+        create_entity();
 
-    for (size_t j = 0; j < x_ji.size(); ++j) {
-        // Initialize indicies and counts for entity
-        using_t.push_back(std::vector<size_t>());
-        n_jt.push_back(std::vector<size_t>());
-        restaurants_.push_back(std::vector<size_t>());
-        n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
-
-        auto dish = common::util::sample_choice(dish_pool, rng);
-        if (dish > dishes_.back()){
-            dish = create_dish();
+        auto did = common::util::sample_choice(dish_pool, rng);
+        if (did > dishes_.back()){
+            did = create_dish();
         }
-        create_table(j, dish);
+        create_table(eid, did);
+        t_ji.push_back(std::vector<size_t>(nterms(eid), 0));
     }
-    std::cout << "dishes_ " << dishes_ << std::endl;
-    for (size_t i = 0; i < docs.size(); i++) {
+}
 
-        t_ji.push_back(std::vector<size_t>(docs[i].size(), 0));
-    }
+void
+microscopes::lda::state::create_entity(){
+    using_t.push_back(std::vector<size_t>());
+    n_jt.push_back(std::vector<size_t>());
+    restaurants_.push_back(std::vector<size_t>());
+    n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
 }
 
 std::vector<std::vector<size_t>>
@@ -260,9 +256,9 @@ microscopes::lda::state::create_dish() {
     }
     if (k_new == dishes_.size())
     {
-        m_k.push_back(m_k[0]);
+        m_k.push_back(0);
         n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
-        MICROSCOPES_DCHECK(k_new == dishes_.back() + 1, "bad k_new (1)");
+        MICROSCOPES_DCHECK(dishes_.size() == 0 || k_new == dishes_.back() + 1, "bad k_new (1)");
         MICROSCOPES_DCHECK(k_new < n_kv.size(), "bad k_new (2)");
     }
 

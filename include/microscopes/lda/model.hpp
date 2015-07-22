@@ -103,6 +103,9 @@ public:
     void
     add_table(size_t ein, size_t t_new, size_t did);
 
+    void
+    create_entity();
+
     size_t
     create_dish();
 
