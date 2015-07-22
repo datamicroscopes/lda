@@ -4,12 +4,15 @@
 ### Added
 - Documents can now be any list-of-list of hashable objects
 - Expose nwords method of state object to Python layer
+- Can initialize state with more than one dish (topic)
 
 ### Removed
 - Removed biology abstract test script and data
 
 ### Changed
 - State object rolls up m_k instead of tracking m
+- Reuse create_table and create_dish in state constructor
+- Rename state.t_ji to state.table_doc_word
 
 ## [0.2.0] - 2015-07-20
 ### Added
