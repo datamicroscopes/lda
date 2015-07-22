@@ -2,7 +2,6 @@
 #include <microscopes/lda/kernels.hpp>
 #include <microscopes/lda/random_docs.hpp>
 #include <microscopes/common/macros.hpp>
-#include <microscopes/common/recarray/dataview.hpp>
 #include <microscopes/models/distributions.hpp>
 #include <microscopes/common/random_fwd.hpp>
 
@@ -13,7 +12,6 @@ using namespace std;
 using namespace distributions;
 using namespace microscopes;
 using namespace microscopes::common;
-using namespace microscopes::common::recarray;
 using namespace microscopes::kernels::lda_crp;
 
 

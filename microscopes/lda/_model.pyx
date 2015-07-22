@@ -1,6 +1,5 @@
 # cython: embedsignature=True
 from microscopes.common import validator
-from cython.operator cimport dereference as deref
 from copy import deepcopy
 from itertools import chain
 
@@ -93,7 +92,7 @@ def initialize(model_definition defn, data, rng r, **kwargs):
     Parameters
     ----------
     defn : model definition
-    data : variadic dataview
+    data : a list of list of serializable objects (i.e. 'documents')
     rng : random state
     vocab_hp : parameter on symmetric Dirichlet prior over topic distributions (beta)
     dish_hps : concentration parameters on base (alpha) and second-level (gamma) Dirichlet processes

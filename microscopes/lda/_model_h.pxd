@@ -4,7 +4,6 @@ from libc.stddef cimport size_t
 
 from microscopes._shared_ptr_h cimport shared_ptr
 from microscopes.common._random_fwd_h cimport rng_t
-from microscopes.common.variadic._dataview_h cimport dataview
 
 
 cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":

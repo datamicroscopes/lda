@@ -3,13 +3,7 @@
 
 from microscopes.common import validator
 from microscopes.common.rng import rng
-from microscopes.common.variadic._dataview import abstract_dataview
-from microscopes.lda.definition import model_definition
 from microscopes.lda.kernels import lda_crp_gibbs
-from microscopes.lda.model import state
-
-import itertools as it
-import copy
 
 
 class runner(object):
@@ -21,7 +15,7 @@ class runner(object):
         The structural definition.
 
     view : dataview
-        The variadic dataview.
+        A list of list of serializable objects (the 'documents')
 
     latent : ``state``
         The initialization state.
