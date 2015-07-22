@@ -88,7 +88,7 @@ sequence4(double alpha, double beta, double gamma){
 
     state.leave_from_dish(0, 1);
     state.seat_at_dish(0, 1, 2);
-    MICROSCOPES_CHECK(state.m == 5, "state.m is wrong in section 2");
+    MICROSCOPES_CHECK(state.ntables() == 5, "state.ntables() is wrong in section 2");
     // return;
     MICROSCOPES_CHECK(state.m_k[1] == 1, "state.m_k[1] is wrong in section 2");
     MICROSCOPES_CHECK(state.m_k[2] == 4, "state.m_k[1] is wrong in section 2");
@@ -283,11 +283,11 @@ sequence2(double alpha, double beta, double gamma){
         "n_kv[1].get(6) is wrong");
 
     state.leave_from_dish(0, 1); // decreate m and m_k only
-    MICROSCOPES_CHECK(state.m == 2, "state.m != 2");
+    MICROSCOPES_CHECK(state.ntables() == 2, "state.ntables() != 2");
     MICROSCOPES_CHECK(state.m_k[1] == 2, "state.m_k[1] != 2");
 
     state.seat_at_dish(0, 1, 1);
-    MICROSCOPES_CHECK(state.m == 3, "state.m != 3");
+    MICROSCOPES_CHECK(state.ntables() == 3, "state.ntables() != 3");
     MICROSCOPES_CHECK(state.m_k[1] == 3, "state.m_k[1] != 3");
 }
 
