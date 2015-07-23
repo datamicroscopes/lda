@@ -16,6 +16,11 @@ cdef class state:
         self._defn = defn
         validator.validate_len(data, defn.n, "data")
 
+        for doc in data:
+            for word in doc:
+                if word >= defn.v:
+                    raise ValueError("Word index out of bounds.")
+
         # Validate kwargs
         valid_kwargs = ('dish_hps', 'vocab_hp',
                         'initial_dishes',
@@ -104,7 +109,7 @@ cdef vector[vector[size_t]] _initialize_data(docs):
     """Convert docs (list of list of hashable items) to list of list of
     positive integers.
     """
-    vocab = chain.from_iterable(docs)
+    vocab = set(chain.from_iterable(docs))
     word_to_int = { word: i for i, word in enumerate(vocab)}
     numeric_docs = []
     for doc in docs:

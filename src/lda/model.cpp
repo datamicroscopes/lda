@@ -220,6 +220,7 @@ microscopes::lda::state::seat_at_dish(size_t j, size_t t, size_t k_new) {
         for (auto kv : n_jtv[j][t]) {
             auto v = kv.first;
             auto n = kv.second;
+            MICROSCOPES_DCHECK(v < nwords(), "Word out of bounds");
             if (k_old != 0)
             {
                 n_kv[k_old].decr(v, n);
@@ -239,6 +240,7 @@ microscopes::lda::state::add_table(size_t ein, size_t t_new, size_t did) {
     n_k.incr(k_new, 1);
 
     size_t v = x_ji[ein][did];
+    MICROSCOPES_DCHECK(v < nwords(), "Word out of bounds");
     n_kv[k_new].incr(v, 1);
     n_jtv[ein][t_new][v] += 1;
 }
@@ -309,6 +311,7 @@ microscopes::lda::state::remove_table(size_t eid, size_t tid) {
         MICROSCOPES_DCHECK(k > 0, "k <= 0");
         // decrease counters
         size_t v = x_ji[eid][tid];
+        MICROSCOPES_DCHECK(v < nwords(), "Word out of bounds");
         n_kv[k].decr(v, 1);
         n_k.decr(k, 1);
         n_jt[eid][t] -= 1;
