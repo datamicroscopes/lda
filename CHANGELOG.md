@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.2.1] - 2015-07-22
+## [0.2.2] - 2015-07-23
 ### Fixed
 - Fixed bug where `initialize` incorrectly converted words (hashable objects) to integers (causing bad sampling issues).
 
