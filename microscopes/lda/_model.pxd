@@ -5,6 +5,7 @@ from microscopes.common._rng cimport rng
 from microscopes.lda._model_h cimport (
     state as c_state,
     initialize as c_initialize,
+    initialize_explicit as c_initialize_explicit,
 )
 from microscopes._shared_ptr_h cimport shared_ptr
 from microscopes.lda.definition cimport model_definition

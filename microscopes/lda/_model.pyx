@@ -39,7 +39,7 @@ cdef class state:
         vocab_hp = kwargs.get('vocab_hp', 0.5)
         validator.validate_positive(vocab_hp)
 
-        # Get initial dishes
+        # Get initial dishes or assigments
         dishes_and_tables = self._get_dishes_and_tables(kwargs)
 
         if 'initial_dishes' in dishes_and_tables:
@@ -50,8 +50,19 @@ cdef class state:
                                          initial_dishes=dishes_and_tables['initial_dishes'],
                                          docs=data,
                                          rng=r._thisptr[0])
+        elif "table_assignments" in dishes_and_tables \
+                and "dish_assignments" in dishes_and_tables:
+            self._thisptr = c_initialize_explicit(
+                                         defn=defn._thisptr.get()[0],
+                                         alpha=dish_hps['alpha'],
+                                         beta=vocab_hp,
+                                         gamma=dish_hps['gamma'],
+                                         dish_assignments=dishes_and_tables['dish_assignments'],
+                                         table_assignments=dishes_and_tables['table_assignments'],
+                                         docs=data,
+                                         rng=r._thisptr[0])
         else:
-            raise NotImplementedError("Must specify initialize with initial_dishes")
+            raise NotImplementedError("Must specify XXX")
 
     def perplexity(self):
         return self._thisptr.get().perplexity()
