@@ -43,13 +43,13 @@ cdef class state:
 
 
         cdef vector[vector[size_t]] _data = deepcopy(data)
-        self._thisptr = c_initialize(defn._thisptr.get()[0],
-                                     dish_hps['alpha'],
-                                     vocab_hp,
-                                     dish_hps['gamma'],
-                                     initial_dishes,
-                                     _data,
-                                     r._thisptr[0])
+        self._thisptr = c_initialize(defn=defn._thisptr.get()[0],
+                                     alpha=dish_hps['alpha'],
+                                     beta=vocab_hp,
+                                     gamma=dish_hps['gamma'],
+                                     initial_dishes=initial_dishes,
+                                     docs=_data,
+                                     rng=r._thisptr[0])
 
     def perplexity(self):
         return self._thisptr.get().perplexity()
