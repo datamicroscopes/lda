@@ -28,16 +28,18 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
 
 
 cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state":
-    shared_ptr[state] initialize(const model_definition &defn,
-                                 float alpha, float beta, float gamma,
-                                 size_t initial_dishes,
-                                 vector[vector[size_t]] &docs,
-                                 rng_t & rng) except +
+    shared_ptr[state] \
+    initialize(const model_definition &defn,
+        float alpha, float beta, float gamma,
+        size_t initial_dishes,
+        vector[vector[size_t]] &docs,
+        rng_t & rng) except +
 
+    shared_ptr[state] \
     initialize_explicit "microscopes::lda::state::initialize" (
-                                 const model_definition &defn,
-                                 float alpha, float beta, float gamma,
-                                 const vector[vector[size_t]] &dish_assignments,
-                                 const vector[vector[size_t]] &table_assignments,
-                                 vector[vector[size_t]] &docs,
-                                 rng_t &rng) except +
+        const model_definition &defn,
+        float alpha, float beta, float gamma,
+        const vector[vector[size_t]] &dish_assignments,
+        const vector[vector[size_t]] &table_assignments,
+        vector[vector[size_t]] &docs,
+        rng_t &rng) except +
