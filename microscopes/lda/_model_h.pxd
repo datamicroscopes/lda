@@ -36,7 +36,7 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state"
 
     initialize_explicit "microscopes::lda::state::initialize" (
                                  const model_definition &defn,
-                                 float alpa, float beta, float gamma,
+                                 float alpha, float beta, float gamma,
                                  const vector[vector[size_t]] &dish_assignments,
                                  const vector[vector[size_t]] &table_assignments,
                                  vector[vector[size_t]] &docs,
