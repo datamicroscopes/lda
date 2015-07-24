@@ -39,7 +39,7 @@ cdef class state:
         validator.validate_positive(vocab_hp)
 
         # Get initial dishes
-        initial_dishes = 1
+        initial_dishes = kwargs.get("initial_dishes", 10)
 
 
         cdef vector[vector[size_t]] _data = deepcopy(data)

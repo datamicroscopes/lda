@@ -1,8 +1,12 @@
 # Change Log
 
 ## [Unreleased]
-###
+### Changed
 - New README
+
+### Fixed
+- Multidish initialization actually works (from Python)
+
 
 ## [0.2.2] - 2015-07-23
 ### Fixed
