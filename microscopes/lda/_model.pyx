@@ -64,6 +64,8 @@ cdef class state:
         else:
             raise NotImplementedError("Must specify XXX")
 
+    DEFAULT_INITIAL_DISH_HINT = 10
+
     def perplexity(self):
         return self._thisptr.get().perplexity()
 
@@ -102,9 +104,19 @@ cdef class state:
         return self._thisptr.get()[0].score_data(r._thisptr[0])
 
     def _get_dishes_and_tables(self, kwargs):
-        initial_dishes = kwargs.get("initial_dishes", 10)
+        if "initial_dishes" in kwargs \
+                and "table_assignments" not in kwargs \
+                and "dish_assignments" not in kwargs:
+            return {'initial_dishes': kwargs["initial_dishes"]}
 
-        return {'initial_dishes': initial_dishes}
+        elif "table_assignments" in kwargs \
+                and "dish_assignments" in kwargs \
+                and "initial_dishes" not in kwargs:
+            return {'table_assignments': kwargs['table_assignments'],
+                    'dish_assignments': kwargs['dish_assignments']}
+
+        else:
+            return {'initial_dishes': self.DEFAULT_INITIAL_DISH_HINT}
 
 
 def bind(state s, **kwargs):
