@@ -20,8 +20,8 @@ sequence_random(double alpha, double beta, double gamma, size_t seed){
     rng_t r(seed);
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
     size_t V = 7;
-    lda::model_definition def(3, V);
-    lda::state state(def, alpha, beta, gamma, 2, docs, r);
+    lda::model_definition defn(3, V);
+    lda::state state(defn, alpha, beta, gamma, 2, docs, r);
     for(unsigned i = 0; i < 10; ++i){
         microscopes::kernels::lda_crp_gibbs(state, r);
     }

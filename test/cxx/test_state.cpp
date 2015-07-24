@@ -46,8 +46,8 @@ sequence4(double alpha, double beta, double gamma){
     rng_t r(5849343);
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
     size_t V = 7;
-    lda::model_definition def(3, V);
-    lda::state state(def, alpha, beta, gamma, 1, docs, r);
+    lda::model_definition defn(3, V);
+    lda::state state(defn, alpha, beta, gamma, 1, docs, r);
     auto Vbeta = V*beta;
     size_t k1 = state.create_dish();
     size_t k2 = state.create_dish();
@@ -133,8 +133,8 @@ sequence3(double alpha, double beta, double gamma){
     rng_t r(5849343);
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
     size_t V = 7;
-    lda::model_definition def(3, V);
-    lda::state state(def, alpha, beta, gamma, 1, docs, r);
+    lda::model_definition defn(3, V);
+    lda::state state(defn, alpha, beta, gamma, 1, docs, r);
 
     size_t k1 = state.create_dish();
     size_t k2 = state.create_dish();
@@ -248,8 +248,8 @@ sequence2(double alpha, double beta, double gamma){
     rng_t r(5849343);
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
     size_t V = 7;
-    lda::model_definition def(3, V);
-    lda::state state(def, alpha, beta, gamma, 1, docs, r);
+    lda::model_definition defn(3, V);
+    lda::state state(defn, alpha, beta, gamma, 1, docs, r);
 
     // assign all words to table 1 and all tables to dish 1
     size_t k_new = state.create_dish();
@@ -295,8 +295,8 @@ sequence1(double alpha, double beta, double gamma){
     rng_t r(5849343);
     size_t V = 7;
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
-    lda::model_definition def(3, 7);
-    lda::state state(def, alpha, beta, gamma, 1, docs, r);
+    lda::model_definition defn(3, 7);
+    lda::state state(defn, alpha, beta, gamma, 1, docs, r);
 
     // Section 1
     size_t j = 0;

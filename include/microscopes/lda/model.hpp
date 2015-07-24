@@ -47,7 +47,7 @@ public:
         return std::make_shared<state>(std::forward<Args>(args)...);
     }
 
-    state(const model_definition &def,
+    state(const model_definition &defn,
           float alpha,
           float beta,
           float gamma,
@@ -55,7 +55,7 @@ public:
           const std::vector<std::vector<size_t>> &docs,
           common::rng_t &);
 
-    state(const model_definition &def,
+    state(const model_definition &defn,
           float alpha,
           float beta,
           float gamma,

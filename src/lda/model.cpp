@@ -8,7 +8,7 @@ microscopes::lda::model_definition::model_definition(size_t n, size_t v)
     MICROSCOPES_DCHECK(v > 0, "no terms");
 }
 
-microscopes::lda::state::state(const model_definition &def,
+microscopes::lda::state::state(const model_definition &defn,
       float alpha,
       float beta,
       float gamma,
@@ -16,8 +16,8 @@ microscopes::lda::state::state(const model_definition &def,
       const std::vector<std::vector<size_t>> &docs,
       common::rng_t &rng)
     : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
-      n_k(lda_util::defaultdict<size_t, float>(beta * def.v())) {
-    V = def.v();
+      n_k(lda_util::defaultdict<size_t, float>(beta * defn.v())) {
+    V = defn.v();
 
     auto dish_pool = microscopes::common::util::range(initial_dishes);
 
@@ -34,7 +34,7 @@ microscopes::lda::state::state(const model_definition &def,
     }
 }
 
-microscopes::lda::state::state(const model_definition &def,
+microscopes::lda::state::state(const model_definition &defn,
       float alpha,
       float beta,
       float gamma,
@@ -43,7 +43,7 @@ microscopes::lda::state::state(const model_definition &def,
       const std::vector<std::vector<size_t>> &docs,
       common::rng_t &rng)
     : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
-      n_k(lda_util::defaultdict<size_t, float>(beta * def.v())) {
+      n_k(lda_util::defaultdict<size_t, float>(beta * defn.v())) {
 
 }
 
