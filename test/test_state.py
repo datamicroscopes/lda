@@ -39,7 +39,6 @@ def test_multi_dish_initialization():
 def test_alpha_numeric():
     docs = [list('abcd'), list('cdef')]
     defn = model_definition(len(docs), v=6)
-    data = toy_dataset(defn)
     prng = rng()
     s = initialize(defn, docs, prng)
     assert_equals(s.nentities(), len(docs))
