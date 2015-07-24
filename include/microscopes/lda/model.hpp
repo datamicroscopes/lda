@@ -55,6 +55,15 @@ public:
           const std::vector<std::vector<size_t>> &docs,
           common::rng_t &);
 
+    state(const model_definition &def,
+          float alpha,
+          float beta,
+          float gamma,
+          const std::vector<std::vector<size_t>> &dish_assignments,
+          const std::vector<std::vector<size_t>> &table_assignments,
+          const std::vector<std::vector<size_t>> &docs,
+          common::rng_t &);
+
     std::vector<std::vector<size_t>>
     assignments();
 

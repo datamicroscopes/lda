@@ -34,6 +34,19 @@ microscopes::lda::state::state(const model_definition &def,
     }
 }
 
+microscopes::lda::state::state(const model_definition &def,
+      float alpha,
+      float beta,
+      float gamma,
+      const std::vector<std::vector<size_t>> &dish_assignments,
+      const std::vector<std::vector<size_t>> &table_assignments,
+      const std::vector<std::vector<size_t>> &docs,
+      common::rng_t &rng)
+    : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
+      n_k(lda_util::defaultdict<size_t, float>(beta * def.v())) {
+
+}
+
 void
 microscopes::lda::state::create_entity(){
     using_t.push_back(std::vector<size_t>());
