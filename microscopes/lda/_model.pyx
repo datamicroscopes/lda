@@ -43,13 +43,12 @@ cdef class state:
         initial_dishes = kwargs.get("initial_dishes", 10)
 
 
-        cdef vector[vector[size_t]] _data = deepcopy(data)
         self._thisptr = c_initialize(defn=defn._thisptr.get()[0],
                                      alpha=dish_hps['alpha'],
                                      beta=vocab_hp,
                                      gamma=dish_hps['gamma'],
                                      initial_dishes=initial_dishes,
-                                     docs=_data,
+                                     docs=data,
                                      rng=r._thisptr[0])
 
     def perplexity(self):
