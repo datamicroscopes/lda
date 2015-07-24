@@ -44,8 +44,8 @@ cdef class state:
 
         cdef vector[vector[size_t]] _data = deepcopy(data)
         self._thisptr = c_initialize(defn=defn._thisptr.get()[0],
-                                     beta=vocab_hp,
                                      alpha=dish_hps['alpha'],
+                                     beta=vocab_hp,
                                      gamma=dish_hps['gamma'],
                                      initial_dishes=initial_dishes,
                                      docs=_data,
