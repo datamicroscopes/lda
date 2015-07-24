@@ -40,16 +40,18 @@ cdef class state:
         validator.validate_positive(vocab_hp)
 
         # Get initial dishes
-        initial_dishes = kwargs.get("initial_dishes", 10)
+        dishes_and_tables = self._get_dishes_and_tables(kwargs)
 
-
-        self._thisptr = c_initialize(defn=defn._thisptr.get()[0],
-                                     alpha=dish_hps['alpha'],
-                                     beta=vocab_hp,
-                                     gamma=dish_hps['gamma'],
-                                     initial_dishes=initial_dishes,
-                                     docs=data,
-                                     rng=r._thisptr[0])
+        if 'initial_dishes' in dishes_and_tables:
+            self._thisptr = c_initialize(defn=defn._thisptr.get()[0],
+                                         alpha=dish_hps['alpha'],
+                                         beta=vocab_hp,
+                                         gamma=dish_hps['gamma'],
+                                         initial_dishes=dishes_and_tables['initial_dishes'],
+                                         docs=data,
+                                         rng=r._thisptr[0])
+        else:
+            raise NotImplementedError("Must specify initialize with initial_dishes")
 
     def perplexity(self):
         return self._thisptr.get().perplexity()
@@ -87,6 +89,11 @@ cdef class state:
     def score_data(self, rng r):
         raise NotImplementedError()
         return self._thisptr.get()[0].score_data(r._thisptr[0])
+
+    def _get_dishes_and_tables(self, kwargs):
+        initial_dishes = kwargs.get("initial_dishes", 10)
+
+        return {'initial_dishes': initial_dishes}
 
 
 def bind(state s, **kwargs):
