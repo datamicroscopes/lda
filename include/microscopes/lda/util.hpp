@@ -27,6 +27,18 @@ namespace lda_util {
         return unique_values;
     }
 
+    template<typename T>
+    T
+    max_element(std::vector<std::vector<T>> nested_list){
+        std::set<T> unique_values;
+        for(std::vector<T> list: nested_list){
+            for(T val: list){
+                unique_values.insert(val);
+            }
+        }
+        return *std::max_element(unique_values.begin(), unique_values.end());
+    }
+
     template<typename T> void
     removeFirst(std::vector<T> &v, T element){
         auto it = std::find(v.begin(),v.end(), element);
