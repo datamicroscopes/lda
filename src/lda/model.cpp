@@ -44,7 +44,6 @@ microscopes::lda::state::state(const model_definition &defn,
             did = create_dish();
         }
         create_table(eid, did);
-        table_doc_word.push_back(std::vector<size_t>(nterms(eid), 0));
     }
 }
 
@@ -335,7 +334,7 @@ microscopes::lda::state::create_table(size_t ein, size_t k_new)
     if (k_new != 0){
         m_k[k_new] += 1;
     }
-
+    table_doc_word.push_back(std::vector<size_t>(nterms(ein), 0));
     return t_new;
 }
 
