@@ -57,13 +57,17 @@ microscopes::lda::state::state(const model_definition &defn,
       const std::vector<std::vector<size_t>> &docs,
       common::rng_t &rng)
     : state(defn, alpha, beta, gamma, docs, rng) {
-        auto assigned_dishes = lda_util::unique_members(dish_assignments);
-        auto assigned_tables = lda_util::unique_members(table_assignments);
 
-        size_t num_dishes = *std::max_element(assigned_dishes.begin(), assigned_dishes.end());
+        auto num_dishes = lda_util::max_element(dish_assignments);
         num_dishes++;
         for(size_t dish = 0; dish < num_dishes; dish++) {
             create_dish();
+        }
+        for (size_t eid = 0; eid < nentities(); ++eid) {
+            create_entity();
+            for(auto did: dish_assignments[eid]){
+                create_table(eid, did);
+            }
         }
 }
 

@@ -1,3 +1,5 @@
+import numpy as np
+
 from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
 from microscopes.lda.model import initialize
@@ -43,3 +45,22 @@ def test_alpha_numeric():
     s = initialize(defn, docs, prng)
     assert_equals(s.nentities(), len(docs))
     assert_equals(s.nwords(), 6)
+
+
+def test_explicit():
+    N, V = 5, 100
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
+    prng = rng()
+
+    table_assignments = [
+        np.random.randint(low=0, high=10, size=len(d)) for d in data]
+
+    dish_assignments = [
+        np.random.randint(low=0, high=len(t), size=len(d))
+        for t, d in zip(table_assignments, data)]
+
+    s = initialize(defn, data, prng,
+                   table_assignments=table_assignments,
+                   dish_assignments=dish_assignments)
+    assert_equals(s.nentities(), len(data))
