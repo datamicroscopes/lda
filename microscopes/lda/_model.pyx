@@ -43,26 +43,28 @@ cdef class state:
         dishes_and_tables = self._get_dishes_and_tables(kwargs)
 
         if 'initial_dishes' in dishes_and_tables:
-            self._thisptr = c_initialize(defn=defn._thisptr.get()[0],
-                                         alpha=dish_hps['alpha'],
-                                         beta=vocab_hp,
-                                         gamma=dish_hps['gamma'],
-                                         initial_dishes=dishes_and_tables['initial_dishes'],
-                                         docs=data,
-                                         rng=r._thisptr[0])
+            self._thisptr = c_initialize(
+                defn=defn._thisptr.get()[0],
+                alpha=dish_hps['alpha'],
+                beta=vocab_hp,
+                gamma=dish_hps['gamma'],
+                initial_dishes=dishes_and_tables['initial_dishes'],
+                docs=data,
+                rng=r._thisptr[0])
         elif "table_assignments" in dishes_and_tables \
                 and "dish_assignments" in dishes_and_tables:
             self._thisptr = c_initialize_explicit(
-                                         defn=defn._thisptr.get()[0],
-                                         alpha=dish_hps['alpha'],
-                                         beta=vocab_hp,
-                                         gamma=dish_hps['gamma'],
-                                         dish_assignments=dishes_and_tables['dish_assignments'],
-                                         table_assignments=dishes_and_tables['table_assignments'],
-                                         docs=data,
-                                         rng=r._thisptr[0])
+                defn=defn._thisptr.get()[0],
+                alpha=dish_hps['alpha'],
+                beta=vocab_hp,
+                gamma=dish_hps['gamma'],
+                dish_assignments=dishes_and_tables['dish_assignments'],
+                table_assignments=dishes_and_tables['table_assignments'],
+                docs=data,
+                rng=r._thisptr[0])
         else:
-            raise NotImplementedError("Must specify XXX")
+            raise NotImplementedError(("Specify either: (1) initial_dishes, "
+                "(2) table_assignments and dish_assignments, or (3) none of the above."))
 
     DEFAULT_INITIAL_DISH_HINT = 10
 
