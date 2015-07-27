@@ -67,6 +67,10 @@ microscopes::lda::state::state(const model_definition &defn,
             for(auto did: dish_assignments[eid]){
                 create_table(eid, did);
             }
+            for(auto tid: table_assignments[eid]){
+                auto did = restaurants_[eid][tid];
+                microscopes::lda::state::add_table(eid, tid, did);
+            }
         }
 }
 
