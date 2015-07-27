@@ -41,6 +41,9 @@ bool assertSequenceEqual(const vector<T> &v1, const vector<T> &v2){
 
 }
 
+// These tests are ported from
+// https://github.com/shuyo/iir/blob/a6203a7523970a4807beba1ce3b9048a16013246/lda/test_hdplda2.py
+
 static void
 sequence4(double alpha, double beta, double gamma){
     rng_t r(5849343);
