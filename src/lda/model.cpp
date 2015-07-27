@@ -12,12 +12,26 @@ microscopes::lda::state::state(const model_definition &defn,
       float alpha,
       float beta,
       float gamma,
+      const std::vector<std::vector<size_t>> &docs,
+      common::rng_t &rng)
+    : V(defn.v()),
+      alpha_(alpha),
+      beta_(beta),
+      gamma_(gamma),
+      x_ji(docs),
+      n_k(lda_util::defaultdict<size_t, float>(beta * defn.v()))
+      {
+        // This page intentionally left blank
+}
+
+microscopes::lda::state::state(const model_definition &defn,
+      float alpha,
+      float beta,
+      float gamma,
       size_t initial_dishes,
       const std::vector<std::vector<size_t>> &docs,
       common::rng_t &rng)
-    : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
-      n_k(lda_util::defaultdict<size_t, float>(beta * defn.v())) {
-    V = defn.v();
+    : state(defn, alpha, beta, gamma, docs, rng) {
 
     auto dish_pool = microscopes::common::util::range(initial_dishes);
 
@@ -42,8 +56,7 @@ microscopes::lda::state::state(const model_definition &defn,
       const std::vector<std::vector<size_t>> &table_assignments,
       const std::vector<std::vector<size_t>> &docs,
       common::rng_t &rng)
-    : alpha_(alpha), beta_(beta), gamma_(gamma), x_ji(docs),
-      n_k(lda_util::defaultdict<size_t, float>(beta * defn.v())) {
+    : state(defn, alpha, beta, gamma, docs, rng) {
 
 }
 

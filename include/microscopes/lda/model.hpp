@@ -47,6 +47,15 @@ public:
         return std::make_shared<state>(std::forward<Args>(args)...);
     }
 
+private:
+    state(const model_definition &defn,
+          float alpha,
+          float beta,
+          float gamma,
+          const std::vector<std::vector<size_t>> &docs,
+          common::rng_t &);
+
+public:
     state(const model_definition &defn,
           float alpha,
           float beta,
