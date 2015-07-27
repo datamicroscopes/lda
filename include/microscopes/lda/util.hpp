@@ -15,6 +15,18 @@ namespace lda_util {
         return (std::abs(1 - sum) < 0.01);
     }
 
+    template<typename T>
+    std::set<T>
+    unique_members(std::vector<std::vector<T>> nested_list){
+        std::set<T> unique_values;
+        for(std::vector<T> list: nested_list){
+            for(T val: list){
+                unique_values.insert(val);
+            }
+        }
+        return unique_values;
+    }
+
     template<typename T> void
     removeFirst(std::vector<T> &v, T element){
         auto it = std::find(v.begin(),v.end(), element);
