@@ -140,7 +140,12 @@ microscopes::lda::state::word_distribution() {
         if (k == 0) continue;
         vec.push_back(std::map<size_t, float>());
         for (size_t v = 0; v < V; ++v) {
-            vec.back()[v] = n_kv[k].get(v) / n_k.get(k);
+            if (n_kv[k].contains(v)) {
+                vec.back()[v] = n_kv[k].get(v) / n_k.get(k);
+            }
+            else {
+                vec.back()[v] = beta_ / n_k.get(k);
+            }
         }
     }
     return vec;
