@@ -189,14 +189,13 @@ microscopes::lda::state::perplexity() {
     double log_likelihood = 0;
     size_t N = 0;
     for (size_t eid = 0; eid < nentities(); eid++) {
-        auto &py_x_ji = x_ji[eid];
-        auto &p_jk = theta[eid];
-        for (auto &v : py_x_ji) {
+        for (auto &v : x_ji[eid]) {
             double word_prob = 0;
-            for (size_t did = 0; did < p_jk.size(); did++) {
-                auto p = p_jk[did];
-                auto &p_kv = phi[did];
-                word_prob += p * p_kv[v];
+            for (size_t did = 0; did < dishes_.size(); did++) {
+                MICROSCOPES_DCHECK(theta[eid].size() == dishes_.size(), "theta[eid] wrong");
+                // Probability that topic of word occurs in document
+                // times probability word occurs in topic
+                word_prob += theta[eid][did] * phi[did][v];
             }
             log_likelihood -= distributions::fast_log(word_prob);
         }
