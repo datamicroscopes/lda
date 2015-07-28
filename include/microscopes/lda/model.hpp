@@ -119,7 +119,7 @@ public:
     seat_at_dish(size_t j, size_t t, size_t k_new);
 
     void
-    add_table(size_t ein, size_t t_new, size_t did);
+    add_table(size_t eid, size_t t_new, size_t did);
 
     void
     create_entity();
@@ -128,7 +128,7 @@ public:
     create_dish();
 
     size_t
-    create_table(size_t ein, size_t k_new);
+    create_table(size_t eid, size_t k_new);
 
     void
     remove_table(size_t eid, size_t tid);

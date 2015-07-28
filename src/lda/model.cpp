@@ -193,9 +193,9 @@ microscopes::lda::state::perplexity() {
         auto &p_jk = theta[eid];
         for (auto &v : py_x_ji) {
             double word_prob = 0;
-            for (size_t i = 0; i < p_jk.size(); i++) {
-                auto p = p_jk[i];
-                auto &p_kv = phi[i];
+            for (size_t did = 0; did < p_jk.size(); did++) {
+                auto p = p_jk[did];
+                auto &p_kv = phi[did];
                 word_prob += p * p_kv[v];
             }
             log_likelihood -= distributions::fast_log(word_prob);
@@ -272,17 +272,17 @@ microscopes::lda::state::seat_at_dish(size_t j, size_t t, size_t k_new) {
 
 
 void
-microscopes::lda::state::add_table(size_t ein, size_t tid, size_t did) {
-    table_doc_word[ein][did] = tid;
-    n_jt[ein][tid] += 1;
+microscopes::lda::state::add_table(size_t eid, size_t tid, size_t did) {
+    table_doc_word[eid][did] = tid;
+    n_jt[eid][tid] += 1;
 
-    size_t k_new = restaurants_[ein][tid];
+    size_t k_new = restaurants_[eid][tid];
     n_k.incr(k_new, 1);
 
-    size_t v = x_ji[ein][did];
+    size_t v = x_ji[eid][did];
     MICROSCOPES_DCHECK(v < nwords(), "Word out of bounds");
     n_kv[k_new].incr(v, 1);
-    n_jtv[ein][tid][v] += 1;
+    n_jtv[eid][tid][v] += 1;
 }
 
 size_t
@@ -313,32 +313,32 @@ microscopes::lda::state::create_dish() {
 }
 
 size_t
-microscopes::lda::state::create_table(size_t ein, size_t k_new)
+microscopes::lda::state::create_table(size_t eid, size_t k_new)
 {
-    size_t t_new = using_t[ein].size();
-    for (size_t i = 0; i < using_t[ein].size(); ++i)
+    size_t t_new = using_t[eid].size();
+    for (size_t i = 0; i < using_t[eid].size(); ++i)
     {
-        if (i != using_t[ein][i])
+        if (i != using_t[eid][i])
         {
             t_new = i;
             break;
         }
     }
-    if (t_new == using_t[ein].size())
+    if (t_new == using_t[eid].size())
     {
-        n_jt[ein].push_back(0);
-        restaurants_[ein].push_back(0);
+        n_jt[eid].push_back(0);
+        restaurants_[eid].push_back(0);
 
-        n_jtv[ein].push_back(std::map<size_t, size_t>());
+        n_jtv[eid].push_back(std::map<size_t, size_t>());
     }
-    using_t[ein].insert(using_t[ein].begin() + t_new, t_new);
-    n_jt[ein][t_new] = 0;
+    using_t[eid].insert(using_t[eid].begin() + t_new, t_new);
+    n_jt[eid][t_new] = 0;
     // MICROSCOPES_DCHECK(k_new != 0, "k_new ");
-    restaurants_[ein][t_new] = k_new;
+    restaurants_[eid][t_new] = k_new;
     if (k_new != 0){
         m_k[k_new] += 1;
     }
-    table_doc_word.push_back(std::vector<size_t>(nterms(ein), 0));
+    table_doc_word.push_back(std::vector<size_t>(nterms(eid), 0));
     return t_new;
 }
 
