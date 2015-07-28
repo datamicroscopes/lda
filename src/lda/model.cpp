@@ -188,9 +188,9 @@ microscopes::lda::state::perplexity() {
     phi.insert(phi.begin(), std::map<size_t, float>());
     double log_likelihood = 0;
     size_t N = 0;
-    for (size_t j = 0; j < x_ji.size(); j++) {
-        auto &py_x_ji = x_ji[j];
-        auto &p_jk = theta[j];
+    for (size_t eid = 0; eid < nentities(); eid++) {
+        auto &py_x_ji = x_ji[eid];
+        auto &p_jk = theta[eid];
         for (auto &v : py_x_ji) {
             double word_prob = 0;
             for (size_t i = 0; i < p_jk.size(); i++) {
@@ -200,7 +200,7 @@ microscopes::lda::state::perplexity() {
             }
             log_likelihood -= distributions::fast_log(word_prob);
         }
-        N += x_ji[j].size();
+        N += nterms(eid);
     }
 
     return exp(log_likelihood / N);
