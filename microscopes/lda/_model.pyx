@@ -111,10 +111,12 @@ cdef class state:
         # probabilities. Return the Python user a list of maps from the original
         # words (hashable objects) to probabilities.
         word_distribution_by_topic = []
-        for num_dist in word_distribution_by_topic:
+        for num_dist in num_distribution_by_topic:
             word_dist = {}
-            for num, prob in num_dist.items():
-                word_dist[self.vocab[num]] = num_dist[num]
+            for num, prob in num_dist.iteritems():
+                word = self._vocab[num]
+                word_dist[word] = prob
+            word_distribution_by_topic.append(word_dist)
         return word_distribution_by_topic
 
     def score_assignment(self):
