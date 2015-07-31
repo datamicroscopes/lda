@@ -15,7 +15,7 @@ def vocab_size(docs):
 
 
 def test_simple():
-    N, V = 10, 100
+    N, V = 10, 20
     defn = model_definition(N, V)
     data = toy_dataset(defn)
     view = data
@@ -41,7 +41,7 @@ def test_pyldavis_data():
 
 
 def test_single_dish_initialization():
-    N, V = 10, 100
+    N, V = 10, 20
     defn = model_definition(N, V)
     data = toy_dataset(defn)
     view = data
@@ -51,7 +51,7 @@ def test_single_dish_initialization():
 
 
 def test_multi_dish_initialization():
-    N, V = 10, 100
+    N, V = 10, 20
     defn = model_definition(N, V)
     data = toy_dataset(defn)
     view = data

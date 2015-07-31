@@ -5,7 +5,7 @@ from microscopes.common.rng import rng
 
 
 def test_runner_simple():
-    N, V = 10, 100
+    N, V = 10, 20
     defn = model_definition(N, V)
     data = toy_dataset(defn)
     view = data

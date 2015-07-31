@@ -12,11 +12,11 @@ def toy_dataset(defn):
     """Generate a toy variadic dataset for HDP-LDA
 
     """
-
-    lengths = 1 + np.random.poisson(lam=10, size=defn.n)
+    avg_doc_len = 50
+    lengths = 1 + np.random.poisson(lam=avg_doc_len, size=defn.n)
     def mkrow(nwords):
-        return np.random.choice(range(defn.v), size=nwords)
-    return map(mkrow, lengths)
+        return list(np.random.choice(range(defn.v), size=nwords))
+    return [mkrow(length) for length in lengths]
 
 
 def permutations(doclengths):
