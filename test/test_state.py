@@ -1,4 +1,4 @@
-import numpy as np
+import itertools
 
 from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
@@ -7,6 +7,11 @@ from microscopes.lda.testutil import toy_dataset
 
 from nose.tools import assert_equals, assert_true
 from nose.tools import assert_almost_equals
+
+
+def vocab_size(docs):
+    flatten = lambda l: list(itertools.chain.from_iterable(l))
+    return len(set(flatten(docs)))
 
 
 def test_simple():
