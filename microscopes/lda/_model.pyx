@@ -132,7 +132,8 @@ cdef class state:
 
         topic_term_distribution = []
         for topic in self.word_distribution(r):
-            t = [topic[word_id] for word_id in sorted_num_vocab]
+            t = [topic[self._vocab[word_id]]
+                 for word_id in sorted_num_vocab]
             topic_term_distribution.append(t)
 
         doc_topic_distribution = self.document_distribution()
