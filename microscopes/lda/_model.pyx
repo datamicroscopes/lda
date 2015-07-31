@@ -96,7 +96,9 @@ cdef class state:
     def document_distribution(self):
         doc_distribution = self._thisptr.get()[0].document_distribution()
         # Remove dummy topic
-        return [topic_distribution[1:] for topic_distribution in doc_distribution]
+        distributions = [topic_distribution[1:] for topic_distribution in doc_distribution]
+        distributions = [[i/sum(d) for i in d] for d in distributions]
+        return distributions
 
     def word_distribution(self, rng r):
         return self._thisptr.get()[0].word_distribution()
