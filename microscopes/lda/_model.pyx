@@ -101,6 +101,7 @@ cdef class state:
         doc_distribution = self._thisptr.get()[0].document_distribution()
         # Remove dummy topic
         distributions = [topic_distribution[1:] for topic_distribution in doc_distribution]
+        # Normalize
         distributions = [[i/sum(d) for i in d] for d in distributions]
         return distributions
 
