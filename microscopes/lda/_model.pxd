@@ -1,4 +1,6 @@
 from libcpp.vector cimport vector
+from libcpp.map cimport map
+from libcpp.string cimport string
 from libc.stddef cimport size_t
 
 from microscopes.common._rng cimport rng
@@ -19,4 +21,4 @@ cdef class state:
     """
     cdef shared_ptr[c_state] _thisptr
     cdef model_definition _defn
-    # cdef abstract_dataview _data
+    cdef map_vocab

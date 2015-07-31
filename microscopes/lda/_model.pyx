@@ -11,9 +11,13 @@ cdef class state:
     -----
     This class is not meant to be sub-classed.
     """
-    def __cinit__(self, model_definition defn, vector[vector[size_t]] data, rng r, **kwargs):
+    def __cinit__(self, model_definition defn,
+                  vector[vector[size_t]] data,
+                  vocab,
+                  rng r, **kwargs):
         # Save and validate model definition
         self._defn = defn
+        self._vocab = vocab
         validator.validate_len(data, defn.n, "data")
 
         for doc in data:
@@ -134,16 +138,18 @@ def initialize(model_definition defn, data, rng r, **kwargs):
     vocab_hp : parameter on symmetric Dirichlet prior over topic distributions (beta)
     dish_hps : concentration parameters on base (alpha) and second-level (gamma) Dirichlet processes
     """
-    cdef vector[vector[size_t]] numeric_docs = _initialize_data(data)
-    return state(defn=defn, data=numeric_docs, r=r, **kwargs)
+    numeric_docs, vocab_lookup = _initialize_data(data)
+    return state(defn=defn, data=numeric_docs, vocab=vocab_lookup, r=r, **kwargs)
 
-cdef vector[vector[size_t]] _initialize_data(docs):
+def _initialize_data(docs):
     """Convert docs (list of list of hashable items) to list of list of
-    positive integers.
+    positive integers and a map from the integers back to the terms
     """
     vocab = set(chain.from_iterable(docs))
     word_to_int = { word: i for i, word in enumerate(vocab)}
+    int_to_word = { i: word for i, word in enumerate(vocab)}
+    print int_to_word
     numeric_docs = []
     for doc in docs:
         numeric_docs.append([word_to_int[word] for word in doc])
-    return numeric_docs
+    return numeric_docs, int_to_word
