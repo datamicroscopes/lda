@@ -1,7 +1,10 @@
 # cython: embedsignature=True
+import itertools
+
 from microscopes.common import validator
 from copy import deepcopy
 from itertools import chain
+from collections import Counter
 
 cdef class state:
     """The underlying state of an HDP-LDA
@@ -18,6 +21,7 @@ cdef class state:
         # Save and validate model definition
         self._defn = defn
         self._vocab = vocab
+        self._data = data
         validator.validate_len(data, defn.n, "data")
 
         for doc in data:
@@ -111,6 +115,29 @@ cdef class state:
         raise NotImplementedError()
         return self._thisptr.get()[0].score_data(r._thisptr[0])
 
+    def pyldavis_data(self, rng r):
+        sorted_num_vocab = sorted(self._vocab.keys())
+
+        topic_term_distribution = []
+        for topic in self.word_distribution(r):
+            t = [topic[word_id] for word_id in sorted_num_vocab]
+            topic_term_distribution.append(t)
+
+        doc_topic_distribution = self.document_distribution()
+
+        doc_lengths = [len(doc) for doc in self._data]
+        vocab = [self._vocab[k] for k in sorted_num_vocab]
+
+        flatten = lambda l: list(itertools.chain.from_iterable(l))
+        ctr = Counter(flatten(self._data))
+        term_frequency = [ctr[num] for num in sorted_num_vocab]
+
+        return {'topic_term_dists': topic_term_distribution,
+                'doc_topic_dists': doc_topic_distribution,
+                'doc_lengths': doc_lengths,
+                'vocab': vocab,
+                'term_frequency': term_frequency}
+
     def _get_dishes_and_tables(self, kwargs):
         if "initial_dishes" in kwargs \
                 and "table_assignments" not in kwargs \
@@ -150,7 +177,6 @@ def _initialize_data(docs):
     vocab = set(chain.from_iterable(docs))
     word_to_int = { word: i for i, word in enumerate(vocab)}
     int_to_word = { i: word for i, word in enumerate(vocab)}
-    print int_to_word
     numeric_docs = []
     for doc in docs:
         numeric_docs.append([word_to_int[word] for word in doc])

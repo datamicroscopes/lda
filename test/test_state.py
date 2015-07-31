@@ -6,6 +6,7 @@ from microscopes.lda.model import initialize
 from microscopes.lda.testutil import toy_dataset
 
 from nose.tools import assert_equals, assert_true
+from nose.tools import assert_almost_equals
 
 
 def test_simple():
@@ -16,6 +17,22 @@ def test_simple():
     prng = rng()
     s = initialize(defn, view, prng)
     assert_equals(s.nentities(), len(data))
+
+
+def test_pyldavis_data():
+    docs = [list('abcd'), list('cdef')]
+    defn = model_definition(len(docs), v=6)
+    prng = rng()
+    s = initialize(defn, docs, prng)
+    data = s.pyldavis_data(prng)
+    index_of_a = data['vocab'].index('a')
+    index_of_c = data['vocab'].index('c')
+    assert_equals(data['term_frequency'][index_of_a], 1)
+    assert_equals(data['term_frequency'][index_of_c], 2)
+    for dist in data['topic_term_dists']:
+        assert_almost_equals(sum(dist), 1)
+    for dist in data['doc_topic_dists']:
+        assert_almost_equals(sum(dist), 1)
 
 
 def test_single_dish_initialization():

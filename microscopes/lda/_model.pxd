@@ -21,4 +21,5 @@ cdef class state:
     """
     cdef shared_ptr[c_state] _thisptr
     cdef model_definition _defn
-    cdef map_vocab
+    cdef _vocab
+    cdef vector[vector[size_t]] _data
