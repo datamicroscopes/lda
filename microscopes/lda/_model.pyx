@@ -178,6 +178,8 @@ def initialize(model_definition defn, data, rng r, **kwargs):
     dish_hps : concentration parameters on base (alpha) and second-level (gamma) Dirichlet processes
     """
     numeric_docs, vocab_lookup = _initialize_data(data)
+    validator.validate_len(vocab_lookup, defn.v, "vocab_lookup")
+    if len(vocab_lookup) == defn.v
     return state(defn=defn, data=numeric_docs, vocab=vocab_lookup, r=r, **kwargs)
 
 def _initialize_data(docs):
