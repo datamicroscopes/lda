@@ -106,7 +106,16 @@ cdef class state:
         return distributions
 
     def word_distribution(self, rng r):
-        return self._thisptr.get()[0].word_distribution()
+        num_distribution_by_topic = self._thisptr.get()[0].word_distribution()
+        # C++ returns a list of maps from integer representation of terms to
+        # probabilities. Return the Python user a list of maps from the original
+        # words (hashable objects) to probabilities.
+        word_distribution_by_topic = []
+        for num_dist in word_distribution_by_topic:
+            word_dist = {}
+            for num, prob in num_dist.items():
+                word_dist[self.vocab[num]] = num_dist[num]
+        return word_distribution_by_topic
 
     def score_assignment(self):
         raise NotImplementedError()
