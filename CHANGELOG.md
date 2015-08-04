@@ -1,11 +1,16 @@
 # Change Log
 
 ## [Unreleased]
+### Added
+- Add utility function for getting pyLDAvis data
+
 ### Changed
 - New README
 
 ### Fixed
 - Multidish initialization actually works (from Python)
+- Word distributions are normalized
+- Word distributions map from word (hashable objects) to probabilities instead of index to probability.
 
 
 ## [0.2.2] - 2015-07-23
