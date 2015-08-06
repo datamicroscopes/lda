@@ -24,9 +24,8 @@ debugbuild: debug
 	$(MAKE) -C debug
 	$(MAKE) -C debug test
 	$(MAKE) -C debug install
-	LDFLAGS="-L/usr/local/lib"  CFLAGS="-I/usr/local/include" pip install -v -e .
+	pip install -v -e .
 	nosetests -vv
-
 
 .PHONY: test
 test:
