@@ -17,7 +17,7 @@ relwithdebinfo:
 debug:
 	@echo "Setting up cmake (debug)"
 	@python ./cmake/print_cmake_command.py Debug
-	[ -d debug ] || (mkdir debug && cd debug && eval `python ../cmake/print_cmake_command.py Debug`)
+	[ -d debug ] || (mkdir debug && cd debug && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$CONDA_ENV_PATH -DCMAKE_PREFIX_PATH=$CONDA_ENV_PATH ..)
 
 .PHONY: debugbuild
 debugbuild: debug
