@@ -44,10 +44,6 @@ if(DEFINED EXTRA_LIBRARY_PATH)
   link_directories(${EXTRA_LIBRARY_PATH})
 endif()
 
-find_package(Protobuf REQUIRED)
-message(STATUS "found protobuf INC=${PROTOBUF_INCLUDE_DIRS}, LIB=${PROTOBUF_LIBRARIES}")
-include_directories(${PROTOBUF_INCLUDE_DIRS})
-
 find_package(Distributions)
 if(DISTRIBUTIONS_FOUND)
   message(STATUS "found distributions INC=${DISTRIBUTIONS_INCLUDE_DIRS}, LIB=${DISTRIBUTIONS_LIBRARY_DIRS}")
