@@ -6,8 +6,7 @@ if __name__ == '__main__':
     build_type = "RelWithDebInfo"
     if len(sys.argv) > 1:
         build_type = sys.argv[1]
-    ValidBuildTypes = ('Debug', 'Release', 'RelWithDebInfo')
-    if not build_type in ValidBuildTypes:
+    if build_type not in ('Debug', 'Release', 'RelWithDebInfo'):
         raise ValueError("invalid build type: {}".format(build_type))
     ## XXX: handle virtualenv
     conda_full_path = check_output("which conda", shell=True).strip()
