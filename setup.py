@@ -240,24 +240,25 @@ def get_version():
         raise RuntimeError("could not determine version")
     return version
 
-basedir = join_path(os.path.dirname(__file__), 'microscopes', 'lda')
-include_dirs, library_dirs, include_paths = load_dependencies(basedir)
-extra_compile_args = build_extra_compile_args()
-extra_link_args = build_extra_link_args()
-extensions = cythonize([make_extension(module) for module in CYTHON_MODULES],
-                       include_path=[include_paths['microscopes_common_cython_inc']])
-long_description = read_readme()
-version = get_version()
+if __name__ == '__main__':
+    basedir = join_path(os.path.dirname(__file__), 'microscopes', 'lda')
+    include_dirs, library_dirs, include_paths = load_dependencies(basedir)
+    extra_compile_args = build_extra_compile_args()
+    extra_link_args = build_extra_link_args()
+    extensions = cythonize([make_extension(module) for module in CYTHON_MODULES],
+                           include_path=[include_paths['microscopes_common_cython_inc']])
+    long_description = read_readme()
+    version = get_version()
 
-setup(version=version,
-      name='microscopes-lda',
-      description='Non-parametric bayesian inference',
-      long_description=long_description,
-      url='https://github.com/datamicroscopes/lda',
-      author='Tim Hopper, Stephen Tu, Eric Jonas',
-      maintainer='Tim Hopper',
-      maintainer_email='tdhopper@gmail.com',
-      packages=(
-          'microscopes.lda',
-      ),
-      ext_modules=extensions)
+    setup(version=version,
+          name='microscopes-lda',
+          description='Non-parametric bayesian inference',
+          long_description=long_description,
+          url='https://github.com/datamicroscopes/lda',
+          author='Tim Hopper, Stephen Tu, Eric Jonas',
+          maintainer='Tim Hopper',
+          maintainer_email='tdhopper@gmail.com',
+          packages=(
+              'microscopes.lda',
+          ),
+          ext_modules=extensions)
