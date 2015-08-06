@@ -10,7 +10,6 @@ from cython import __version__ as cython_version
 from pkg_resources import parse_version
 from os.path import join as join_path
 
-import numpy
 import sys
 import os
 import json
@@ -158,27 +157,27 @@ def load_dependencies(basedir):
     if is_debug_build():
         print 'Debug build'
 
-    include_dirs = [numpy.get_include()]
+    include_dirs = set()
     if 'EXTRA_INCLUDE_PATH' in os.environ:
-        include_dirs.append(os.environ['EXTRA_INCLUDE_PATH'])
+        include_dirs.add(os.environ['EXTRA_INCLUDE_PATH'])
     if distributions_inc is not None:
-        include_dirs.append(distributions_inc)
+        include_dirs.add(distributions_inc)
     if microscopes_common_inc is not None:
-        include_dirs.append(microscopes_common_inc)
+        include_dirs.add(microscopes_common_inc)
     if microscopes_lda_inc is not None:
-        include_dirs.append(microscopes_lda_inc)
+        include_dirs.add(microscopes_lda_inc)
 
-    library_dirs = []
+    library_dirs = set()
     if distributions_lib is not None:
-        library_dirs.append(distributions_lib)
+        library_dirs.add(distributions_lib)
     if microscopes_common_lib is not None:
-        library_dirs.append(microscopes_common_lib)
+        library_dirs.add(microscopes_common_lib)
     if microscopes_lda_lib is not None:
-        library_dirs.append(microscopes_lda_lib)
+        library_dirs.add(microscopes_lda_lib)
 
     include_paths = {"microscopes_common_cython_inc": microscopes_common_cython_inc,
                      }
-    return include_dirs, library_dirs, include_paths
+    return list(include_dirs), list(library_dirs), include_paths
 
 
 def build_extra_compile_args():
@@ -214,6 +213,8 @@ def build_extra_link_args():
 
 def make_extension(module_name):
     sources = [module_name.replace('.', '/') + '.pyx']
+    print "include_dirs", include_dirs
+    print "library_dirs", library_dirs
     return Extension(
         module_name,
         sources=sources,
