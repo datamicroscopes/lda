@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include <microscopes/common/util.hpp>
 #include <microscopes/common/assert.hpp>
@@ -135,6 +136,8 @@ public:
 
     void
     delete_table(size_t eid, size_t tid);
+
+    inline size_t get_word(size_t eid, size_t word_index) const { return x_ji[eid][word_index]; }
 
     inline size_t tablesize(size_t eid, size_t tid) const { return n_jt[eid][tid]; }
 
