@@ -138,12 +138,12 @@ sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rn
 void
 lda_crp_gibbs(microscopes::lda::state &state, common::rng_t &rng)
 {
-    for (size_t j = 0; j < state.x_ji.size(); ++j) {
-        for (size_t i = 0; i < state.x_ji[j].size(); ++i) {
+    for (size_t j = 0; j < state.nentities(); ++j) {
+        for (size_t i = 0; i < state.nterms(j); ++i) {
             lda_crp::sampling_t(state, j, i, rng);
         }
     }
-    for (size_t j = 0; j < state.x_ji.size(); ++j) {
+    for (size_t j = 0; j < state.nentities(); ++j) {
         for (auto t : state.using_t[j]) {
             if (t != 0) {
                 lda_crp::sampling_k(state, j, t, rng);
