@@ -95,7 +95,7 @@ calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float
 void
 sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rng) {
     state.remove_table(j, i);
-    size_t v = state.x_ji[j][i];
+    size_t v = state.get_word(j, i);
     std::vector<float> f_k = calc_f_k(state, v, rng);
     MICROSCOPES_DCHECK(f_k[0] == 0, "f_k[0] != 0");
     std::vector<float> p_t = calc_table_posterior(state, j, f_k, rng);
@@ -138,12 +138,12 @@ sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rn
 void
 lda_crp_gibbs(microscopes::lda::state &state, common::rng_t &rng)
 {
-    for (size_t j = 0; j < state.x_ji.size(); ++j) {
-        for (size_t i = 0; i < state.x_ji[j].size(); ++i) {
+    for (size_t j = 0; j < state.nentities(); ++j) {
+        for (size_t i = 0; i < state.nterms(j); ++i) {
             lda_crp::sampling_t(state, j, i, rng);
         }
     }
-    for (size_t j = 0; j < state.x_ji.size(); ++j) {
+    for (size_t j = 0; j < state.nentities(); ++j) {
         for (auto t : state.using_t[j]) {
             if (t != 0) {
                 lda_crp::sampling_k(state, j, t, rng);
