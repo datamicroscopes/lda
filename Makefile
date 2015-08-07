@@ -13,8 +13,12 @@ relwithdebinfo:
 	@python ./cmake/print_cmake_command.py RelWithDebInfo
 	[ -d relwithdebinfo ] || (mkdir relwithdebinfo && cd relwithdebinfo && eval `python ../cmake/print_cmake_command.py RelWithDebInfo`)
 
+.PHONY: conda_check
+conda_check:
+	. conda_check.sh
+
 .PHONY: cmake_debug
-cmake_debug:
+cmake_debug: conda_check
 	@echo "Setting up cmake (debug)"
 	@python ./cmake/print_cmake_command.py Debug
 	[ -d debug ] || (mkdir debug && cd debug && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$CONDA_ENV_PATH -DCMAKE_PREFIX_PATH=$CONDA_ENV_PATH ..)
