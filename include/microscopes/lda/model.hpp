@@ -137,7 +137,9 @@ public:
     void
     delete_table(size_t eid, size_t tid);
 
-    inline size_t get_word(size_t eid, size_t word_index) const { return x_ji[eid][word_index]; }
+    inline size_t get_word(size_t eid, size_t word_index) const { return get_entity(eid)[word_index]; }
+
+    inline std::vector<size_t> get_entity(size_t eid) const { return x_ji[eid]; }
 
     inline size_t tablesize(size_t eid, size_t tid) const { return n_jt[eid][tid]; }
 
@@ -153,7 +155,7 @@ public:
 
     inline size_t nwords() const { return V; }
 
-    inline size_t nterms(size_t eid) const { return x_ji[eid].size(); }
+    inline size_t nterms(size_t eid) const { return get_entity(eid).size(); }
 
     inline size_t ntables(size_t eid) const { return using_t[eid].size(); }
 

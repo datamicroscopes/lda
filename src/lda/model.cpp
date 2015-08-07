@@ -184,7 +184,7 @@ microscopes::lda::state::perplexity() {
     double log_likelihood = 0;
     size_t N = 0;
     for (size_t eid = 0; eid < nentities(); eid++) {
-        for (auto &v : x_ji[eid]) {
+        for (auto &v : get_entity(eid)) {
             double word_prob = 0;
             for (size_t did = 0; did < dishes_.size(); did++) {
                 MICROSCOPES_DCHECK(theta[eid].size() == dishes_.size(), "theta[eid] wrong");
@@ -273,7 +273,7 @@ microscopes::lda::state::add_table(size_t eid, size_t tid, size_t did) {
     size_t k_new = restaurants_[eid][tid];
     n_k.incr(k_new, 1);
 
-    size_t v = x_ji[eid][did];
+    size_t v = get_word(eid, did);
     MICROSCOPES_DCHECK(v < nwords(), "Word out of bounds");
     n_kv[k_new].incr(v, 1);
     n_jtv[eid][tid][v] += 1;
@@ -344,7 +344,7 @@ microscopes::lda::state::remove_table(size_t eid, size_t tid) {
         size_t k = restaurants_[eid][t];
         MICROSCOPES_DCHECK(k > 0, "k <= 0");
         // decrease counters
-        size_t v = x_ji[eid][tid];
+        size_t v = get_word(eid, tid);
         MICROSCOPES_DCHECK(v < nwords(), "Word out of bounds");
         n_kv[k].decr(v, 1);
         n_k.decr(k, 1);

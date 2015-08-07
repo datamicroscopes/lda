@@ -95,7 +95,7 @@ calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float
 void
 sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rng) {
     state.remove_table(j, i);
-    size_t v = state.x_ji[j][i];
+    size_t v = state.get_word(j, i);
     std::vector<float> f_k = calc_f_k(state, v, rng);
     MICROSCOPES_DCHECK(f_k[0] == 0, "f_k[0] != 0");
     std::vector<float> p_t = calc_table_posterior(state, j, f_k, rng);
