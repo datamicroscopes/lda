@@ -24,7 +24,7 @@ CYTHON_MODULES = ['microscopes.lda._model',
                   ]
 
 LIBRARY_DEPENDENCIES = ["microscopes_common", "microscopes_lda",
-                        "distributions_shared"]
+                        "protobuf", "distributions_shared"]
 
 
 def get_git_sha1():
