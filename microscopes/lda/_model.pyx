@@ -167,9 +167,6 @@ cdef class state:
             return {'initial_dishes': self.DEFAULT_INITIAL_DISH_HINT}
 
 
-def bind(state s, **kwargs):
-    pass
-
 def initialize(model_definition defn, data, rng r, **kwargs):
     """Initialize state to a random, valid point in the state space
     Parameters
