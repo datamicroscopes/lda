@@ -40,3 +40,14 @@ class TestLDANewsReuters():
         original_perplexity = self.latent.perplexity()
         self.r.run(self.prng, self.niters)
         assert self.latent.perplexity() < original_perplexity
+
+    def test_lda_zero_iter(self):
+        # compare to model with 0 iterations
+        pass
+
+    def test_lda_random_seed(self):
+        # refit model with same random seed and verify results identical
+        pass
+
+    def test_lda_attributes(self):
+        pass
