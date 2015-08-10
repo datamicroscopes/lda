@@ -11,6 +11,12 @@ def test_docs_from_document_term_matrix():
     assert utils.docs_from_document_term_matrix(dtm) == docs
 
 
+def test_docs_from_dtm_with_gaps():
+    dtm = [[2, 0, 1], [1, 1, 1]]
+    docs = [[0, 0, 2], [0, 1, 2]]
+    assert utils.docs_from_document_term_matrix(dtm) == docs
+
+
 def test_docs_from_numpy_dtp():
     dtm = np.array([[2, 1], [3, 2]])
     docs = [[0, 0, 1], [0, 0, 0, 1, 1]]
