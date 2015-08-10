@@ -10,6 +10,8 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq g++-4.8
   - sudo pip install conda
+  - conda create -n env
+  - source activate env
   - conda update --yes conda
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
