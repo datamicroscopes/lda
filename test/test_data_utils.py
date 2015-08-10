@@ -1,3 +1,5 @@
+import numpy as np
+
 from cStringIO import StringIO
 from nose.tools import raises
 from microscopes.lda import utils
@@ -5,6 +7,12 @@ from microscopes.lda import utils
 
 def test_docs_from_document_term_matrix():
     dtm = [[2, 1], [3, 2]]
+    docs = [[0, 0, 1], [0, 0, 0, 1, 1]]
+    assert utils.docs_from_document_term_matrix(dtm) == docs
+
+
+def test_docs_from_numpy_dtp():
+    dtm = np.array([[2, 1], [3, 2]])
     docs = [[0, 0, 1], [0, 0, 0, 1, 1]]
     assert utils.docs_from_document_term_matrix(dtm) == docs
 
