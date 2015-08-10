@@ -43,3 +43,8 @@ def test_bad_ldac_data():
     stream.write("2 0:1")
     stream.seek(0) # rewind stream
     utils.docs_from_ldac(stream)
+
+
+def test_num_terms():
+    docs = [[0, 1, 2], [1, 2, 3]]
+    assert utils.num_terms(docs) == 4

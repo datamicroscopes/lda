@@ -2,6 +2,13 @@
 """
 
 
+def num_terms(docs):
+    terms = set()
+    for doc in docs:
+        terms.update(set(doc))
+    return len(terms)
+
+
 def docs_from_document_term_matrix(dtm):
     """Read dataset from document term document-term matrix
 
