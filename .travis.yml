@@ -10,8 +10,8 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq g++-4.8
   - sudo pip install conda
-  - conda init
-  - conda update conda --yes
+  - sudo conda init
+  - sudo conda update conda --yes
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
   - conda create -n build --yes python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython pip scikit-learn
