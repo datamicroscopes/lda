@@ -9,11 +9,9 @@ before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -qq
   - sudo apt-get install -qq g++-4.8
-  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda
+  - sudo pip install conda
+  - sudo conda init
+  - sudo conda update conda --yes
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
   - conda create -n build --yes python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython pip scikit-learn
