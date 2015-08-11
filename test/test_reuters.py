@@ -1,7 +1,8 @@
 import os
 import numpy as np
 
-from nose.tools import assert_almost_equal
+from nose.tools import assert_almost_equal, assert_dict_equal
+from nose.tools import assert_list_equal
 
 from microscopes.lda import model, runner
 from microscopes.lda.definition import model_definition
@@ -58,8 +59,28 @@ class TestLDANewsReuters():
         assert latent2.perplexity() > self.latent.perplexity()
 
     def test_lda_random_seed(self):
-        # refit model with same random seed and verify results identical
-        pass
+        # ensure that randomness is contained in rng
+        # by running model twice with same seed
+        niters = 10
+
+        # model 1
+        prng1 = rng(seed=54321)
+        latent1 = model.initialize(self.defn, self.docs, prng1)
+        runner1 = runner.runner(self.defn, self.docs, latent1)
+        runner1.run(prng1, niters)
+
+        # model2
+        prng2 = rng(seed=54321)
+        latent2 = model.initialize(self.defn, self.docs, prng2)
+        runner2 = runner.runner(self.defn, self.docs, latent2)
+        runner2.run(prng2, niters)
+
+        assert_list_equal(latent1.document_distribution(),
+                          latent2.document_distribution())
+
+        for d1, d2 in zip(latent1.word_distribution(self.prng),
+                          latent2.word_distribution(self.prng)):
+            assert_dict_equal(d1, d2)
 
     def test_lda_attributes(self):
         assert np.array(self.doc_topic).shape == (self.N, self.latent.ntopics())
