@@ -30,7 +30,8 @@ class TestLDANewsReuters():
         cls.niters = 100 if os.environ.get('TRAVIS') else 2
 
         cls.defn = model_definition(cls.N, cls.V)
-        cls.prng = rng(seed=12345)
+        cls.seed = 12345
+        cls.prng = rng(seed=cls.seed)
         cls.latent = model.initialize(cls.defn, cls.docs, cls.prng)
         cls.r = runner.runner(cls.defn, cls.docs, cls.latent)
         cls.r.run(cls.prng, cls.niters)
