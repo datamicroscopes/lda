@@ -25,10 +25,10 @@ class TestLDANewsReuters():
         self.niters = 100
 
         self.defn = model_definition(self.N, self.V)
-        self.prng = rng()
+        self.prng = rng(seed=12345)
         self.latent = model.initialize(self.defn, self.docs, self.prng)
         self.r = runner.runner(self.defn, self.docs, self.latent)
-
+        self.r.run(self.prng, self.niters)
         self.doc_topic = self.latent.document_distribution()
 
 
