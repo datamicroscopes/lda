@@ -3,6 +3,8 @@
 ## [Unreleased]
 ### Added
 - Add utility function for getting pyLDAvis data
+- Added utility functions for translating data formats
+- Wrote tests based on those in [ariddell's LDA](https://github.com/ariddell/lda/tree/57f721b05ffbdec5cb11c2533f72aa1f9e6ed12d/lda/tests)
 
 ### Changed
 - New README
