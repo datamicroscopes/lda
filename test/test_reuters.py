@@ -14,25 +14,27 @@ from microscopes.lda import utils
 
 class TestLDANewsReuters():
 
-    def _load_docs(self):
+    @classmethod
+    def _load_docs(cls):
         test_dir = os.path.dirname(__file__)
         reuters_ldac_fn = os.path.join(test_dir, 'data', 'reuters.ldac')
         with open(reuters_ldac_fn, 'r') as f:
-            self.docs = utils.docs_from_ldac(f)
+            cls.docs = utils.docs_from_ldac(f)
 
-        self.V = utils.num_terms(self.docs)
-        self.N = len(self.docs)
+        cls.V = utils.num_terms(cls.docs)
+        cls.N = len(cls.docs)
 
-    def setUp(self):
-        self._load_docs()
-        self.niters = 100
+    @classmethod
+    def setup_class(cls):
+        cls._load_docs()
+        cls.niters = 100
 
-        self.defn = model_definition(self.N, self.V)
-        self.prng = rng(seed=12345)
-        self.latent = model.initialize(self.defn, self.docs, self.prng)
-        self.r = runner.runner(self.defn, self.docs, self.latent)
-        self.r.run(self.prng, self.niters)
-        self.doc_topic = self.latent.document_distribution()
+        cls.defn = model_definition(cls.N, cls.V)
+        cls.prng = rng(seed=12345)
+        cls.latent = model.initialize(cls.defn, cls.docs, cls.prng)
+        cls.r = runner.runner(cls.defn, cls.docs, cls.latent)
+        cls.r.run(cls.prng, cls.niters)
+        cls.doc_topic = cls.latent.document_distribution()
 
     def test_lda_news(self):
         assert len(self.doc_topic) == len(self.docs)
