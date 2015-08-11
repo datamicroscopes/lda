@@ -1,4 +1,7 @@
 import os
+import numpy as np
+
+from nose.tools import assert_almost_equal
 
 from microscopes.lda import model, runner
 from microscopes.lda.definition import model_definition
@@ -56,4 +59,13 @@ class TestLDANewsReuters():
         pass
 
     def test_lda_attributes(self):
-        pass
+        assert np.array(self.doc_topic).shape == (self.N, self.latent.ntopics())
+        assert len(self.latent.word_distribution(self.prng)) == self.latent.ntopics()
+        for dist in self.latent.word_distribution(self.prng):
+            assert len(dist) == self.V
+
+        # check distributions sum to one
+        for dist in self.latent.word_distribution(self.prng):
+            assert_almost_equal(sum(dist.values()), 1)
+        for dist in self.latent.document_distribution():
+            assert_almost_equal(sum(dist), 1)
