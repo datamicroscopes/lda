@@ -1,5 +1,6 @@
 # cython: embedsignature=True
 import itertools
+import numpy as np
 
 from microscopes.common import validator
 from copy import deepcopy
@@ -150,6 +151,39 @@ cdef class state:
                 'doc_lengths': doc_lengths,
                 'vocab': vocab,
                 'term_frequency': term_frequency}
+
+    def predict(self, docs, prng, max_iter=20, tol=1e-16):
+        """Predict topic distributions for documents
+        Parameters
+        ----------
+        docs : document or list of documents
+        max_iter : int, optional
+            Maximum number of iterations.
+        tol: double, optional
+            Tolerance value used for stopping
+        Returns
+        -------
+        list of topic distributions for each input document
+        """
+        if not isinstance(docs[0], list):
+            docs = [docs]
+        return [self._predict_single(doc, prng, max_iter, tol) for doc in docs]
+
+    def _predict_single(self, doc, prng, max_iter, tol):
+        PZS = np.zeros((len(doc), self.ntopics()))
+        word_dist = self.word_distribution(prng)
+        for iteration in range(max_iter + 1): # +1 is for initialization
+            PZS_new = [[d[word] for d in word_dist]
+                        for word in doc]
+            PZS_new = np.array(PZS_new)
+            PZS_new *= (PZS.sum(axis=0) - PZS + self.vocab_hp)
+            PZS_new /= PZS_new.sum(axis=1)[:, np.newaxis] # vector to single column matrix
+            PZS = PZS_new
+            if np.abs(PZS_new - PZS).sum() < tol:
+                break
+        theta_doc = PZS.sum(axis=0) / PZS.sum()
+        assert theta_doc.shape == (self.ntopics(),)
+        return theta_doc.tolist()
 
     def _get_dishes_and_tables(self, kwargs):
         if "initial_dishes" in kwargs \

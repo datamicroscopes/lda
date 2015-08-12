@@ -93,3 +93,19 @@ class TestLDANewsReuters():
             assert_almost_equal(sum(dist.values()), 1)
         for dist in self.latent.document_distribution():
             assert_almost_equal(sum(dist), 1)
+
+    def test_lda_1transform_basic(self):
+        """Basic checks on transform"""
+
+        n_docs = 3
+        n_topics = self.latent.ntopics()
+        docs_test = self.docs[0:n_docs]
+        doc_topic_test = np.array(self.latent.predict(docs_test, self.prng))
+        assert doc_topic_test.shape == (n_docs, n_topics)
+        np.testing.assert_almost_equal(doc_topic_test.sum(axis=1), np.ones(n_docs))
+
+        # one document
+        docs_test = self.docs[0]
+        doc_topic_test = np.array(self.latent.predict(docs_test, self.prng))
+        doc_topic_test.shape = (1, n_topics)
+        np.testing.assert_array_almost_equal(doc_topic_test.sum(axis=1), np.ones(1))
