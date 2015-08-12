@@ -44,8 +44,8 @@ cdef class state:
             dish_hps = {'alpha': 0.1, 'gamma': 0.1}
         validator.validate_kwargs(dish_hps, ('alpha', 'gamma',))
 
-        vocab_hp = kwargs.get('vocab_hp', 0.5)
-        validator.validate_positive(vocab_hp)
+        self.vocab_hp = kwargs.get('vocab_hp', 0.5)
+        validator.validate_positive(self.vocab_hp)
 
         # Get initial dishes or assigments
         dishes_and_tables = self._get_dishes_and_tables(kwargs)
@@ -54,7 +54,7 @@ cdef class state:
             self._thisptr = c_initialize(
                 defn=defn._thisptr.get()[0],
                 alpha=dish_hps['alpha'],
-                beta=vocab_hp,
+                beta=self.vocab_hp,
                 gamma=dish_hps['gamma'],
                 initial_dishes=dishes_and_tables['initial_dishes'],
                 docs=data,
@@ -64,7 +64,7 @@ cdef class state:
             self._thisptr = c_initialize_explicit(
                 defn=defn._thisptr.get()[0],
                 alpha=dish_hps['alpha'],
-                beta=vocab_hp,
+                beta=self.vocab_hp,
                 gamma=dish_hps['gamma'],
                 dish_assignments=dishes_and_tables['dish_assignments'],
                 table_assignments=dishes_and_tables['table_assignments'],

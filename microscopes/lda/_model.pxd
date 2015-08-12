@@ -23,3 +23,4 @@ cdef class state:
     cdef model_definition _defn
     cdef _vocab
     cdef vector[vector[size_t]] _data
+    cdef float vocab_hp
