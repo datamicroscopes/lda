@@ -327,7 +327,6 @@ microscopes::lda::state::create_table(size_t eid, size_t k_new)
     }
     using_t[eid].insert(using_t[eid].begin() + t_new, t_new);
     n_jt[eid][t_new] = 0;
-    // MICROSCOPES_DCHECK(k_new != 0, "k_new ");
     restaurants_[eid][t_new] = k_new;
     if (k_new != 0){
         m_k[k_new] += 1;

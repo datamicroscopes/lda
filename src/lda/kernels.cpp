@@ -112,6 +112,7 @@ sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rn
         if (k_new == 0)
         {
             k_new = state.create_dish();
+            MICROSCOPES_DCHECK(k_new != 0, "k_new is 0");
         }
         t_new = state.create_table(j, k_new);
     }
@@ -129,6 +130,7 @@ sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rn
     if (k_new == 0)
     {
         k_new = state.create_dish();
+        MICROSCOPES_DCHECK(k_new != 0, "k_new is 0");
     }
     state.seat_at_dish(j, t, k_new);
 }
