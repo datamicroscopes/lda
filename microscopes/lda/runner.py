@@ -46,4 +46,3 @@ class runner(object):
 
         for _ in xrange(niters):
             lda_crp_gibbs(self._latent, r)
-            lda_sample_dispersion(self._latent, r)
