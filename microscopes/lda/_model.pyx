@@ -165,11 +165,11 @@ cdef class state:
         raise NotImplementedError()
         return self._thisptr.get()[0].score_data(r._thisptr[0])
 
-    def pyldavis_data(self, rng r):
+    def pyldavis_data(self, rng r=None):
         sorted_num_vocab = sorted(self._vocab.keys())
 
         topic_term_distribution = []
-        for topic in self.word_distribution_by_topic(r):
+        for topic in self.word_distribution_by_topic():
             t = [topic[self._vocab[word_id]]
                  for word_id in sorted_num_vocab]
             topic_term_distribution.append(t)
@@ -208,7 +208,7 @@ cdef class state:
 
     def _predict_single(self, doc, prng, max_iter, tol):
         PZS = np.zeros((len(doc), self.ntopics()))
-        word_dist = self.word_distribution(prng)
+        word_dist = self.word_distribution_by_topic()
         for iteration in range(max_iter + 1): # +1 is for initialization
             PZS_new = [[d[word] for d in word_dist]
                         for word in doc]
