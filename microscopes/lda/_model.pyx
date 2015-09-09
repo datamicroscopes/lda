@@ -200,6 +200,13 @@ cdef class state:
         return ctr
 
     def term_relevance_by_topic(self, weight=0.5):
+        """For each topic, get terms sorted by relevance.
+
+        Relevance metric is defined by Sievert and Shirley (2004).
+        It is a weighted average of the log probability of a word
+        occurring in a topic and the log lift of assigning the word
+        to the topic.
+        """
         phi = self.word_distribution_by_topic()
         ctf = self._corpus_term_frequency()
         relevance_by_topic = []
