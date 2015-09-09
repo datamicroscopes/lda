@@ -12,33 +12,25 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
     auto n_jt_val = state.n_jt[j][t];
     for (size_t i = 0; i < state.dishes_.size(); i++) {
         auto k = state.dishes_[i];
-        if (k == 0) continue;
-        float n_k_val = (k == k_old) ? state.n_k.get(k) - state.n_jt[j][t] : state.n_k.get(k);
-        MICROSCOPES_DCHECK(n_k_val > 0, "n_k_val isn't positive");
-        log_p_k[i] = distributions::fast_log(state.m_k[k]) + distributions::fast_lgamma(n_k_val) - distributions::fast_lgamma(n_k_val + n_jt_val);
-        MICROSCOPES_DCHECK(isfinite(log_p_k[i]), "log_p_k isn't finite");
+        float n_k_val = state.n_k.get(k); // V*beta when k == i == 0
+        if (k == k_old) n_k_val -= n_jt_val;
+        log_p_k[i] = distributions::fast_log(i == 0 ? state.gamma_ : state.m_k[k]);
+        log_p_k[i] += distributions::fast_lgamma(n_k_val);
+        log_p_k[i] -= distributions::fast_lgamma(n_k_val + n_jt_val);
     }
-    log_p_k[0] = distributions::fast_log(state.gamma_) + distributions::fast_lgamma(state.V * state.beta_) - distributions::fast_lgamma(state.V * state.beta_ + state.n_jt[j][t]);
 
     for (auto &kv : state.n_jtv[j][t]) {
-        auto w = kv.first;
-        auto n_jtw = kv.second;
-        if (n_jtw == 0) continue;
-        MICROSCOPES_DCHECK(n_jtw > 0, "n_jtw isn't positive");
+        auto w = kv.first; // w is word index
+        auto n_jtw = kv.second; // n_jtw is # of times word w appears at table t in doc j.
+        if (n_jtw == 0) continue; // if word w isn't at table t, continue. log_pk wouldn't change.
 
-        std::vector<float> n_kw(state.dishes_.size());
         for (size_t i = 0; i < state.dishes_.size(); i++) {
-            n_kw[i] = state.n_kv[state.dishes_[i]].get(w);
-            if (state.dishes_[i] == state.restaurants_[j][t]) n_kw[i] -= n_jtw;
-            MICROSCOPES_DCHECK(i == 0 || n_kw[i] > 0, "n_kw[i] <= 0");
+            float n_kw;
+            n_kw = state.n_kv[state.dishes_[i]].get(w); // beta when k == i == 0
+            if (state.dishes_[i] == state.restaurants_[j][t]) n_kw -= n_jtw;
+            log_p_k[i] += distributions::fast_lgamma(n_kw + n_jtw);
+            log_p_k[i] -= distributions::fast_lgamma(n_kw);
         }
-        n_kw[0] = 1; // # dummy for logarithm's warning
-        for (size_t i = 1; i < n_kw.size(); i++) {
-            log_p_k[i] += distributions::fast_lgamma(n_kw[i] + n_jtw) - distributions::fast_lgamma(n_kw[i]);
-            MICROSCOPES_DCHECK(isfinite(log_p_k[i]), "log_p_k isn't finite");
-        }
-
-        log_p_k[0] += distributions::fast_lgamma(state.beta_ + n_jtw) - distributions::fast_lgamma(state.beta_);
     }
 
     std::vector<float> p_k;
