@@ -91,7 +91,6 @@ def test_explicit():
     """Test that we can explicitly initialize state by specifying
     table and dish assignments
     """
-
     prng = rng()
     N, V = 3, 7
     defn = model_definition(N, V)
@@ -110,6 +109,15 @@ def test_explicit():
         assert da1 == da2
     for ta1, ta2 in zip(s.table_assignments(), table_assignments):
         assert ta1 == ta2
+
+
+def test_explicit_exceptions():
+    """ValueError should be rasied for bad assignments
+    """
+    prng = rng()
+    N, V = 3, 7
+    defn = model_definition(N, V)
+    data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
 
     # We should get an error if we leave out a dish assignment for a given table
     table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
@@ -130,3 +138,24 @@ def test_explicit():
                   defn, data, prng,
                   table_assignments=table_assignments,
                   dish_assignments=dish_assignments)
+
+
+def test_explicit_inception():
+    """Initialize a new state using assignments from old
+
+    Helps ensure that our assignment validation code is correct
+    """
+    prng = rng()
+    N, V = 3, 7
+    defn = model_definition(N, V)
+    data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
+
+    table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
+    dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
+
+    s = initialize(defn, data, prng,
+                   table_assignments=table_assignments,
+                   dish_assignments=dish_assignments)
+    s2 = initialize(defn, data, prng,
+                    table_assignments=s.table_assignments(),
+                    dish_assignments=s.dish_assignments())
