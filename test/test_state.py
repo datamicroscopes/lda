@@ -52,6 +52,10 @@ def test_relevance():
     assert isinstance(rel[0], list)
     assert len(rel) == s.ntopics()
     assert len(rel[0]) == s.nwords()
+    assert rel[0] == sorted(rel[0],
+                            key=lambda (_, r): r,
+                            reverse=True)
+    assert rel[-1][0] < rel[-1][-1]
 
 
 def test_single_dish_initialization():

@@ -216,8 +216,8 @@ cdef class state:
                 p_w = ctf[term]
                 rel = self._relevance_for_word(phi_kw, p_w, weight)
                 term_relevance.append((term, rel))
-            term_relevance = sorted(term_relevance, reverse=True)
-            relevance_by_topic.append(term_relevance)
+            term_relevance_s = sorted(term_relevance, key=lambda r: r[1], reverse=True)
+            relevance_by_topic.append(term_relevance_s)
         return relevance_by_topic
 
     def _relevance_for_word(self, phi_kw, p_w, weight=0.5):
