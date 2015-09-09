@@ -12,7 +12,7 @@ microscopes::lda::state::state(const model_definition &defn,
       float alpha,
       float beta,
       float gamma,
-      const std::vector<std::vector<size_t>> &docs,
+      const microscopes::lda::nested_vector &docs,
       common::rng_t &rng)
     : V(defn.v()),
       alpha_(alpha),
@@ -29,7 +29,7 @@ microscopes::lda::state::state(const model_definition &defn,
       float beta,
       float gamma,
       size_t initial_dishes,
-      const std::vector<std::vector<size_t>> &docs,
+      const microscopes::lda::nested_vector &docs,
       common::rng_t &rng)
     : state(defn, alpha, beta, gamma, docs, rng) {
 
@@ -51,9 +51,9 @@ microscopes::lda::state::state(const model_definition &defn,
       float alpha,
       float beta,
       float gamma,
-      const std::vector<std::vector<size_t>> &dish_assignments,
-      const std::vector<std::vector<size_t>> &table_assignments,
-      const std::vector<std::vector<size_t>> &docs,
+      const microscopes::lda::nested_vector &dish_assignments,
+      const microscopes::lda::nested_vector &table_assignments,
+      const microscopes::lda::nested_vector &docs,
       common::rng_t &rng)
     : state(defn, alpha, beta, gamma, docs, rng) {
 
@@ -82,9 +82,9 @@ microscopes::lda::state::create_entity(){
     n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
 }
 
-std::vector<std::vector<size_t>>
+microscopes::lda::nested_vector
 microscopes::lda::state::assignments() {
-    std::vector<std::vector<size_t>> ret;
+    microscopes::lda::nested_vector ret;
     ret.resize(nentities());
 
     for (size_t eid = 0; eid < nentities(); eid++) {
@@ -103,7 +103,7 @@ microscopes::lda::state::assignments() {
 * table IDs -> (global) dish assignments
 *
 */
-std::vector<std::vector<size_t>>
+microscopes::lda::nested_vector
 microscopes::lda::state::dish_assignments() {
     return restaurants_;
 }
@@ -113,7 +113,7 @@ microscopes::lda::state::dish_assignments() {
 * from each word to the (local) table it is assigned to.
 *
 */
-std::vector<std::vector<size_t>>
+microscopes::lda::nested_vector
 microscopes::lda::state::table_assignments() {
     return table_doc_word;
 }

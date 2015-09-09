@@ -13,6 +13,7 @@
 namespace microscopes {
 namespace lda {
 
+typedef std::vector<std::vector<size_t>> nested_vector;
 
 class model_definition {
 public:
@@ -30,20 +31,20 @@ public:
     float alpha_; //!< Hyperparamter on second level Dirichlet process (\alpha_0)
     float beta_; //!< Hyperparameter of base Dirichlet distribution (over term distributions) (\beta)
     float gamma_; //!< Hyperparameter on first level Dirichlet process (\gamma)
-    std::vector<std::vector<size_t>> using_t; //!< Nested vector giving list of indices of
+    nested_vector using_t; //!< Nested vector giving list of indices of
                                               //!< active tables for each document
                                              //!< table==0 means we need to create new table for word
     std::vector<size_t> dishes_; //!< List of indices of active dishes/topics (using_k in shuyo's code)
-    const std::vector<std::vector<size_t>> x_ji; //!< Integer representation of documents
-    std::vector<std::vector<size_t>> restaurants_; //!< Nested vector mapping doc/table pair to topic (k_jt)
+    const nested_vector x_ji; //!< Integer representation of documents
+    nested_vector restaurants_; //!< Nested vector mapping doc/table pair to topic (k_jt)
                                                    //!< dish==0 means we need to create new dish
-    std::vector<std::vector<size_t>> n_jt; //!<
+    nested_vector n_jt; //!<
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; //!< Nested vector giving counts for doc/table/word triples
     std::vector<size_t> m_k; //!< Number of tables assigned to each dish
     lda_util::defaultdict<size_t, float> n_k; //!< Number of words assigned to each dish plus beta * V
     std::vector<lda_util::defaultdict<size_t, float>> n_kv; //!< Number of times a given word is assigned to
                                                             //!< each dish plus beta
-    std::vector<std::vector<size_t>> table_doc_word; //!< Nested vector giving table assignment for each doc/word pair (t_ji)
+    nested_vector table_doc_word; //!< Nested vector giving table assignment for each doc/word pair (t_ji)
 
     template <class... Args>
     static inline std::shared_ptr<state>
@@ -57,7 +58,7 @@ private:
           float alpha,
           float beta,
           float gamma,
-          const std::vector<std::vector<size_t>> &docs,
+          const nested_vector &docs,
           common::rng_t &);
 
 public:
@@ -66,19 +67,19 @@ public:
           float beta,
           float gamma,
           size_t initial_dishes,
-          const std::vector<std::vector<size_t>> &docs,
+          const nested_vector &docs,
           common::rng_t &);
 
     state(const model_definition &defn,
           float alpha,
           float beta,
           float gamma,
-          const std::vector<std::vector<size_t>> &dish_assignments,
-          const std::vector<std::vector<size_t>> &table_assignments,
-          const std::vector<std::vector<size_t>> &docs,
+          const nested_vector &dish_assignments,
+          const nested_vector &table_assignments,
+          const nested_vector &docs,
           common::rng_t &);
 
-    std::vector<std::vector<size_t>>
+    nested_vector
     assignments();
 
     /**
@@ -86,7 +87,7 @@ public:
     * table IDs -> (global) dish assignments
     *
     */
-    std::vector<std::vector<size_t>>
+    nested_vector
     dish_assignments();
 
     /**
@@ -94,7 +95,7 @@ public:
     * from each word to the (local) table it is assigned to.
     *
     */
-    std::vector<std::vector<size_t>>
+    nested_vector
     table_assignments();
 
     // Not implemented
