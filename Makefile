@@ -39,7 +39,7 @@ travis_install:
 
 .PHONY: travis_script
 travis_script:
-	(cd test && nosetests --verbose -a '!slow')
+	(cd test && nosetests --verbose -a '!slow' --nocapture)
 
 .PHONY: lint
 lint:

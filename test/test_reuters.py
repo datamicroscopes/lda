@@ -45,6 +45,8 @@ class TestLDANewsReuters():
         # run additional iterations, verify improvement in log likelihood
         original_perplexity = self.latent.perplexity()
         self.r.run(self.prng, self.niters)
+        print "self.latent.perplexity()", self.latent.perplexity()
+        print "original_perplexity", original_perplexity
         assert self.latent.perplexity() < original_perplexity
 
     def test_lda_zero_iter(self):
