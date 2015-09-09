@@ -107,6 +107,10 @@ def test_explicit():
     assert_equals(s.nentities(), len(data))
     assert len(s.dish_assignments()) == len(dish_assignments)
     assert len(s.table_assignments()) == len(table_assignments)
+    for da1, da2 in zip(s.dish_assignments(), dish_assignments):
+        assert da1 == da2
+    for ta1, ta2 in zip(s.table_assignments(), table_assignments):
+        assert ta1 == ta2
 
     # We should get an error if we leave out a dish assignment for a given table
     table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
