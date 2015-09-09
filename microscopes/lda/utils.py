@@ -9,12 +9,13 @@ def num_terms(docs):
     return len(terms)
 
 
-def docs_from_document_term_matrix(dtm):
+def docs_from_document_term_matrix(dtm, vocab=None):
     """Read dataset from document term document-term matrix
 
     Parameters
     ----------
     dtm : array of shape N,V
+    vocab : list of vocabulary words (of length N)
 
     Returns
     -------
@@ -23,7 +24,7 @@ def docs_from_document_term_matrix(dtm):
     docs = []
     for term_counts in dtm:
         term_counts = enumerate(term_counts)
-        docs.append(_term_counts_to_doc(term_counts))
+        docs.append(_term_counts_to_doc(term_counts, vocab=vocab))
     return docs
 
 
@@ -70,8 +71,11 @@ def docs_from_ldac(stream):
     return docs
 
 
-def _term_counts_to_doc(term_counts):
+def _term_counts_to_doc(term_counts, vocab=None):
     doc = []
     for term_id, count in term_counts:
+        if vocab is not None:
+            doc.extend(count * [vocab[term_id]])
+        else:
             doc.extend(count * [term_id])
     return doc

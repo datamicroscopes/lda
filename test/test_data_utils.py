@@ -11,6 +11,13 @@ def test_docs_from_document_term_matrix():
     assert utils.docs_from_document_term_matrix(dtm) == docs
 
 
+def test_docs_from_document_term_matrix_with_vocab():
+    dtm = [[2, 1], [3, 2]]
+    docs = [['cat', 'cat', 2], ['cat', 'cat', 'cat', 2, 2]]
+    gen_docs = utils.docs_from_document_term_matrix(dtm, vocab=['cat', 2])
+    assert gen_docs == docs
+
+
 def test_docs_from_dtm_with_gaps():
     dtm = [[2, 0, 1], [1, 1, 1]]
     docs = [[0, 0, 2], [0, 1, 2]]
