@@ -1,13 +1,10 @@
 import itertools
-import numpy as np
 
 from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
 from microscopes.lda.model import initialize
-from microscopes.lda import utils
 from microscopes.lda.testutil import toy_dataset
 
-from nose.plugins.attrib import attr
 from nose.tools import assert_equals, assert_true
 from nose.tools import assert_almost_equals, assert_raises
 
@@ -96,7 +93,6 @@ def test_explicit():
     N, V = 3, 7
     defn = model_definition(N, V)
     data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
-
 
     table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
     dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
