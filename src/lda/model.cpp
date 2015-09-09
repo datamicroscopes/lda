@@ -61,10 +61,11 @@ microscopes::lda::state::state(const model_definition &defn,
         // table_assignment maps words to tables (and should be the same
         //  shape as docs)
         // dish_assignment maps tables to dishes (its outer length should
-        //  be the the same as docs. Its inner length should be the same as
-        //  the number of unique tables for the given entity/doc.)
+        //  be the the same as docs. Its inner length one plus the maximum
+        //  table index value for the given entity/doc.)
 
         // Create all the dishes we will need.
+        create_dish(); // dummy dish
         auto num_dishes = lda_util::max_element(dish_assignments);
         for(size_t dish = 0; dish <= num_dishes; dish++) {
             create_dish();
