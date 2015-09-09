@@ -36,7 +36,6 @@ class TestLDANewsReuters():
         cls.latent = model.initialize(cls.defn, cls.docs, cls.prng)
         cls.r = runner.runner(cls.defn, cls.docs, cls.latent)
         cls.original_perplexity = cls.latent.perplexity()
-        print "cls.original_perplexity", cls.original_perplexity
         cls.r.run(cls.prng, cls.niters)
         cls.doc_topic = cls.latent.topic_distribution_by_document()
 
