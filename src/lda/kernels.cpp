@@ -89,23 +89,14 @@ sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rn
     state.remove_table(j, i);
     size_t v = state.get_word(j, i);
     std::vector<float> f_k = calc_f_k(state, v, rng);
-    MICROSCOPES_DCHECK(f_k[0] == 0, "f_k[0] != 0");
     std::vector<float> p_t = calc_table_posterior(state, j, f_k, rng);
 
-    MICROSCOPES_DCHECK(lda_util::valid_probability_vector(p_t), "Invalid p_t");
-    size_t word = common::util::sample_discrete(p_t, rng);
-    size_t t_new = state.using_t[j][word];
+    size_t t_new = state.using_t[j][common::util::sample_discrete(p_t, rng)];
     if (t_new == 0)
     {
-        std::vector<float> p_k = calc_dish_posterior_w(state, f_k, rng);
-        MICROSCOPES_DCHECK(lda_util::valid_probability_vector(p_k), "Invalid p_k");
-        size_t topic_index = common::util::sample_discrete(p_k, rng);
-        size_t k_new = state.dishes_[topic_index];
-        if (k_new == 0)
-        {
-            k_new = state.create_dish();
-            MICROSCOPES_DCHECK(k_new != 0, "k_new is 0");
-        }
+        auto p_k = calc_dish_posterior_w(state, f_k, rng);
+        size_t k_new = state.dishes_[common::util::sample_discrete(p_k, rng)];
+        if (k_new == 0) k_new = state.create_dish();
         t_new = state.create_table(j, k_new);
     }
     state.add_table(j, t_new, i);
@@ -114,16 +105,9 @@ sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rn
 void
 sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rng) {
     state.leave_from_dish(j, t);
-    std::vector<float> p_k = calc_dish_posterior_t(state, j, t, rng);
-    MICROSCOPES_DCHECK(lda_util::valid_probability_vector(p_k), "Invalid p_k");
-    MICROSCOPES_DCHECK(state.dishes_.size() == p_k.size(), "p_k is wrong size");
-    size_t topic_index = common::util::sample_discrete(p_k, rng);
-    size_t k_new = state.dishes_[topic_index];
-    if (k_new == 0)
-    {
-        k_new = state.create_dish();
-        MICROSCOPES_DCHECK(k_new != 0, "k_new is 0");
-    }
+    auto p_k = calc_dish_posterior_t(state, j, t, rng);
+    size_t k_new = state.dishes_[common::util::sample_discrete(p_k, rng)];
+    if (k_new == 0) k_new = state.create_dish();
     state.seat_at_dish(j, t, k_new);
 }
 
