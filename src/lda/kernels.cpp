@@ -58,7 +58,7 @@ std::vector<float>
 calc_f_k(microscopes::lda::state &state, size_t v, common::rng_t &rng) {
     Eigen::VectorXf f_k(state.n_kv.size());
 
-    f_k(0) = (state.n_kv[0].get(v) - state.beta_) / state.n_k.get(0);
+    f_k(0) = 0;
     for (size_t k = 1; k < state.n_kv.size(); k++)
     {
         f_k(k) = state.n_kv[k].get(v) / state.n_k.get(k);
@@ -72,14 +72,14 @@ calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float
     std::vector<size_t> using_table = state.using_t[j];
     Eigen::VectorXf p_t(using_table.size());
 
-    for (size_t i = 0; i < using_table.size(); i++) {
+    for (size_t i = 1; i < using_table.size(); i++) {
         auto p = using_table[i];
         p_t(i) = state.n_jt[j][p] * f_k[state.restaurants_[j][p]];
     }
     Eigen::Map<Eigen::VectorXf> eigen_f_k(f_k.data(), f_k.size());
     Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> eigen_m_k(state.m_k.data(), state.m_k.size());
     float p_x_ji = state.gamma_ / state.V + eigen_f_k.dot(eigen_m_k.cast<float>());
-    p_t[0] = p_x_ji * state.alpha_ / (state.gamma_ + state.ntables());
+    p_t(0) = p_x_ji * state.alpha_ / (state.gamma_ + state.ntables());
     p_t /= p_t.sum();
     return std::vector<float>(p_t.data(), p_t.data() + p_t.size());
 }
