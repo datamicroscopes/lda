@@ -29,7 +29,7 @@ def test_pyldavis_data():
     defn = model_definition(len(docs), v=6)
     prng = rng()
     s = initialize(defn, docs, prng)
-    data = s.pyldavis_data(prng)
+    data = s.pyldavis_data()
     index_of_a = data['vocab'].index('a')
     index_of_c = data['vocab'].index('c')
     assert_equals(data['term_frequency'][index_of_a], 1)
