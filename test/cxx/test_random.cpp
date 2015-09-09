@@ -48,10 +48,12 @@ test_explicit_initializtion(){
     std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4}, {0,1,5,6}};
     size_t V = 7;
     lda::model_definition defn(3, V);
-    std::vector<std::vector<size_t>> table_assignments = {{0, 1, 0, 1}, {0, 0, 0}, {1, 1, 1, 0}};
-    std::vector<std::vector<size_t>> dish_assignments = {{0, 1}, {2}, {0, 1}};
+    std::vector<std::vector<size_t>> table_assignments = {{1, 2, 1, 2}, {1, 1, 1}, {3, 3, 3, 1}};
+    std::vector<std::vector<size_t>> dish_assignments = {{0, 1, 2}, {0, 3}, {0, 1, 2, 1}};
     lda::state state(defn, alpha, beta, gamma,
                      dish_assignments, table_assignments, docs, r);
+    MICROSCOPES_CHECK(table_assignments.size() == state.table_assignments().size(), "table_assignments is wrong length");
+    MICROSCOPES_CHECK(dish_assignments.size() == state.dish_assignments().size(), "table_assignments is wrong length");
 }
 
 int main(void){
