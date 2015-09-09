@@ -28,7 +28,7 @@ class TestLDANewsReuters():
     @classmethod
     def setup_class(cls):
         cls._load_docs()
-        cls.niters = 100 if os.environ.get('TRAVIS') else 2
+        cls.niters = 50 if os.environ.get('TRAVIS') else 2
 
         cls.defn = model_definition(cls.N, cls.V)
         cls.seed = 12345
