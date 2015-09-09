@@ -27,9 +27,9 @@ private:
 class state {
 public:
     size_t V; // Size of vocabulary
-    float alpha_; //  Hyperparamter on second level Dirichlet process
-    float beta_; // Hyperparameter on base Dirichlet process
-    float gamma_; // Hyperparameter on first level Dirichlet process
+    float alpha_; // `\alpha_0`  Hyperparamter on second level Dirichlet process
+    float beta_; // `\beta` Hyperparameter of base Dirichlet distribution (over term distributions)
+    float gamma_; // `\gamma` Hyperparameter on first level Dirichlet process
     std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
     std::vector<size_t> dishes_; // using_k; dish(topic) index (k=0 means to draw a new dish)
     const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
