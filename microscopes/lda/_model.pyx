@@ -1,4 +1,5 @@
 # cython: embedsignature=True
+import functools
 import itertools
 import numpy as np
 import warnings
@@ -134,13 +135,6 @@ cdef class state:
         distributions = [[i/sum(d) for i in d] for d in distributions]
         return distributions
 
-        doc_distribution = self._thisptr.get()[0].document_distribution()
-        # Remove dummy topic
-        distributions = [topic_distribution[1:] for topic_distribution in doc_distribution]
-        # Normalize
-        distributions = [[i/sum(d) for i in d] for d in distributions]
-        return distributions
-
     @deprecated
     def word_distribution(self, rng r=None):
         return self.word_distribution_by_topic()
@@ -177,12 +171,12 @@ cdef class state:
         sorted_num_vocab = sorted(self._vocab.keys())
 
         topic_term_distribution = []
-        for topic in self.word_distribution(r):
+        for topic in self.word_distribution_by_topic(r):
             t = [topic[self._vocab[word_id]]
                  for word_id in sorted_num_vocab]
             topic_term_distribution.append(t)
 
-        doc_topic_distribution = self.document_distribution()
+        doc_topic_distribution = self.topic_distribution_by_document()
 
         doc_lengths = [len(doc) for doc in self._data]
         vocab = [self._vocab[k] for k in sorted_num_vocab]
