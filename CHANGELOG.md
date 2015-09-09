@@ -5,6 +5,7 @@
 - Add utility function for getting pyLDAvis data
 - Added utility functions for translating data formats
 - Wrote tests based on those in [ariddell's LDA](https://github.com/ariddell/lda/tree/57f721b05ffbdec5cb11c2533f72aa1f9e6ed12d/lda/tests)
+- Added `term_relevance_by_topic` to get terms and relevance values as described by [Sievert and Shirley](http://nlp.stanford.edu/events/illvi2014/papers/sievert-illvi2014.pdf)
 
 ### Changed
 - New README
