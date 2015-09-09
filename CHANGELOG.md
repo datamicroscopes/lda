@@ -8,12 +8,13 @@
 
 ### Changed
 - New README
+- Rename `word_distribution` method to `word_distribution_by_topic`
+- Rename `document_distribution` method to `topic_distribution_by_document`.
 
 ### Fixed
 - Multidish initialization actually works (from Python)
 - Word distributions are normalized
 - Word distributions map from word (hashable objects) to probabilities instead of index to probability.
-
 
 ## [0.2.2] - 2015-07-23
 ### Fixed
