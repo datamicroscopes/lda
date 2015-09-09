@@ -33,13 +33,13 @@ public:
     std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
     std::vector<size_t> dishes_; // using_k; dish(topic) index (k=0 means to draw a new dish)
     const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
-    std::vector<std::vector<size_t>> restaurants_; // topics of document and table
+    std::vector<std::vector<size_t>> restaurants_; // k_jt -- topics of document and table
     std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
     std::vector<size_t> m_k; // number of tables for each topic
     lda_util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
     std::vector<lda_util::defaultdict<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
-    std::vector<std::vector<size_t>> table_doc_word; // t_ji table for each document and term (-1 means not-assigned)
+    std::vector<std::vector<size_t>> table_doc_word; // t_ji -- table for each document and term (-1 means not-assigned)
 
     template <class... Args>
     static inline std::shared_ptr<state>
