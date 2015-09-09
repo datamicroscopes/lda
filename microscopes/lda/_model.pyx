@@ -202,20 +202,18 @@ cdef class state:
     def term_relevance_by_topic(self, weight=0.5):
         phi = self.word_distribution_by_topic()
         ctf = self._corpus_term_frequency()
-
         relevance_by_topic = []
         for word_dist in phi:
             term_relevance = []
             for term, phi_kw in word_dist.iteritems():
                 p_w = ctf[term]
                 rel = self._relevance_for_word(phi_kw, p_w, weight)
-                term_relevance.append((rel, term))
+                term_relevance.append((term, rel))
             term_relevance = sorted(term_relevance, reverse=True)
             relevance_by_topic.append(term_relevance)
         return relevance_by_topic
 
-
-    def _relevance_for_word(phi_kw, p_w, weight=0.5, ):
+    def _relevance_for_word(self, phi_kw, p_w, weight=0.5):
         """
 
         Defined in LDAvis: A method for visualizing and interpreting topics (2014)

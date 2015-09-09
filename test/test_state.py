@@ -45,8 +45,13 @@ def test_relevance():
     defn = model_definition(len(docs), v=6)
     prng = rng()
     s = initialize(defn, docs, prng)
+    s.term_relevance_by_topic(weight=0)
+    s.term_relevance_by_topic(weight=1)
     rel = s.term_relevance_by_topic()
-    print rel
+    assert isinstance(rel, list)
+    assert isinstance(rel[0], list)
+    assert len(rel) == s.ntopics()
+    assert len(rel[0]) == s.nwords()
 
 
 def test_single_dish_initialization():
