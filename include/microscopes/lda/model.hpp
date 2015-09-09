@@ -32,13 +32,13 @@ public:
     float beta_; //!< Hyperparameter of base Dirichlet distribution (over term distributions) (\beta)
     float gamma_; //!< Hyperparameter on first level Dirichlet process (\gamma)
     nested_vector using_t; //!< Nested vector giving list of indices of
-                                              //!< active tables for each document
-                                             //!< table==0 means we need to create new table for word
+                           //!< active tables for each document
+                           //!< table==0 means we need to create new table for word
     std::vector<size_t> dishes_; //!< List of indices of active dishes/topics (using_k in shuyo's code)
     const nested_vector x_ji; //!< Integer representation of documents
     nested_vector restaurants_; //!< Nested vector mapping doc/table pair to topic (k_jt)
-                                                   //!< dish==0 means we need to create new dish
-    nested_vector n_jt; //!<
+                                //!< dish==0 means we need to create new dish
+    nested_vector n_jt; //!< Nested vector giving counts for words assigned to doc/table pairs
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; //!< Nested vector giving counts for doc/table/word triples
     std::vector<size_t> m_k; //!< Number of tables assigned to each dish
     lda_util::defaultdict<size_t, float> n_k; //!< Number of words assigned to each dish plus beta * V
