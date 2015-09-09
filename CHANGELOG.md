@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+
+## [3.0.0] - 2015-09-16
 ### Added
 - Add utility function for getting pyLDAvis data
 - Added utility functions for translating data formats
