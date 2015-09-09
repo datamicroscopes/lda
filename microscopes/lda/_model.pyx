@@ -164,6 +164,12 @@ cdef class state:
     def score_data(self, rng r):
         raise NotImplementedError()
 
+    def serialize(self):
+        return self._thisptr.get().serialize()
+
+    def __reduce__(self):
+        return (_reconstruct_state, (self._defn, self.serialize()))
+
     def pyldavis_data(self, rng r=None):
         sorted_num_vocab = sorted(self._vocab.keys())
 
@@ -304,3 +310,22 @@ def _initialize_data(docs):
     for doc in docs:
         numeric_docs.append([word_to_int[word] for word in doc])
     return numeric_docs, int_to_word
+
+
+def deserialize(model_definition defn, bytes):
+    """Restore a state object from a bytestring representation.
+
+    Note that a serialized representation of a state object does
+    not contain its own structural definition.
+
+    Parameters
+    ----------
+    defn : model definition
+    bytes : bytestring representation
+
+    """
+    return state(defn=defn, bytes=bytes)
+
+
+def _reconstruct_state(defn, bytes):
+    return deserialize(defn, bytes)

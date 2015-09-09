@@ -368,3 +368,10 @@ microscopes::lda::state::delete_table(size_t eid, size_t tid) {
         delete_dish(k);
     }
 }
+
+std::string
+microscopes::lda::state::serialize() const
+{
+
+    // return common::util::protobuf_to_string();
+}
