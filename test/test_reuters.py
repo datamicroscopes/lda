@@ -35,6 +35,8 @@ class TestLDANewsReuters():
         cls.prng = rng(seed=cls.seed)
         cls.latent = model.initialize(cls.defn, cls.docs, cls.prng)
         cls.r = runner.runner(cls.defn, cls.docs, cls.latent)
+        cls.original_perplexity = cls.latent.perplexity()
+        print "cls.original_perplexity", cls.original_perplexity
         cls.r.run(cls.prng, cls.niters)
         cls.doc_topic = cls.latent.topic_distribution_by_document()
 
@@ -43,11 +45,8 @@ class TestLDANewsReuters():
 
     def test_lda_monotone(self):
         # run additional iterations, verify improvement in log likelihood
-        original_perplexity = self.latent.perplexity()
         self.r.run(self.prng, self.niters)
-        print "self.latent.perplexity()", self.latent.perplexity()
-        print "original_perplexity", original_perplexity
-        assert self.latent.perplexity() < original_perplexity
+        assert self.latent.perplexity() < self.original_perplexity
 
     def test_lda_zero_iter(self):
         # compare to model with 0 iterations
