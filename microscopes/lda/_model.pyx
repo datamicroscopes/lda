@@ -63,7 +63,7 @@ cdef class state:
         validator.validate_positive(self.vocab_hp)
 
         # Get initial dishes or assigments
-        dishes_and_tables = self._get_dishes_and_tables(kwargs)
+        dishes_and_tables = _get_dishes_and_tables(kwargs)
 
         if 'initial_dishes' in dishes_and_tables:
             self._thisptr = c_initialize(
@@ -76,6 +76,7 @@ cdef class state:
                 rng=r._thisptr[0])
         elif "table_assignments" in dishes_and_tables \
                 and "dish_assignments" in dishes_and_tables:
+
             self._thisptr = c_initialize_explicit(
                 defn=defn._thisptr.get()[0],
                 alpha=dish_hps['alpha'],
@@ -263,20 +264,22 @@ cdef class state:
         assert theta_doc.shape == (self.ntopics(),)
         return theta_doc.tolist()
 
-    def _get_dishes_and_tables(self, kwargs):
-        if "initial_dishes" in kwargs \
-                and "table_assignments" not in kwargs \
-                and "dish_assignments" not in kwargs:
-            return {'initial_dishes': kwargs["initial_dishes"]}
+def _get_dishes_and_tables(kwargs):
+    if "initial_dishes" in kwargs \
+            and "table_assignments" not in kwargs \
+            and "dish_assignments" not in kwargs:
+        return {'initial_dishes': kwargs["initial_dishes"]}
 
-        elif "table_assignments" in kwargs \
-                and "dish_assignments" in kwargs \
-                and "initial_dishes" not in kwargs:
-            return {'table_assignments': kwargs['table_assignments'],
-                    'dish_assignments': kwargs['dish_assignments']}
+    elif "table_assignments" in kwargs \
+            and "dish_assignments" in kwargs \
+            and "initial_dishes" not in kwargs:
+        _validate_table_dish_assignment(kwargs['table_assignments'],
+                                        kwargs['dish_assignments'])
+        return {'table_assignments': kwargs['table_assignments'],
+                'dish_assignments': kwargs['dish_assignments']}
 
-        else:
-            return {'initial_dishes': self.DEFAULT_INITIAL_DISH_HINT}
+    else:
+        return {'initial_dishes': self.DEFAULT_INITIAL_DISH_HINT}
 
 
 def initialize(model_definition defn, data, rng r, **kwargs):
