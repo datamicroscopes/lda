@@ -36,7 +36,7 @@ class TestLDANewsReuters():
         cls.latent = model.initialize(cls.defn, cls.docs, cls.prng)
         cls.r = runner.runner(cls.defn, cls.docs, cls.latent)
         cls.r.run(cls.prng, cls.niters)
-        cls.doc_topic = cls.latent.document_distribution()
+        cls.doc_topic = cls.latent.topic_distribution_by_document()
 
     def test_lda_news(self):
         assert len(self.doc_topic) == len(self.docs)
@@ -54,7 +54,7 @@ class TestLDANewsReuters():
         assert latent2 is not None
         r2 = runner.runner(self.defn, self.docs, latent2)
         assert r2 is not None
-        doc_topic2 = latent2.document_distribution()
+        doc_topic2 = latent2.topic_distribution_by_document()
         assert doc_topic2 is not None
         assert latent2.perplexity() > self.latent.perplexity()
 
@@ -75,23 +75,23 @@ class TestLDANewsReuters():
         runner2 = runner.runner(self.defn, self.docs, latent2)
         runner2.run(prng2, niters)
 
-        assert_list_equal(latent1.document_distribution(),
-                          latent2.document_distribution())
+        assert_list_equal(latent1.topic_distribution_by_document(),
+                          latent2.topic_distribution_by_document())
 
-        for d1, d2 in zip(latent1.word_distribution(self.prng),
-                          latent2.word_distribution(self.prng)):
+        for d1, d2 in zip(latent1.word_distribution_by_topic(),
+                          latent2.word_distribution_by_topic()):
             assert_dict_equal(d1, d2)
 
     def test_lda_attributes(self):
         assert np.array(self.doc_topic).shape == (self.N, self.latent.ntopics())
-        assert len(self.latent.word_distribution(self.prng)) == self.latent.ntopics()
-        for dist in self.latent.word_distribution(self.prng):
+        assert len(self.latent.word_distribution_by_topic()) == self.latent.ntopics()
+        for dist in self.latent.word_distribution_by_topic():
             assert len(dist) == self.V
 
         # check distributions sum to one
-        for dist in self.latent.word_distribution(self.prng):
+        for dist in self.latent.word_distribution_by_topic():
             assert_almost_equal(sum(dist.values()), 1)
-        for dist in self.latent.document_distribution():
+        for dist in self.latent.topic_distribution_by_document():
             assert_almost_equal(sum(dist), 1)
 
     def test_lda_1transform_basic(self):

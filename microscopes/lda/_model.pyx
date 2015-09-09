@@ -118,7 +118,7 @@ cdef class state:
 
     @deprecated
     def document_distribution(self):
-        return topic_distribution_by_document()
+        return self.topic_distribution_by_document()
 
     def topic_distribution_by_document(self):
         """Return list of distributions over topics for each document
@@ -143,7 +143,7 @@ cdef class state:
 
     @deprecated
     def word_distribution(self, rng r=None):
-        return word_distribution_by_topic()
+        return self.word_distribution_by_topic()
 
     def word_distribution_by_topic(self):
         """Return distribution over vocabulary words for each topic.
