@@ -88,7 +88,10 @@ def test_alpha_numeric():
 
 
 def test_explicit():
-    # explicit initialization doesn't work yet
+    """Test that we can explicitly initialize state by specifying
+    table and dish assignments
+    """
+
     prng = rng()
     N, V = 3, 7
     defn = model_definition(N, V)
