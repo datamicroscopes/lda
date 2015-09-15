@@ -159,11 +159,9 @@ cdef class state:
 
     def score_assignment(self):
         raise NotImplementedError()
-        return self._thisptr.get()[0].score_assignment()
 
     def score_data(self, rng r):
         raise NotImplementedError()
-        return self._thisptr.get()[0].score_data(r._thisptr[0])
 
     def pyldavis_data(self, rng r=None):
         sorted_num_vocab = sorted(self._vocab.keys())
