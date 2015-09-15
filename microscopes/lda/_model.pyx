@@ -178,8 +178,7 @@ cdef class state:
         doc_lengths = [len(doc) for doc in self._data]
         vocab = [self._vocab[k] for k in sorted_num_vocab]
 
-        flatten = lambda l: list(itertools.chain.from_iterable(l))
-        ctr = Counter(flatten(self._data))
+        ctr = self._corpus_term_id_frequency()
         term_frequency = [ctr[num] for num in sorted_num_vocab]
 
         return {'topic_term_dists': topic_term_distribution,
@@ -188,6 +187,10 @@ cdef class state:
                 'vocab': vocab,
                 'term_frequency': term_frequency}
 
+    def _corpus_term_id_frequency(self):
+        flatten = lambda l: list(itertools.chain.from_iterable(l))
+        ctr = Counter(flatten(self._data))
+        return ctr
 
     def _corpus_term_frequency(self):
         flatten = lambda l: list(itertools.chain.from_iterable(l))
