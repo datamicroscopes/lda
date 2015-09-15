@@ -194,8 +194,10 @@ cdef class state:
 
     def _corpus_term_frequency(self):
         flatten = lambda l: list(itertools.chain.from_iterable(l))
-        ctr = Counter(flatten(self._data))
-        return ctr.most_common()
+        flat_data = flatten(self._data)
+        flat_vocab = [self._vocab[tid] for tid in flat_data]
+        ctr = Counter(flat_vocab)
+        return ctr
 
     def term_relevance_by_topic(self, weight=0.5):
         phi = self.word_distribution_by_topic()
