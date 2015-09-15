@@ -40,6 +40,15 @@ def test_pyldavis_data():
         assert_almost_equals(sum(dist), 1)
 
 
+def test_relevance():
+    docs = [list('abcd'), list('cdef')]
+    defn = model_definition(len(docs), v=6)
+    prng = rng()
+    s = initialize(defn, docs, prng)
+    rel = s.term_relevance_by_topic()
+    print rel
+
+
 def test_single_dish_initialization():
     N, V = 10, 20
     defn = model_definition(N, V)
