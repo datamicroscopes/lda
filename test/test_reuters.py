@@ -95,8 +95,6 @@ class TestLDANewsReuters():
             assert_almost_equal(sum(dist), 1)
 
     def test_lda_1transform_basic(self):
-        """Basic checks on transform"""
-
         n_docs = 3
         n_topics = self.latent.ntopics()
         docs_test = self.docs[0:n_docs]
