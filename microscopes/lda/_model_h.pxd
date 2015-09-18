@@ -27,6 +27,7 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         vector[vector[size_t]] assignments()
         vector[vector[size_t]] dish_assignments()
         vector[vector[size_t]] table_assignments()
+        vector[size_t] tables(size_t eid)
         vector[vector[float]] document_distribution()
         vector[map[size_t, float]] word_distribution()
         vector[size_t] dishes()
