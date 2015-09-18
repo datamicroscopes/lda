@@ -120,6 +120,9 @@ cdef class state:
     def table_assignments(self):
         return self._thisptr.get()[0].table_assignments()
 
+    def tables(self, size_t eid):
+        return self._thisptr.get()[0].tables(eid)
+
     @deprecated
     def document_distribution(self):
         return self.topic_distribution_by_document()
