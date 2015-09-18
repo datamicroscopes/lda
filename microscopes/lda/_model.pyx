@@ -91,6 +91,14 @@ cdef class state:
 
     DEFAULT_INITIAL_DISH_HINT = 10
 
+    property gamma:
+        def __get__(self): return self._thisptr.get().gamma_
+        def __set__(self, gamma): self._thisptr.get().gamma_ = gamma
+
+    property alpha:
+        def __get__(self): return self._thisptr.get().alpha_
+        def __set__(self, alpha): self._thisptr.get().alpha_ = alpha
+
     def perplexity(self):
         return self._thisptr.get().perplexity()
 

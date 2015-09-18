@@ -11,6 +11,8 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         model_definition(size_t, size_t) except +
 
     cdef cppclass state:
+        float gamma_
+        float alpha_
         double perplexity()
         size_t nentities()
         size_t ntopics()
