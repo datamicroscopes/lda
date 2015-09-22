@@ -1,8 +1,10 @@
 import itertools
+import numpy as np
 
 from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
 from microscopes.lda.model import initialize
+from microscopes.lda import utils
 from microscopes.lda.testutil import toy_dataset
 
 from nose.plugins.attrib import attr
@@ -90,20 +92,27 @@ def test_alpha_numeric():
 
 def test_explicit():
     # explicit initialization doesn't work yet
-    return
-    # N, V = 5, 100
-    # defn = model_definition(N, V)
-    # data = toy_dataset(defn)
-    # prng = rng()
+    prng = rng()
+    N, V = 5, 100
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
 
-    # table_assignments = [
-    #     np.random.randint(low=0, high=10, size=len(d)) for d in data]
+    # Update defn with actual vocab size
+    V = len(set(reduce(lambda x, y: list(x) + list(y), data)))
+    defn = model_definition(N, V)
 
-    # dish_assignments = [
-    #     np.random.randint(low=0, high=len(t), size=len(d))
-    #     for t, d in zip(table_assignments, data)]
+    table_assignments = [
+        np.random.randint(low=0, high=10, size=len(d)) for d in data]
+    table_assignments = utils.reindex_nested(table_assignments)
 
-    # s = initialize(defn, data, prng,
-    #                table_assignments=table_assignments,
-    #                dish_assignments=dish_assignments)
-    # assert_equals(s.nentities(), len(data))
+    dish_assignments = [
+        np.random.randint(low=0, high=len(t), size=len(d))
+        for t, d in zip(table_assignments, data)]
+    dish_assignments = utils.reindex_nested(dish_assignments)
+
+
+
+    s = initialize(defn, data, prng,
+                   table_assignments=table_assignments,
+                   dish_assignments=dish_assignments)
+    assert_equals(s.nentities(), len(data))
