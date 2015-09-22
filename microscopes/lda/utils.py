@@ -71,6 +71,28 @@ def docs_from_ldac(stream):
     return docs
 
 
+def reindex_nested(l):
+    """Reindex assignment vector to assigments to consecutive integers
+
+    For example convert `[[0, 3], [2, 3]]` to `[[0, 2], [3, 1]]`
+
+    Parameters
+    ----------
+    l : nested lists with hashable items in second dimensional lists
+
+    Returns
+    -------
+    nested with hashable items translated to hashable values
+    """
+    # Flatten
+    items = set(reduce(lambda x, y: list(x) + list(y), l))
+    # Map from original value to new value
+    lookup = {t: i for i, t in enumerate(items)}
+    # New nested list
+    return [[lookup[x] for x in table]
+            for table in l]
+
+
 def _term_counts_to_doc(term_counts, vocab=None):
     doc = []
     for term_id, count in term_counts:
