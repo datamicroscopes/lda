@@ -26,20 +26,24 @@ private:
 
 class state {
 public:
-    size_t V; // Size of vocabulary
-    float alpha_; // `\alpha_0`  Hyperparamter on second level Dirichlet process
-    float beta_; // `\beta` Hyperparameter of base Dirichlet distribution (over term distributions)
-    float gamma_; // `\gamma` Hyperparameter on first level Dirichlet process
-    std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
-    std::vector<size_t> dishes_; // using_k; dish(topic) index (k=0 means to draw a new dish)
-    const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
-    std::vector<std::vector<size_t>> restaurants_; // k_jt -- topics of document and table
-    std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
-    std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
-    std::vector<size_t> m_k; // number of tables for each topic
-    lda_util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
-    std::vector<lda_util::defaultdict<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
-    std::vector<std::vector<size_t>> table_doc_word; // t_ji -- table for each document and term (-1 means not-assigned)
+    size_t V; //!< Total number of unique vocabulary words
+    float alpha_; //!< Hyperparamter on second level Dirichlet process (\alpha_0)
+    float beta_; //!< Hyperparameter of base Dirichlet distribution (over term distributions) (\beta)
+    float gamma_; //!< Hyperparameter on first level Dirichlet process (\gamma)
+    std::vector<std::vector<size_t>> using_t; //!< Nested vector giving list of indices of
+                                              //!< active tables for each document
+                                             //!< table==0 means we need to create new table for word
+    std::vector<size_t> dishes_; //!< List of indices of active dishes/topics (using_k in shuyo's code)
+    const std::vector<std::vector<size_t>> x_ji; //!< Integer representation of documents
+    std::vector<std::vector<size_t>> restaurants_; //!< Nested vector mapping doc/table pair to topic (k_jt)
+                                                   //!< dish==0 means we need to create new dish
+    std::vector<std::vector<size_t>> n_jt; //!<
+    std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; //!< Nested vector giving counts for doc/table/word triples
+    std::vector<size_t> m_k; //!< Number of tables assigned to each dish
+    lda_util::defaultdict<size_t, float> n_k; //!< Number of words assigned to each dish plus beta * V
+    std::vector<lda_util::defaultdict<size_t, float>> n_kv; //!< Number of times a given word is assigned to
+                                                            //!< each dish plus beta
+    std::vector<std::vector<size_t>> table_doc_word; //!< Nested vector giving table assignment for each doc/word pair (t_ji)
 
     template <class... Args>
     static inline std::shared_ptr<state>
