@@ -37,7 +37,7 @@ microscopes::lda::state::state(const model_definition &defn,
 
     create_dish(); // Dummy dish
     for (size_t eid = 0; eid < nentities(); ++eid) {
-        create_entity();
+        create_entity(eid);
 
         auto did = common::util::sample_choice(dish_pool, rng);
         if (did > dishes_.back()){
@@ -63,7 +63,7 @@ microscopes::lda::state::state(const model_definition &defn,
             create_dish();
         }
         for (size_t eid = 0; eid < nentities(); ++eid) {
-            create_entity();
+            create_entity(eid);
             for(auto did: dish_assignments[eid]){
                 create_table(eid, did);
             }
@@ -75,10 +75,11 @@ microscopes::lda::state::state(const model_definition &defn,
 }
 
 void
-microscopes::lda::state::create_entity(){
+microscopes::lda::state::create_entity(size_t eid){
     using_t.push_back(std::vector<size_t>());
     n_jt.push_back(std::vector<size_t>());
     restaurants_.push_back(std::vector<size_t>());
+    table_doc_word.push_back(std::vector<size_t>(nterms(eid), 0));
     n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
 }
 
@@ -331,7 +332,6 @@ microscopes::lda::state::create_table(size_t eid, size_t k_new)
     if (k_new != 0){
         m_k[k_new] += 1;
     }
-    table_doc_word.push_back(std::vector<size_t>(nterms(eid), 0));
     return t_new;
 }
 

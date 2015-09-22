@@ -128,7 +128,7 @@ public:
     add_table(size_t eid, size_t t_new, size_t did);
 
     void
-    create_entity();
+    create_entity(size_t eid);
 
     size_t
     create_dish();
