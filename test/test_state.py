@@ -5,6 +5,7 @@ from microscopes.lda.definition import model_definition
 from microscopes.lda.model import initialize
 from microscopes.lda.testutil import toy_dataset
 
+from nose.plugins.attrib import attr
 from nose.tools import assert_equals, assert_true
 from nose.tools import assert_almost_equals
 

@@ -1,5 +1,6 @@
 import numpy as np
 
+from nose.plugins.attrib import attr
 from cStringIO import StringIO
 from nose.tools import raises
 from microscopes.lda import utils

@@ -1,3 +1,5 @@
+from nose.plugins.attrib import attr
+
 from microscopes.lda import model, runner
 from microscopes.lda.definition import model_definition
 from microscopes.lda.testutil import toy_dataset
