@@ -106,13 +106,18 @@ def test_explicit():
     table_assignments = utils.reindex_nested(table_assignments)
 
     dish_assignments = [
-        np.random.randint(low=0, high=len(t), size=len(d))
+        np.random.randint(low=0, high=len(t), size=len(set(t)))
         for t, d in zip(table_assignments, data)]
     dish_assignments = utils.reindex_nested(dish_assignments)
-
-
 
     s = initialize(defn, data, prng,
                    table_assignments=table_assignments,
                    dish_assignments=dish_assignments)
     assert_equals(s.nentities(), len(data))
+
+    assert len(s.dish_assignments()) == len(dish_assignments)
+    assert len(s.table_assignments()) == len(table_assignments)
+
+    assert s.dish_assignments() == dish_assignments
+    for a, b in zip(s.table_assignments(), table_assignments):
+        assert a == b
