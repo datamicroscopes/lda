@@ -21,6 +21,9 @@ def deprecated(func):
     return new_func
 
 
+DEFAULT_INITIAL_DISH_HINT = 10
+
+
 cdef class state:
     """The underlying state of an HDP-LDA
     You should not explicitly construct a state object.
@@ -63,7 +66,7 @@ cdef class state:
         validator.validate_positive(self.vocab_hp)
 
         # Get initial dishes or assigments
-        dishes_and_tables = _get_dishes_and_tables(kwargs)
+        dishes_and_tables = _get_dishes_and_tables(kwargs, data)
 
         if 'initial_dishes' in dishes_and_tables:
             self._thisptr = c_initialize(
@@ -89,8 +92,6 @@ cdef class state:
         else:
             raise NotImplementedError(("Specify either: (1) initial_dishes, "
                 "(2) table_assignments and dish_assignments, or (3) none of the above."))
-
-    DEFAULT_INITIAL_DISH_HINT = 10
 
     def perplexity(self):
         return self._thisptr.get().perplexity()
@@ -264,7 +265,7 @@ cdef class state:
         assert theta_doc.shape == (self.ntopics(),)
         return theta_doc.tolist()
 
-def _get_dishes_and_tables(kwargs):
+def _get_dishes_and_tables(kwargs, data):
     if "initial_dishes" in kwargs \
             and "table_assignments" not in kwargs \
             and "dish_assignments" not in kwargs:
@@ -274,12 +275,26 @@ def _get_dishes_and_tables(kwargs):
             and "dish_assignments" in kwargs \
             and "initial_dishes" not in kwargs:
         _validate_table_dish_assignment(kwargs['table_assignments'],
-                                        kwargs['dish_assignments'])
+                                        kwargs['dish_assignments'],
+                                        data)
         return {'table_assignments': kwargs['table_assignments'],
                 'dish_assignments': kwargs['dish_assignments']}
 
     else:
-        return {'initial_dishes': self.DEFAULT_INITIAL_DISH_HINT}
+        return {'initial_dishes': DEFAULT_INITIAL_DISH_HINT}
+
+
+def _validate_table_dish_assignment(table_assignments, dish_assignments, data):
+    validator.validate_len(table_assignments, len(data), "table_assignments")
+    validator.validate_len(dish_assignments, len(data), "dish_assignments")
+
+    num_tables = []
+    for table_assignment, doc in zip(table_assignments, data):
+        validator.validate_len(table_assignment, len(doc), "table_assignment")
+        num_tables.append(max(table_assignment))
+    for dish_assignment, num_table in zip(dish_assignments, num_tables):
+        validator.validate_len(dish_assignment, num_table+1, "dish_assignment")
+
 
 
 def initialize(model_definition defn, data, rng r, **kwargs):
