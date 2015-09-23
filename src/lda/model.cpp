@@ -276,14 +276,14 @@ microscopes::lda::state::seat_at_dish(size_t j, size_t t, size_t k_new) {
 
 
 void
-microscopes::lda::state::add_table(size_t eid, size_t tid, size_t did) {
-    table_doc_word[eid][did] = tid;
+microscopes::lda::state::add_table(size_t eid, size_t tid, size_t word_index) {
+    table_doc_word[eid][word_index] = tid;
     n_jt[eid][tid] += 1;
 
     size_t k_new = restaurants_[eid][tid];
     n_k.incr(k_new, 1);
 
-    size_t v = get_word(eid, did);
+    size_t v = get_word(eid, word_index);
     MICROSCOPES_DCHECK(v < nwords(), "Word out of bounds");
     n_kv[k_new].incr(v, 1);
     n_jtv[eid][tid][v] += 1;
