@@ -56,20 +56,29 @@ microscopes::lda::state::state(const model_definition &defn,
       const microscopes::lda::nested_vector &docs,
       common::rng_t &rng)
     : state(defn, alpha, beta, gamma, docs, rng) {
+        // Explicit initialization constructor for state used for
+        // deserialization and testing
+        // table_assignment maps words to tables (and should be the same
+        //  shape as docs)
+        // dish_assignment maps tables to dishes (its outer length should
+        //  be the the same as docs. Its inner length should be the same as
+        //  the number of unique tables for the given entity/doc.)
 
+        // Create all the dishes we will need.
         auto num_dishes = lda_util::max_element(dish_assignments);
-        num_dishes++;
-        for(size_t dish = 0; dish < num_dishes; dish++) {
+        for(size_t dish = 0; dish <= num_dishes; dish++) {
             create_dish();
         }
         for (size_t eid = 0; eid < nentities(); ++eid) {
             create_entity(eid);
+            // Create all the tables we will need and assign them to their dish.
             for(auto did: dish_assignments[eid]){
                 create_table(eid, did);
             }
-            for(auto tid: table_assignments[eid]){
-                auto did = restaurants_[eid][tid];
-                microscopes::lda::state::add_table(eid, tid, did);
+            // Assign words to tables.
+            for(size_t word_index = 0; word_index < table_assignments[eid].size(); word_index++){
+                auto tid  = table_assignments[eid][word_index];
+                add_table(eid, tid, word_index);
             }
         }
 }

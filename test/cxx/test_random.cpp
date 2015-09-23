@@ -45,11 +45,11 @@ test_explicit_initializtion(){
     double beta = 0.01;
     double gamma = 0.5;
     rng_t r(seed);
-    std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4,5}, {0,1,5,6}};
+    std::vector< std::vector<size_t>> docs {{0,1,2,3}, {0,1,4}, {0,1,5,6}};
     size_t V = 7;
     lda::model_definition defn(3, V);
-    std::vector<std::vector<size_t>> dish_assignments = {{1, 2, 1, 2}, {1, 2, 1, 2}, {1, 2, 1, 2}};
-    std::vector<std::vector<size_t>> table_assignments = {{0}, {0}, {0}};
+    std::vector<std::vector<size_t>> table_assignments = {{0, 1, 0, 1}, {0, 0, 0}, {1, 1, 1, 0}};
+    std::vector<std::vector<size_t>> dish_assignments = {{0, 1}, {2}, {0, 1}};
     lda::state state(defn, alpha, beta, gamma,
                      dish_assignments, table_assignments, docs, r);
 }
