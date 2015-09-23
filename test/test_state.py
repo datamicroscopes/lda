@@ -9,7 +9,7 @@ from microscopes.lda.testutil import toy_dataset
 
 from nose.plugins.attrib import attr
 from nose.tools import assert_equals, assert_true
-from nose.tools import assert_almost_equals
+from nose.tools import assert_almost_equals, assert_raises
 
 
 def vocab_size(docs):
@@ -93,31 +93,37 @@ def test_alpha_numeric():
 def test_explicit():
     # explicit initialization doesn't work yet
     prng = rng()
-    N, V = 5, 100
+    N, V = 3, 7
     defn = model_definition(N, V)
-    data = toy_dataset(defn)
+    data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
 
-    # Update defn with actual vocab size
-    V = len(set(reduce(lambda x, y: list(x) + list(y), data)))
-    defn = model_definition(N, V)
 
-    table_assignments = [
-        np.random.randint(low=0, high=10, size=len(d)) for d in data]
-    table_assignments = utils.reindex_nested(table_assignments)
-
-    dish_assignments = [
-        np.random.randint(low=0, high=len(t), size=len(set(t)))
-        for t, d in zip(table_assignments, data)]
-    dish_assignments = utils.reindex_nested(dish_assignments)
+    table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
+    dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
 
     s = initialize(defn, data, prng,
                    table_assignments=table_assignments,
                    dish_assignments=dish_assignments)
     assert_equals(s.nentities(), len(data))
-
     assert len(s.dish_assignments()) == len(dish_assignments)
     assert len(s.table_assignments()) == len(table_assignments)
 
-    assert s.dish_assignments() == dish_assignments
-    for a, b in zip(s.table_assignments(), table_assignments):
-        assert a == b
+    # We should get an error if we leave out a dish assignment for a given table
+    table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
+    dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2]]
+
+    assert_raises(ValueError,
+                  initialize,
+                  defn, data, prng,
+                  table_assignments=table_assignments,
+                  dish_assignments=dish_assignments)
+
+    # We should get an error if we leave out a table assignment for a given word
+    table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3]]
+    dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
+
+    assert_raises(ValueError,
+                  initialize,
+                  defn, data, prng,
+                  table_assignments=table_assignments,
+                  dish_assignments=dish_assignments)
