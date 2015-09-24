@@ -8,6 +8,8 @@ from copy import deepcopy
 from itertools import chain
 from collections import Counter
 
+from microscopes.lda import utils
+from microscopes.io.schema_pb2 import LdaModelState
 
 def deprecated(func):
     """This is a decorator which can be used to mark functions
@@ -167,7 +169,20 @@ cdef class state:
         raise NotImplementedError()
 
     def serialize(self):
-        return self._thisptr.get().serialize()
+        proto_lda = LdaModelState()
+        flat, indices = utils.ragged_array_to_row_major_form(self._data)
+        proto_lda.docs.extend(flat)
+        proto_lda.doc_index.extend(indices)
+        proto_lda.alpha = self.dish_hps['alpha']
+        proto_lda.beta = self.vocab_hp
+        proto_lda.gamma = self.dish_hps['gamma']
+        flat, indices = utils.ragged_array_to_row_major_form(self.table_assignments())
+        proto_lda.table_assignment.extend(flat)
+        proto_lda.table_assignment_index.extend(indices)
+        flat, indices = utils.ragged_array_to_row_major_form(self.dish_assignments())
+        proto_lda.dish_assignment.extend(flat)
+        proto_lda.dish_assignment_index.extend(indices)
+        return proto_lda.SerializeToString()
 
     def __reduce__(self):
         return (_reconstruct_state, (self._defn, self.serialize()))

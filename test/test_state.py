@@ -24,6 +24,16 @@ def test_simple():
     assert_equals(s.nentities(), len(data))
 
 
+def test_serialize_simple():
+    N, V = 10, 20
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
+    view = data
+    prng = rng()
+    s = initialize(defn, view, prng)
+    s.serialize()
+
+
 def test_pyldavis_data():
     docs = [list('abcd'), list('cdef')]
     defn = model_definition(len(docs), v=6)
