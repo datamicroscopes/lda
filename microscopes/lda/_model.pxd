@@ -24,3 +24,4 @@ cdef class state:
     cdef _vocab
     cdef vector[vector[size_t]] _data
     cdef float vocab_hp
+    cdef dict dish_hps
