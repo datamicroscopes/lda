@@ -2,7 +2,7 @@ import itertools
 
 from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
-from microscopes.lda.model import initialize
+from microscopes.lda.model import initialize, deserialize
 from microscopes.lda.testutil import toy_dataset
 
 from nose.tools import assert_equals, assert_true
@@ -31,7 +31,9 @@ def test_serialize_simple():
     view = data
     prng = rng()
     s = initialize(defn, view, prng)
-    s.serialize()
+    m = s.serialize()
+    s2 = deserialize(defn, m)
+    assert s2.__class__ == s.__class__
 
 
 def test_pyldavis_data():

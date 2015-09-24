@@ -354,10 +354,23 @@ def deserialize(model_definition defn, bytes):
     Parameters
     ----------
     defn : model definition
-    bytes : bytestring representation
+    bytes : bytestring representation genreated by state.serialize()
 
     """
-    return state(defn=defn, bytes=bytes)
+    m = LdaModelState()
+    m.ParseFromString(bytes)
+    to_row_major = utils.row_major_form_to_ragged_array
+    docs = to_row_major(m.docs, m.doc_index)
+    table_assignments = to_row_major(m.table_assignment, m.table_assignment_index)
+    dish_assignments = to_row_major(m.dish_assignment, m.dish_assignment_index)
+    alpha = m.alpha
+    beta = m.beta
+    gamma = m.gamma
+    s = initialize(defn, docs,
+                   table_assignments=table_assignments,
+                   dish_assignments=dish_assignments,
+                   dish_hps={'alpha': alpha, 'gamma': gamma}, vocab_hp=beta)
+    return s
 
 
 def _reconstruct_state(defn, bytes):
