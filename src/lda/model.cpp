@@ -12,8 +12,7 @@ microscopes::lda::state::state(const model_definition &defn,
       float alpha,
       float beta,
       float gamma,
-      const microscopes::lda::nested_vector &docs,
-      common::rng_t &rng)
+      const microscopes::lda::nested_vector &docs)
     : V(defn.v()),
       alpha_(alpha),
       beta_(beta),
@@ -31,7 +30,7 @@ microscopes::lda::state::state(const model_definition &defn,
       size_t initial_dishes,
       const microscopes::lda::nested_vector &docs,
       common::rng_t &rng)
-    : state(defn, alpha, beta, gamma, docs, rng) {
+    : state(defn, alpha, beta, gamma, docs) {
 
     auto dish_pool = microscopes::common::util::range(initial_dishes);
 
@@ -53,9 +52,8 @@ microscopes::lda::state::state(const model_definition &defn,
       float gamma,
       const microscopes::lda::nested_vector &dish_assignments,
       const microscopes::lda::nested_vector &table_assignments,
-      const microscopes::lda::nested_vector &docs,
-      common::rng_t &rng)
-    : state(defn, alpha, beta, gamma, docs, rng) {
+      const microscopes::lda::nested_vector &docs)
+    : state(defn, alpha, beta, gamma, docs) {
         // Explicit initialization constructor for state used for
         // deserialization and testing
         // table_assignment maps words to tables (and should be the same

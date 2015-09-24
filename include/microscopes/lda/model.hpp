@@ -59,8 +59,7 @@ private:
           float alpha,
           float beta,
           float gamma,
-          const nested_vector &docs,
-          common::rng_t &);
+          const nested_vector &docs);
 
 public:
     state(const model_definition &defn,
@@ -77,8 +76,7 @@ public:
           float gamma,
           const nested_vector &dish_assignments,
           const nested_vector &table_assignments,
-          const nested_vector &docs,
-          common::rng_t &);
+          const nested_vector &docs);
 
     nested_vector
     assignments();

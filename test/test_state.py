@@ -109,7 +109,7 @@ def test_explicit():
     table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
     dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
 
-    s = initialize(defn, data, prng,
+    s = initialize(defn, data,
                    table_assignments=table_assignments,
                    dish_assignments=dish_assignments)
     assert_equals(s.nentities(), len(data))
@@ -135,7 +135,7 @@ def test_explicit_exceptions():
 
     assert_raises(ValueError,
                   initialize,
-                  defn, data, prng,
+                  defn, data,
                   table_assignments=table_assignments,
                   dish_assignments=dish_assignments)
 
@@ -145,7 +145,7 @@ def test_explicit_exceptions():
 
     assert_raises(ValueError,
                   initialize,
-                  defn, data, prng,
+                  defn, data,
                   table_assignments=table_assignments,
                   dish_assignments=dish_assignments)
 
@@ -163,9 +163,9 @@ def test_explicit_inception():
     table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
     dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
 
-    s = initialize(defn, data, prng,
+    s = initialize(defn, data,
                    table_assignments=table_assignments,
                    dish_assignments=dish_assignments)
-    s2 = initialize(defn, data, prng,
+    s2 = initialize(defn, data,
                     table_assignments=s.table_assignments(),
                     dish_assignments=s.dish_assignments())

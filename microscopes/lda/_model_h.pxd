@@ -43,5 +43,4 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state"
         float alpha, float beta, float gamma,
         const vector[vector[size_t]] &dish_assignments,
         const vector[vector[size_t]] &table_assignments,
-        vector[vector[size_t]] &docs,
-        rng_t &rng) except +
+        vector[vector[size_t]] &docs) except +

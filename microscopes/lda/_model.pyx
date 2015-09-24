@@ -36,8 +36,7 @@ cdef class state:
     """
     def __cinit__(self, model_definition defn,
                   vector[vector[size_t]] data,
-                  vocab,
-                  rng r, **kwargs):
+                  vocab, **kwargs):
         # Save and validate model definition
         self._defn = defn
         self._vocab = vocab
@@ -50,7 +49,7 @@ cdef class state:
                     raise ValueError("Word index out of bounds.")
 
         # Validate kwargs
-        valid_kwargs = ('dish_hps', 'vocab_hp',
+        valid_kwargs = ('r', 'dish_hps', 'vocab_hp',
                         'initial_dishes',
                         'initial_tables',
                         'topic_assignments',
@@ -78,7 +77,7 @@ cdef class state:
                 gamma=self.dish_hps['gamma'],
                 initial_dishes=dishes_and_tables['initial_dishes'],
                 docs=data,
-                rng=r._thisptr[0])
+                rng=(<rng> kwargs['r']  )._thisptr[0])
         elif "table_assignments" in dishes_and_tables \
                 and "dish_assignments" in dishes_and_tables:
 
@@ -89,8 +88,7 @@ cdef class state:
                 gamma=self.dish_hps['gamma'],
                 dish_assignments=dishes_and_tables['dish_assignments'],
                 table_assignments=dishes_and_tables['table_assignments'],
-                docs=data,
-                rng=r._thisptr[0])
+                docs=data)
         else:
             raise NotImplementedError(("Specify either: (1) initial_dishes, "
                 "(2) table_assignments and dish_assignments, or (3) none of the above."))
@@ -318,7 +316,7 @@ def _validate_table_dish_assignment(table_assignments, dish_assignments, data):
 
 
 
-def initialize(model_definition defn, data, rng r, **kwargs):
+def initialize(model_definition defn, data, r=None, **kwargs):
     """Initialize state to a random, valid point in the state space
     Parameters
     ----------
@@ -328,9 +326,11 @@ def initialize(model_definition defn, data, rng r, **kwargs):
     vocab_hp : parameter on symmetric Dirichlet prior over topic distributions (beta)
     dish_hps : concentration parameters on base (alpha) and second-level (gamma) Dirichlet processes
     """
+    if r is not None:
+        kwargs['r'] = r
     numeric_docs, vocab_lookup = _initialize_data(data)
     validator.validate_len(vocab_lookup, defn.v, "vocab_lookup")
-    return state(defn=defn, data=numeric_docs, vocab=vocab_lookup, r=r, **kwargs)
+    return state(defn=defn, data=numeric_docs, vocab=vocab_lookup, **kwargs)
 
 def _initialize_data(docs):
     """Convert docs (list of list of hashable items) to list of list of
