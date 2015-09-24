@@ -1,6 +1,7 @@
 from libcpp.vector cimport vector
 from libcpp.map cimport map
 from libc.stddef cimport size_t
+from libcpp.string cimport string
 
 from microscopes._shared_ptr_h cimport shared_ptr
 from microscopes.common._random_fwd_h cimport rng_t

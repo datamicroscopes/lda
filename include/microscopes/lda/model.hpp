@@ -143,7 +143,7 @@ public:
     void
     delete_table(size_t eid, size_t tid);
 
-    common::serialized_t
+    std::string
     serialize() const;
 
     inline size_t get_word(size_t eid, size_t word_index) const { return get_entity(eid)[word_index]; }
