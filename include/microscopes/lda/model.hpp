@@ -2,6 +2,7 @@
 #pragma once
 
 #include <microscopes/common/util.hpp>
+#include <microscopes/common/typedefs.hpp>
 #include <microscopes/common/assert.hpp>
 #include <microscopes/lda/util.hpp>
 
@@ -141,6 +142,9 @@ public:
 
     void
     delete_table(size_t eid, size_t tid);
+
+    common::serialized_t
+    serialize() const;
 
     inline size_t get_word(size_t eid, size_t word_index) const { return get_entity(eid)[word_index]; }
 
