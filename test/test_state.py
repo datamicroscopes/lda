@@ -1,4 +1,5 @@
 import itertools
+import pickle
 
 from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
@@ -34,6 +35,20 @@ def test_serialize_simple():
     m = s.serialize()
     s2 = deserialize(defn, m)
     assert s2.__class__ == s.__class__
+
+
+def test_serialize_pickle():
+    N, V = 10, 20
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
+    view = data
+    prng = rng()
+    s = initialize(defn, view, prng)
+    bstr = pickle.dumps(s)
+    s2 = pickle.loads(bstr)
+    assert s2.__class__ == s.__class__
+
+
 
 
 def test_pyldavis_data():
