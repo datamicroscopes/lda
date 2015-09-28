@@ -11,14 +11,9 @@ class runner(object):
 
     Parameters
     ----------
-    defn : ``model_definition``
-        The structural definition.
-
-    view : dataview
-        A list of list of serializable objects (the 'documents')
-
-    latent : ``state``
-        The initialization state.
+    defn : ``model_definition``: The structural definition.
+    view :  A list of list of serializable objects (the 'documents')
+    latent : ``state``: The initialization state.
 
     kernel_config : list
 
@@ -31,8 +26,7 @@ class runner(object):
 
 
     def run(self, r, niters=10000):
-        """Run the specified lda kernel for `niters`, in a single
-        thread.
+        """Run the lda kernel for `niters`, in a single thread.
 
         Parameters
         ----------
