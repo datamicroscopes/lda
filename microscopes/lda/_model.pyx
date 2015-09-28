@@ -89,8 +89,8 @@ cdef class state:
                 table_assignments=dishes_and_tables['table_assignments'],
                 docs=data)
         else:
-            raise NotImplementedError(("Specify either: (1) initial_dishes, "
-                "(2) table_assignments and dish_assignments, or (3) none of the above."))
+            raise NotImplementedError(("Specify either: (1) initial_dishes or"
+                "(2) table_assignments and dish_assignments."))
 
     def perplexity(self):
         return self._thisptr.get().perplexity()
