@@ -159,11 +159,6 @@ cdef class state:
             word_distribution_by_topic.append(word_dist)
         return word_distribution_by_topic
 
-    def score_assignment(self):
-        raise NotImplementedError()
-
-    def score_data(self, rng r):
-        raise NotImplementedError()
 
     def serialize(self):
         proto_lda = LdaModelState()
