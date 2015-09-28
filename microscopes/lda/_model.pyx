@@ -51,7 +51,6 @@ cdef class state:
         # Validate kwargs
         valid_kwargs = ('r', 'dish_hps', 'vocab_hp',
                         'initial_dishes',
-                        'initial_tables',
                         'topic_assignments',
                         'dish_assignments',
                         'table_assignments',)
