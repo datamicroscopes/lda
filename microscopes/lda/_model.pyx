@@ -314,7 +314,6 @@ def _validate_table_dish_assignment(table_assignments, dish_assignments, data):
         validator.validate_len(dish_assignment, num_table+1, "dish_assignment")
 
 
-
 def initialize(model_definition defn, data, r=None, **kwargs):
     """Initialize state to a random, valid point in the state space
 
@@ -335,7 +334,8 @@ def initialize(model_definition defn, data, r=None, **kwargs):
         Integer valued. Must be same shape as `data`.
     dish_assignments : list of lists that maps tables to dishes.
         Outer length should be the the same as `data`. Inner lists maps
-        unique tables for each document to dish indices.
+        unique tables for each document to dish indices. Thus
+        `len(dish_assignments[i]) == max(table_assignments[i]) + 1`
 
     Example table and dish assignments:
 
