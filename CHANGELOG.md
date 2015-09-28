@@ -1,6 +1,27 @@
 # Change Log
 
 ## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [4.0.0] - 2015-09-28
+### Added
+- Docstrings for most relevant/public methods
+- Add serialization of state objects. They are also picklable.
+- Make model_definition picklable.
+
+### Changed
+- Random number generator is no longer required for state object constructor
+
+### Fixed
+- Bug where perplexity calculation is assumed to be strictly monotone
+- Bugs in explicit initialization. Now fully functional.
+- Bug in sort order for term_relevance_by_topic
 
 ## [3.0.0] - 2015-09-16
 ### Added
