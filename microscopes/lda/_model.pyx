@@ -96,21 +96,36 @@ cdef class state:
         return self._thisptr.get().perplexity()
 
     def nentities(self):
+        """Get number of entities/documents in model.
+        """
         return self._thisptr.get().nentities()
 
     def ntopics(self):
+        """Get number of topics in current state
+        """
         return self._thisptr.get().ntopics()
 
     def nwords(self):
+        """Get number of unique words in all documents
+        """
         return self._thisptr.get().nwords()
 
     def assignments(self):
+        """Get list of lists mapping words in documents to topic.
+        """
         return self._thisptr.get()[0].assignments()
 
     def dish_assignments(self):
+        """List of lists that maps tables to dishes.
+        Outer length is number of documents. Inner lists maps
+        tables for each document to dish indices.
+        """
         return self._thisptr.get()[0].dish_assignments()
 
     def table_assignments(self):
+        """Returns a list of lists that maps words to tables.
+        Integer valued. Same shape as documents.
+        """
         return self._thisptr.get()[0].table_assignments()
 
     @deprecated
@@ -161,6 +176,8 @@ cdef class state:
 
 
     def serialize(self):
+        """Serialize state object as a string
+        """
         proto_lda = LdaModelState()
         flat, indices = utils.ragged_array_to_row_major_form(self._data)
         proto_lda.docs.extend(flat)
@@ -180,6 +197,15 @@ cdef class state:
         return (_reconstruct_state, (self._defn, self.serialize()))
 
     def pyldavis_data(self, rng r=None):
+        """Return dict of data required for visualization initialize
+        in PyLDAvis (https://github.com/bmabey/pyLDAvis).
+
+
+        Construct visualization with:
+
+            pyLDAvis.prepare(**state.pyldavis_data())
+
+        """
         sorted_num_vocab = sorted(self._vocab.keys())
 
         topic_term_distribution = []
@@ -236,9 +262,7 @@ cdef class state:
         return relevance_by_topic
 
     def _relevance_for_word(self, phi_kw, p_w, weight=0.5):
-        """
-
-        Defined in LDAvis: A method for visualizing and interpreting topics (2014)
+        """Defined in LDAvis: A method for visualizing and interpreting topics (2014)
         by Sievert and Shirley
         """
         return weight * np.log(phi_kw) + \
@@ -285,6 +309,8 @@ cdef class state:
         return theta_doc.tolist()
 
 def _get_dishes_and_tables(kwargs, data):
+    """Extract parameters from kwargs
+    """
     if "initial_dishes" in kwargs \
             and "table_assignments" not in kwargs \
             and "dish_assignments" not in kwargs:
@@ -304,6 +330,8 @@ def _get_dishes_and_tables(kwargs, data):
 
 
 def _validate_table_dish_assignment(table_assignments, dish_assignments, data):
+    """Ensure dish and table assignments are valid.
+    """
     validator.validate_len(table_assignments, len(data), "table_assignments")
     validator.validate_len(dish_assignments, len(data), "dish_assignments")
 
