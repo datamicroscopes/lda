@@ -1,5 +1,6 @@
 import itertools
 import pickle
+import cPickle
 
 from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
@@ -44,10 +45,15 @@ def test_serialize_pickle():
     view = data
     prng = rng()
     s = initialize(defn, view, prng)
+    # Pickle
     bstr = pickle.dumps(s)
     s2 = pickle.loads(bstr)
     assert s2.__class__ == s.__class__
 
+    # cPickle
+    bstr = cPickle.dumps(s)
+    s2 = cPickle.loads(bstr)
+    assert s2.__class__ == s.__class__
 
 
 
