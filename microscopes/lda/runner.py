@@ -14,9 +14,6 @@ class runner(object):
     defn : ``model_definition``: The structural definition.
     view :  A list of list of serializable objects (the 'documents')
     latent : ``state``: The initialization state.
-
-    kernel_config : list
-
     """
 
     def __init__(self, defn, view, latent, kernel_config='assign'):
