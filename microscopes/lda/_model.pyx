@@ -245,11 +245,17 @@ cdef class state:
             (1 - weight) * np.log(phi_kw / p_w)
 
 
-    def predict(self, docs, prng, max_iter=20, tol=1e-16):
+    def predict(self, data, prng, max_iter=20, tol=1e-16):
         """Predict topic distributions for documents
+
+        Based on ariddell's implementation of the iterated pseudo-counts
+        method in Wallach et al. (2009).
+
+        cf. https://github.com/ariddell/lda/blob/055f12ed76ac33c43e26b22060e0c6435487eeb7/lda/lda.py#L180-L210
+
         Parameters
         ----------
-        docs : document or list of documents
+        data : document or list of documents
         max_iter : int, optional
             Maximum number of iterations.
         tol: double, optional
@@ -258,9 +264,9 @@ cdef class state:
         -------
         list of topic distributions for each input document
         """
-        if not isinstance(docs[0], list):
-            docs = [docs]
-        return [self._predict_single(doc, prng, max_iter, tol) for doc in docs]
+        if not isinstance(data[0], list):
+            data = [data]
+        return [self._predict_single(doc, prng, max_iter, tol) for doc in data]
 
     def _predict_single(self, doc, prng, max_iter, tol):
         PZS = np.zeros((len(doc), self.ntopics()))
