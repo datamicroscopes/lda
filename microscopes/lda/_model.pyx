@@ -374,8 +374,7 @@ def deserialize(model_definition defn, bytes):
     Parameters
     ----------
     defn : model definition
-    bytes : bytestring representation genreated by state.serialize()
-
+    bytes : bytestring representation of state genreated by state.serialize()
     """
     m = LdaModelState()
     m.ParseFromString(bytes)
