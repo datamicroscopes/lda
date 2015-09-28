@@ -317,13 +317,34 @@ def _validate_table_dish_assignment(table_assignments, dish_assignments, data):
 
 def initialize(model_definition defn, data, r=None, **kwargs):
     """Initialize state to a random, valid point in the state space
+
+    You should specify either dish_assignments and table_assignments ("explicit assignment")
+    OR initial_dishes and random state `r` ("random assignment"). The hyperparameters
+    can be specified or will default to the indicated values.
+
     Parameters
     ----------
-    defn : model definition
+    defn : model definition object
     data : a list of list of serializable objects (i.e. 'documents')
-    rng : random state
-    vocab_hp : parameter on symmetric Dirichlet prior over topic distributions (beta)
-    dish_hps : concentration parameters on base (alpha) and second-level (gamma) Dirichlet processes
+    r : random state (required if specifying initial_dishes
+    initial_dishes: maximum number of dishes (topics) for random state initialization
+    vocab_hp : parameter on symmetric Dirichlet prior over topic distributions ("beta") (default: 0.5)
+    dish_hps : dict specifying concentration parameters on base ("alpha") (default: 0.1)
+        and second-level ("gamma") Dirichlet processes (default: 0.1)
+    table_assignments : list of lists that maps words to tables.
+        Integer valued. Must be same shape as `data`.
+    dish_assignments : list of lists that maps tables to dishes.
+        Outer length should be the the same as `data`. Inner lists maps
+        unique tables for each document to dish indices.
+
+    Example table and dish assignments:
+
+        table_assignments=[[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
+        dish_assignments=[[0, 1, 2], [0, 3], [0, 1, 2, 1]]
+
+    Example
+
+    Returns an LDA state object.
     """
     if r is not None:
         kwargs['r'] = r
