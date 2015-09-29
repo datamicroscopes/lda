@@ -45,7 +45,7 @@ public:
     lda_util::defaultdict<size_t, float> n_k; //!< Number of words assigned to each dish plus beta * V
     std::vector<lda_util::defaultdict<size_t, float>> n_kv; //!< Number of times a given word is assigned to
                                                             //!< each dish plus beta
-    nested_vector table_doc_word; //!< Nested vector giving table assignment for each doc/word pair (t_ji)
+    nested_vector table_assignments_; //!< Nested vector giving table assignment for each doc/word pair (t_ji)
 
     template <class... Args>
     static inline std::shared_ptr<state>
