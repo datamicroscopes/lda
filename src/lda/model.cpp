@@ -345,22 +345,22 @@ microscopes::lda::state::create_table(size_t eid, size_t k_new)
 
 void
 microscopes::lda::state::remove_table(size_t eid, size_t word_index) {
-    size_t t = table_assignments_[eid][word_index];
-    if (t > 0)
+    size_t tid = table_assignments_[eid][word_index];
+    if (tid > 0)
     {
-        size_t k = dish_assignments_[eid][t];
+        size_t k = dish_assignments_[eid][tid];
         MICROSCOPES_DCHECK(k > 0, "k <= 0");
         // decrease counters
         size_t v = get_word(eid, word_index);
         MICROSCOPES_DCHECK(v < nwords(), "Word out of bounds");
         n_kv[k].decr(v, 1);
         n_k.decr(k, 1);
-        n_jt[eid][t] -= 1;
-        n_jtv[eid][t][v] -= 1;
+        n_jt[eid][tid] -= 1;
+        n_jtv[eid][tid][v] -= 1;
 
-        if (n_jt[eid][t] == 0)
+        if (n_jt[eid][tid] == 0)
         {
-            delete_table(eid, t);
+            delete_table(eid, tid);
         }
     }
 }
