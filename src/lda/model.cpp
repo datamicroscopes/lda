@@ -63,10 +63,8 @@ microscopes::lda::state::state(const model_definition &defn,
         //  table index value for the given entity/doc.)
 
         // Create all the dishes we will need.
-        create_dish(); // dummy dish
-        auto num_dishes = lda_util::max_element(dish_assignments);
-        for(size_t dish = 0; dish <= num_dishes; dish++) {
-            create_dish();
+        for(auto dish: lda_util::unique_members(dish_assignments)) {
+            create_dish(dish);
         }
         for (size_t eid = 0; eid < nentities(); ++eid) {
             create_entity(eid);
