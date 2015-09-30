@@ -132,6 +132,9 @@ public:
     size_t
     create_dish();
 
+    void
+    create_dish(size_t k_new);
+
     size_t
     create_table(size_t eid, size_t k_new);
 

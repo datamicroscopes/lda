@@ -288,17 +288,8 @@ microscopes::lda::state::add_table(size_t eid, size_t tid, size_t word_index) {
     n_jtv[eid][tid][v] += 1;
 }
 
-size_t
-microscopes::lda::state::create_dish() {
-    size_t k_new = dishes_.size();
-    for (size_t i = 0; i < dishes_.size(); ++i)
-    {
-        if (i != dishes_[i])
-        {
-            k_new = i;
-            break;
-        }
-    }
+void
+microscopes::lda::state::create_dish(size_t k_new){
     if (k_new == dishes_.size())
     {
         m_k.push_back(0);
@@ -311,6 +302,20 @@ microscopes::lda::state::create_dish() {
     n_k.set(k_new, beta_ * V);
     n_kv[k_new] = lda_util::defaultdict<size_t, float>(beta_);
     m_k[k_new] = 0;
+}
+
+size_t
+microscopes::lda::state::create_dish() {
+    size_t k_new = dishes_.size();
+    for (size_t i = 0; i < dishes_.size(); ++i)
+    {
+        if (i != dishes_[i])
+        {
+            k_new = i;
+            break;
+        }
+    }
+    create_dish(k_new);
     return k_new;
 
 }
