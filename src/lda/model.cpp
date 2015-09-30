@@ -86,7 +86,7 @@ void
 microscopes::lda::state::create_entity(size_t eid){
     using_t.push_back(std::vector<size_t>());
     n_jt.push_back(std::vector<size_t>());
-    restaurants_.push_back(std::vector<size_t>());
+    dish_assignments_.push_back(std::vector<size_t>());
     table_assignments_.push_back(std::vector<size_t>(nterms(eid), 0));
     n_jtv.push_back(std::vector< std::map<size_t, size_t>>());
 }
@@ -100,7 +100,7 @@ microscopes::lda::state::assignments() {
         ret[eid].resize(table_assignments_[eid].size());
         for (size_t did = 0; did < table_assignments_[eid].size(); did++) {
             auto table = table_assignments_[eid][did];
-            ret[eid][did] = restaurants_[eid][table];
+            ret[eid][did] = dish_assignments_[eid][table];
         }
     }
     return ret;
@@ -114,7 +114,7 @@ microscopes::lda::state::assignments() {
 */
 microscopes::lda::nested_vector
 microscopes::lda::state::dish_assignments() {
-    return restaurants_;
+    return dish_assignments_;
 }
 
 /**
@@ -159,7 +159,7 @@ std::vector<std::vector<float>>
 microscopes::lda::state::document_distribution  () {
     // Distribution over topics for each document
     std::vector<std::vector<float>> theta;
-    theta.reserve(restaurants_.size());
+    theta.reserve(dish_assignments_.size());
     std::vector<float> am_k(m_k.begin(), m_k.end());
     am_k[0] = gamma_;
     double sum_am_dishes_ = 0;
@@ -170,12 +170,12 @@ microscopes::lda::state::document_distribution  () {
         am_k[i] *= alpha_ / sum_am_dishes_;
     }
 
-    for (size_t j = 0; j < restaurants_.size(); j++) {
+    for (size_t j = 0; j < dish_assignments_.size(); j++) {
         std::vector<size_t> &n_jt_ = n_jt[j];
         std::vector<float> p_jk = am_k;
         for (auto t : using_t[j]) {
             if (t == 0) continue;
-            size_t k = restaurants_[j][t];
+            size_t k = dish_assignments_[j][t];
             p_jk[k] += n_jt_[t];
         }
         p_jk = lda_util::selectByIndex(p_jk, dishes_);
@@ -214,14 +214,14 @@ microscopes::lda::state::perplexity() {
 
 void
 microscopes::lda::state::leave_from_dish(size_t j, size_t t) {
-    size_t k = restaurants_[j][t];
+    size_t k = dish_assignments_[j][t];
     MICROSCOPES_DCHECK(k > 0, "k < = 0");
     MICROSCOPES_DCHECK(m_k[k] > 0, "m_k[k] <= 0");
     m_k[k] -= 1; // one less table for topic k
     if (m_k[k] == 0) // destroy table
     {
         delete_dish(k);
-        restaurants_[j][t] = 0;
+        dish_assignments_[j][t] = 0;
     }
 }
 
@@ -248,11 +248,11 @@ void
 microscopes::lda::state::seat_at_dish(size_t j, size_t t, size_t k_new) {
     m_k[k_new] += 1;
 
-    size_t k_old = restaurants_[j][t];
+    size_t k_old = dish_assignments_[j][t];
     if (k_new != k_old)
     {
         MICROSCOPES_DCHECK(k_new != 0, "k_new is 0");
-        restaurants_[j][t] = k_new;
+        dish_assignments_[j][t] = k_new;
         float n_jt_val = n_jt[j][t];
 
         if (k_old != 0)
@@ -279,7 +279,7 @@ microscopes::lda::state::add_table(size_t eid, size_t tid, size_t word_index) {
     table_assignments_[eid][word_index] = tid;
     n_jt[eid][tid] += 1;
 
-    size_t k_new = restaurants_[eid][tid];
+    size_t k_new = dish_assignments_[eid][tid];
     n_k.incr(k_new, 1);
 
     size_t v = get_word(eid, word_index);
@@ -330,13 +330,13 @@ microscopes::lda::state::create_table(size_t eid, size_t k_new)
     if (t_new == using_t[eid].size())
     {
         n_jt[eid].push_back(0);
-        restaurants_[eid].push_back(0);
+        dish_assignments_[eid].push_back(0);
 
         n_jtv[eid].push_back(std::map<size_t, size_t>());
     }
     using_t[eid].insert(using_t[eid].begin() + t_new, t_new);
     n_jt[eid][t_new] = 0;
-    restaurants_[eid][t_new] = k_new;
+    dish_assignments_[eid][t_new] = k_new;
     if (k_new != 0){
         m_k[k_new] += 1;
     }
@@ -348,7 +348,7 @@ microscopes::lda::state::remove_table(size_t eid, size_t word_index) {
     size_t tid = table_assignments_[eid][word_index];
     if (tid > 0)
     {
-        size_t k = restaurants_[eid][tid];
+        size_t k = dish_assignments_[eid][tid];
         MICROSCOPES_DCHECK(k > 0, "k <= 0");
         // decrease counters
         size_t v = get_word(eid, word_index);
@@ -362,7 +362,7 @@ microscopes::lda::state::remove_table(size_t eid, size_t word_index) {
         {
             delete_table(eid, tid);
             if (tid == using_t[eid].size() + 1){
-                restaurants_[eid].pop_back();
+                dish_assignments_[eid].pop_back();
                 n_jt[eid].pop_back();
                 n_jtv[eid].pop_back();
             }
@@ -372,7 +372,7 @@ microscopes::lda::state::remove_table(size_t eid, size_t word_index) {
 
 void
 microscopes::lda::state::delete_table(size_t eid, size_t tid) {
-    size_t k = restaurants_[eid][tid];
+    size_t k = dish_assignments_[eid][tid];
     lda_util::removeFirst(using_t[eid], tid);
     m_k[k] -= 1;
     MICROSCOPES_DCHECK(m_k[k] >= 0, "m_k[k] < 0");
