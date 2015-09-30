@@ -2,10 +2,12 @@
 
 ## [Unreleased]
 ### Added
+- Add `active_dishes` method to state
 
 ### Changed
 
 ### Fixed
+- Bug where too many dishes are created when deserializing
 
 ### Removed
 
