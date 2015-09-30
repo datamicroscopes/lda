@@ -290,12 +290,10 @@ microscopes::lda::state::add_table(size_t eid, size_t tid, size_t word_index) {
 
 void
 microscopes::lda::state::create_dish(size_t k_new){
-    if (k_new == dishes_.size())
+    while(k_new >= m_k.size())
     {
         m_k.push_back(0);
         n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
-        MICROSCOPES_DCHECK(dishes_.size() == 0 || k_new == dishes_.back() + 1, "bad k_new (1)");
-        MICROSCOPES_DCHECK(k_new < n_kv.size(), "bad k_new (2)");
     }
 
     dishes_.insert(dishes_.begin() + k_new, k_new);
