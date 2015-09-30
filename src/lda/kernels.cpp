@@ -5,11 +5,11 @@ namespace kernels {
 namespace lda_crp {
 
 std::vector<float>
-calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rng) {
+calc_dish_posterior_t(microscopes::lda::state &state, size_t eid, size_t t, common::rng_t &rng) {
     std::vector<float> log_p_k(state.dishes_.size());
 
-    auto k_old = state.dish_assignment(j, t);
-    auto n_jt_val = state.n_jt[j][t];
+    auto k_old = state.dish_assignment(eid, t);
+    auto n_jt_val = state.n_jt[eid][t];
     for (size_t i = 0; i < state.dishes_.size(); i++) {
         auto k = state.dishes_[i];
         float n_k_val = state.n_k.get(k); // V*beta when k == i == 0
@@ -19,15 +19,15 @@ calc_dish_posterior_t(microscopes::lda::state &state, size_t j, size_t t, common
         log_p_k[i] -= distributions::fast_lgamma(n_k_val + n_jt_val);
     }
 
-    for (auto &kv : state.n_jtv[j][t]) {
+    for (auto &kv : state.n_jtv[eid][t]) {
         auto w = kv.first; // w is word index
-        auto n_jtw = kv.second; // n_jtw is # of times word w appears at table t in doc j.
+        auto n_jtw = kv.second; // n_jtw is # of times word w appears at table t in doc eid.
         if (n_jtw == 0) continue; // if word w isn't at table t, continue. log_pk wouldn't change.
 
         for (size_t i = 0; i < state.dishes_.size(); i++) {
             float n_kw;
             n_kw = state.n_kv[state.dishes_[i]].get(w); // beta when k == i == 0
-            if (state.dishes_[i] == state.dish_assignment(j, t)) n_kw -= n_jtw;
+            if (state.dishes_[i] == state.dish_assignment(eid, t)) n_kw -= n_jtw;
             log_p_k[i] += distributions::fast_lgamma(n_kw + n_jtw);
             log_p_k[i] -= distributions::fast_lgamma(n_kw);
         }
@@ -68,13 +68,13 @@ calc_f_k(microscopes::lda::state &state, size_t v, common::rng_t &rng) {
 }
 
 std::vector<float>
-calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float> &f_k, common::rng_t &rng) {
-    std::vector<size_t> using_table = state.using_t[j];
+calc_table_posterior(microscopes::lda::state &state, size_t eid, std::vector<float> &f_k, common::rng_t &rng) {
+    std::vector<size_t> using_table = state.using_t[eid];
     Eigen::VectorXf p_t(using_table.size());
 
     for (size_t i = 1; i < using_table.size(); i++) {
         auto p = using_table[i];
-        p_t(i) = state.n_jt[j][p] * f_k[state.dish_assignment(j, p)];
+        p_t(i) = state.n_jt[eid][p] * f_k[state.dish_assignment(eid, p)];
     }
     Eigen::Map<Eigen::VectorXf> eigen_f_k(f_k.data(), f_k.size());
     Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> eigen_m_k(state.m_k.data(), state.m_k.size());
@@ -85,30 +85,30 @@ calc_table_posterior(microscopes::lda::state &state, size_t j, std::vector<float
 }
 
 void
-sampling_t(microscopes::lda::state &state, size_t j, size_t i, common::rng_t &rng) {
-    state.remove_table(j, i);
-    size_t v = state.get_word(j, i);
+sampling_t(microscopes::lda::state &state, size_t eid, size_t i, common::rng_t &rng) {
+    state.remove_table(eid, i);
+    size_t v = state.get_word(eid, i);
     std::vector<float> f_k = calc_f_k(state, v, rng);
-    std::vector<float> p_t = calc_table_posterior(state, j, f_k, rng);
+    std::vector<float> p_t = calc_table_posterior(state, eid, f_k, rng);
 
-    size_t t_new = state.using_t[j][common::util::sample_discrete(p_t, rng)];
+    size_t t_new = state.using_t[eid][common::util::sample_discrete(p_t, rng)];
     if (t_new == 0)
     {
         auto p_k = calc_dish_posterior_w(state, f_k, rng);
         size_t k_new = state.dishes_[common::util::sample_discrete(p_k, rng)];
         if (k_new == 0) k_new = state.create_dish();
-        t_new = state.create_table(j, k_new);
+        t_new = state.create_table(eid, k_new);
     }
-    state.add_table(j, t_new, i);
+    state.add_table(eid, t_new, i);
 }
 
 void
-sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rng) {
-    state.leave_from_dish(j, t);
-    auto p_k = calc_dish_posterior_t(state, j, t, rng);
+sampling_k(microscopes::lda::state &state, size_t eid, size_t t, common::rng_t &rng) {
+    state.leave_from_dish(eid, t);
+    auto p_k = calc_dish_posterior_t(state, eid, t, rng);
     size_t k_new = state.dishes_[common::util::sample_discrete(p_k, rng)];
     if (k_new == 0) k_new = state.create_dish();
-    state.seat_at_dish(j, t, k_new);
+    state.seat_at_dish(eid, t, k_new);
 }
 
 } // namespace lda_crp
@@ -116,15 +116,15 @@ sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rn
 void
 lda_crp_gibbs(microscopes::lda::state &state, common::rng_t &rng)
 {
-    for (size_t j = 0; j < state.nentities(); ++j) {
-        for (size_t i = 0; i < state.nterms(j); ++i) {
-            lda_crp::sampling_t(state, j, i, rng);
+    for (size_t eid = 0; eid < state.nentities(); ++eid) {
+        for (size_t i = 0; i < state.nterms(eid); ++i) {
+            lda_crp::sampling_t(state, eid, i, rng);
         }
     }
-    for (size_t j = 0; j < state.nentities(); ++j) {
-        for (auto t : state.using_t[j]) {
+    for (size_t eid = 0; eid < state.nentities(); ++eid) {
+        for (auto t : state.using_t[eid]) {
             if (t != 0) {
-                lda_crp::sampling_k(state, j, t, rng);
+                lda_crp::sampling_k(state, eid, t, rng);
             }
         }
     }
