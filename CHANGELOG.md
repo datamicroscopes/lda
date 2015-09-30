@@ -9,7 +9,17 @@
 
 ### Removed
 
-## [4.0.0] - 2015-09-28
+## [0.4.1]
+### Added
+
+### Changed
+
+### Fixed
+- Issue where deserialization sometimes failed due to deleted tables not being pruned from all vectors.
+
+### Removed
+
+## [0.3.1] - 2015-09-28
 ### Added
 - Docstrings for most relevant/public methods
 - Add serialization of state objects. They are also picklable.
@@ -23,7 +33,7 @@
 - Bugs in explicit initialization. Now fully functional.
 - Bug in sort order for term_relevance_by_topic
 
-## [3.0.0] - 2015-09-16
+## [0.3.0] - 2015-09-16
 ### Added
 - Add utility function for getting pyLDAvis data
 - Added utility functions for translating data formats
