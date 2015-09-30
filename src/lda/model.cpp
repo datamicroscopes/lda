@@ -380,5 +380,18 @@ microscopes::lda::state::delete_table(size_t eid, size_t tid) {
     {
         delete_dish(k);
     }
+
+    // Prune dish assignment vector
+    dish_assignments_[eid][tid] = 0;
+    while(dish_assignments_[eid].empty() == false)
+   {
+        if(dish_assignments_[eid].back() == 0){
+            dish_assignments_[eid].pop_back();
+            n_jt[eid].pop_back();
+            n_jtv[eid].pop_back();
+        }
+        else break;
+   }
+
 }
 
