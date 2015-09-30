@@ -37,7 +37,7 @@ public:
                            //!< table==0 means we need to create new table for word
     std::vector<size_t> dishes_; //!< List of indices of active dishes/topics (using_k in shuyo's code)
     const nested_vector x_ji; //!< Integer representation of documents
-    nested_vector dish_assignments_; //!< Nested vector mapping doc/table pair to topic (k_jt)
+    nested_vector restaurants_; //!< Nested vector mapping doc/table pair to topic (k_jt)
                                 //!< dish==0 means we need to create new dish
     nested_vector n_jt; //!< Nested vector giving counts for words assigned to doc/table pairs
     std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; //!< Nested vector giving counts for doc/table/word triples
