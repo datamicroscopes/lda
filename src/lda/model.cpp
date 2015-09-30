@@ -362,7 +362,7 @@ microscopes::lda::state::remove_table(size_t eid, size_t word_index) {
         {
             delete_table(eid, tid);
             if (tid == using_t[eid].size() + 1){
-                dish_assignments_[eid].pop_back();
+                restaurants_[eid].pop_back();
                 n_jt[eid].pop_back();
                 n_jtv[eid].pop_back();
             }
