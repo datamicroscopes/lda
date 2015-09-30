@@ -147,6 +147,8 @@ public:
 
     inline size_t tablesize(size_t eid, size_t tid) const { return n_jt[eid][tid]; }
 
+    inline size_t dish_assignment(size_t eid, size_t tid) const { return dish_assignments_[eid][tid]; }
+
     inline void delete_dish(size_t did) { lda_util::removeFirst(dishes_, did); }
 
     inline std::vector<size_t> dishes() const { return dishes_; }
