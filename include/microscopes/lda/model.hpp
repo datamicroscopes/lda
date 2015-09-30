@@ -141,9 +141,6 @@ public:
     void
     delete_table(size_t eid, size_t tid);
 
-    std::string
-    serialize() const;
-
     inline size_t get_word(size_t eid, size_t word_index) const { return get_entity(eid)[word_index]; }
 
     inline std::vector<size_t> get_entity(size_t eid) const { return x_ji[eid]; }
