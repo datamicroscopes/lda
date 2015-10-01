@@ -15,6 +15,7 @@
 
 ### Fixed
 - Bug where too many dishes are created when deserializing
+- Bug fixed where dishes_ is constructed incorrectly when dish ids aren't contiguous
 
 ## [0.4.1]
 ### Added

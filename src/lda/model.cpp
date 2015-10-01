@@ -293,8 +293,10 @@ microscopes::lda::state::create_dish(size_t k_new){
         m_k.push_back(0);
         n_kv.push_back(lda_util::defaultdict<size_t, float>(beta_));
     }
-
-    dishes_.insert(dishes_.begin() + k_new, k_new);
+    if(dishes_.size() > k_new)
+        dishes_.insert(dishes_.begin() + k_new, k_new);
+    else
+        dishes_.push_back(k_new);
     n_k.set(k_new, beta_ * V);
     n_kv[k_new] = lda_util::defaultdict<size_t, float>(beta_);
     m_k[k_new] = 0;
