@@ -1,6 +1,7 @@
 from libcpp.vector cimport vector
 from libcpp.map cimport map
 from libc.stddef cimport size_t
+from libcpp.string cimport string
 
 from microscopes._shared_ptr_h cimport shared_ptr
 from microscopes.common._random_fwd_h cimport rng_t
@@ -19,12 +20,14 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         size_t nwords()
         size_t nterms(size_t) except +
 
+        string serialize() except +
         vector[vector[size_t]] assignments()
         vector[vector[size_t]] dish_assignments()
         vector[vector[size_t]] table_assignments()
         vector[size_t] tables(size_t eid)
         vector[vector[float]] document_distribution()
         vector[map[size_t, float]] word_distribution()
+        vector[size_t] dishes()
 
         float score_assignment()
         float score_data(rng_t &)
@@ -44,5 +47,4 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda::state"
         float alpha, float beta, float gamma,
         const vector[vector[size_t]] &dish_assignments,
         const vector[vector[size_t]] &table_assignments,
-        vector[vector[size_t]] &docs,
-        rng_t &rng) except +
+        vector[vector[size_t]] &docs) except +

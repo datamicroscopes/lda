@@ -5,6 +5,7 @@ from scipy import stats
 
 
 def lda_crp_gibbs(state s, rng r):
+<<<<<<< HEAD
     c_lda_crp_gibbs(s._thisptr.get()[0], r._thisptr[0])
 
 def lda_sample_dispersion(state s, rng r):
@@ -40,3 +41,12 @@ def lda_sample_dispersion(state s, rng r):
         s.alpha = stats.gamma(aalpha + T - qs, 1. / (balpha - qw)).rvs()
 
     # state = update_beta(state, abeta, bbeta)
+=======
+    """Gibbs transition kernel for LDA state object. Modifies
+    state object in place.
+
+    Implementation of "Posterior sampling in the Chinese restaurant
+        franchise" as described in Teh et al (2005).
+    """
+    c_lda_crp_gibbs(s._thisptr.get()[0], r._thisptr[0])
+>>>>>>> master

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <microscopes/common/util.hpp>
+#include <microscopes/common/typedefs.hpp>
 #include <microscopes/common/assert.hpp>
 #include <microscopes/lda/util.hpp>
 
@@ -13,6 +14,7 @@
 namespace microscopes {
 namespace lda {
 
+typedef std::vector<std::vector<size_t>> nested_vector;
 
 class model_definition {
 public:
@@ -26,20 +28,24 @@ private:
 
 class state {
 public:
-    size_t V; // Size of vocabulary
-    float alpha_; // `\alpha_0`  Hyperparamter on second level Dirichlet process
-    float beta_; // `\beta` Hyperparameter of base Dirichlet distribution (over term distributions)
-    float gamma_; // `\gamma` Hyperparameter on first level Dirichlet process
-    std::vector<std::vector<size_t>> using_t; // table index (t=0 means to draw a new table)
-    std::vector<size_t> dishes_; // using_k; dish(topic) index (k=0 means to draw a new dish)
-    const std::vector<std::vector<size_t>> x_ji; // vocabulary for each document and term
-    std::vector<std::vector<size_t>> restaurants_; // k_jt -- topics of document and table
-    std::vector<std::vector<size_t>> n_jt; // number of terms for each table of document
-    std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; // number of occurrences of each term for each table of document
-    std::vector<size_t> m_k; // number of tables for each topic
-    lda_util::defaultdict<size_t, float> n_k; // number of terms for each topic ( + beta * V )
-    std::vector<lda_util::defaultdict<size_t, float>> n_kv; // number of terms for each topic and vocabulary ( + beta )
-    std::vector<std::vector<size_t>> table_doc_word; // t_ji -- table for each document and term (-1 means not-assigned)
+    size_t V; //!< Total number of unique vocabulary words
+    float alpha_; //!< Hyperparamter on second level Dirichlet process (\alpha_0)
+    float beta_; //!< Hyperparameter of base Dirichlet distribution (over term distributions) (\beta)
+    float gamma_; //!< Hyperparameter on first level Dirichlet process (\gamma)
+    nested_vector using_t; //!< Nested vector giving list of indices of
+                           //!< active tables for each document
+                           //!< table==0 means we need to create new table for word
+    std::vector<size_t> dishes_; //!< List of indices of active dishes/topics (using_k in shuyo's code)
+    const nested_vector x_ji; //!< Integer representation of documents
+    nested_vector dish_assignments_; //!< Nested vector mapping doc/table pair to topic (k_jt)
+                                //!< dish==0 means we need to create new dish
+    nested_vector n_jt; //!< Nested vector giving counts for words assigned to doc/table pairs
+    std::vector<std::vector<std::map<size_t, size_t>>> n_jtv; //!< Nested vector giving counts for doc/table/word triples
+    std::vector<size_t> m_k; //!< Number of tables assigned to each dish
+    lda_util::defaultdict<size_t, float> n_k; //!< Number of words assigned to each dish plus beta * V
+    std::vector<lda_util::defaultdict<size_t, float>> n_kv; //!< Number of times a given word is assigned to
+                                                            //!< each dish plus beta
+    nested_vector table_assignments_; //!< Nested vector giving table assignment for each doc/word pair (t_ji)
 
     template <class... Args>
     static inline std::shared_ptr<state>
@@ -53,8 +59,7 @@ private:
           float alpha,
           float beta,
           float gamma,
-          const std::vector<std::vector<size_t>> &docs,
-          common::rng_t &);
+          const nested_vector &docs);
 
 public:
     state(const model_definition &defn,
@@ -62,19 +67,18 @@ public:
           float beta,
           float gamma,
           size_t initial_dishes,
-          const std::vector<std::vector<size_t>> &docs,
+          const nested_vector &docs,
           common::rng_t &);
 
     state(const model_definition &defn,
           float alpha,
           float beta,
           float gamma,
-          const std::vector<std::vector<size_t>> &dish_assignments,
-          const std::vector<std::vector<size_t>> &table_assignments,
-          const std::vector<std::vector<size_t>> &docs,
-          common::rng_t &);
+          const nested_vector &dish_assignments,
+          const nested_vector &table_assignments,
+          const nested_vector &docs);
 
-    std::vector<std::vector<size_t>>
+    nested_vector
     assignments();
 
     /**
@@ -82,7 +86,7 @@ public:
     * table IDs -> (global) dish assignments
     *
     */
-    std::vector<std::vector<size_t>>
+    nested_vector
     dish_assignments();
 
     /**
@@ -90,7 +94,7 @@ public:
     * from each word to the (local) table it is assigned to.
     *
     */
-    std::vector<std::vector<size_t>>
+    nested_vector
     table_assignments();
 
     // Not implemented
@@ -123,10 +127,13 @@ public:
     add_table(size_t eid, size_t t_new, size_t did);
 
     void
-    create_entity();
+    create_entity(size_t eid);
 
     size_t
     create_dish();
+
+    void
+    create_dish(size_t k_new);
 
     size_t
     create_table(size_t eid, size_t k_new);
@@ -142,6 +149,8 @@ public:
     inline std::vector<size_t> get_entity(size_t eid) const { return x_ji[eid]; }
 
     inline size_t tablesize(size_t eid, size_t tid) const { return n_jt[eid][tid]; }
+
+    inline size_t dish_assignment(size_t eid, size_t tid) const { return dish_assignments_[eid][tid]; }
 
     inline void delete_dish(size_t did) { lda_util::removeFirst(dishes_, did); }
 

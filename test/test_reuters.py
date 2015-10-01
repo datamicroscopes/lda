@@ -1,6 +1,7 @@
 import os
 import numpy as np
 
+from nose.plugins.attrib import attr
 from nose.tools import assert_almost_equal, assert_dict_equal
 from nose.tools import assert_list_equal
 
@@ -42,6 +43,7 @@ class TestLDANewsReuters():
     def test_lda_news(self):
         assert len(self.doc_topic) == len(self.docs)
 
+    @attr('slow')
     def test_lda_monotone(self):
         # run additional iterations, verify improvement in log likelihood
         self.r.run(self.prng, self.niters)
@@ -58,6 +60,7 @@ class TestLDANewsReuters():
         assert doc_topic2 is not None
         assert latent2.perplexity() > self.latent.perplexity()
 
+    @attr('slow')
     def test_lda_random_seed(self):
         # ensure that randomness is contained in rng
         # by running model twice with same seed

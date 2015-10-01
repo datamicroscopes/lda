@@ -1,5 +1,6 @@
 import numpy as np
 
+from nose.plugins.attrib import attr
 from cStringIO import StringIO
 from nose.tools import raises
 from microscopes.lda import utils
@@ -55,3 +56,9 @@ def test_bad_ldac_data():
 def test_num_terms():
     docs = [[0, 1, 2], [1, 2, 3]]
     assert utils.num_terms(docs) == 4
+
+
+def test_row_major_form_conversion():
+    l = [[1, 2, 3, 4], [1, 2, 3], [1, 2, 3, 4, 5, 6]]
+    rmf = utils.ragged_array_to_row_major_form(l)
+    assert utils.row_major_form_to_ragged_array(*rmf) == l

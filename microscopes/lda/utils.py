@@ -71,6 +71,59 @@ def docs_from_ldac(stream):
     return docs
 
 
+def reindex_nested(l):
+    """Reindex assignment vector to assigments to consecutive integers
+
+    For example convert `[[0, 3], [2, 3]]` to `[[0, 2], [3, 1]]`
+
+    Parameters
+    ----------
+    l : nested lists with hashable items in second dimensional lists
+
+    Returns
+    -------
+    nested with hashable items translated to hashable values
+    """
+    # Flatten
+    items = set(reduce(lambda x, y: list(x) + list(y), l))
+    # Map from original value to new value
+    lookup = {t: i for i, t in enumerate(items)}
+    # New nested list
+    return [[lookup[x] for x in table]
+            for table in l]
+
+
+def flatten(l):
+    """Flatten 2 list
+    """
+    return reduce(lambda x, y: list(x) + list(y), l, [])
+
+
+def ragged_array_to_row_major_form(l):
+    """Convert [[1,2,3], [5,6]] to
+    [1, 2, 3, 5, 6], [0, 3] for serialization
+    """
+    indices = _cumsum(map(len, l))
+    indices = [0] + indices[:-1]
+    flat = flatten(l)
+    return flat, indices
+
+
+def row_major_form_to_ragged_array(flat, indices):
+    """Convert [1, 2, 3, 5, 6], [0, 3] to
+    [[1,2,3], [5,6]] for serialization
+    """
+    endices = indices[1:] + [None]
+    return [flat[start:end] for start, end in zip(indices, endices)]
+
+
+def _cumsum(a):
+    b=a[:]
+    for i in range(1,len(a)):
+        b[i]+=b[i-1]
+    return b
+
+
 def _term_counts_to_doc(term_counts, vocab=None):
     doc = []
     for term_id, count in term_counts:

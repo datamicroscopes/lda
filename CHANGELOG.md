@@ -1,8 +1,47 @@
 # Change Log
 
 ## [Unreleased]
+### Added
 
-## [3.0.0] - 2015-09-16
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.4.2]
+### Added
+- Add `active_dishes` method to state
+
+### Fixed
+- Bug where too many dishes are created when deserializing
+- Bug fixed where dishes_ is constructed incorrectly when dish ids aren't contiguous
+
+## [0.4.1]
+### Added
+
+### Changed
+
+### Fixed
+- Issue where deserialization sometimes failed due to deleted tables not being pruned from all vectors.
+
+### Removed
+
+## [0.3.1] - 2015-09-28
+### Added
+- Docstrings for most relevant/public methods
+- Add serialization of state objects. They are also picklable.
+- Make model_definition picklable.
+
+### Changed
+- Random number generator is no longer required for state object constructor
+
+### Fixed
+- Bug where perplexity calculation is assumed to be strictly monotone
+- Bugs in explicit initialization. Now fully functional.
+- Bug in sort order for term_relevance_by_topic
+
+## [0.3.0] - 2015-09-16
 ### Added
 - Add utility function for getting pyLDAvis data
 - Added utility functions for translating data formats

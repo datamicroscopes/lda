@@ -1,12 +1,14 @@
 import itertools
+import pickle
+import cPickle
 
 from microscopes.common.rng import rng
 from microscopes.lda.definition import model_definition
-from microscopes.lda.model import initialize
+from microscopes.lda.model import initialize, deserialize
 from microscopes.lda.testutil import toy_dataset
 
 from nose.tools import assert_equals, assert_true
-from nose.tools import assert_almost_equals
+from nose.tools import assert_almost_equals, assert_raises
 
 
 def vocab_size(docs):
@@ -22,6 +24,37 @@ def test_simple():
     prng = rng()
     s = initialize(defn, view, prng)
     assert_equals(s.nentities(), len(data))
+
+
+def test_serialize_simple():
+    N, V = 10, 20
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
+    view = data
+    prng = rng()
+    s = initialize(defn, view, prng)
+    m = s.serialize()
+    s2 = deserialize(defn, m)
+    assert s2.__class__ == s.__class__
+
+
+def test_serialize_pickle():
+    N, V = 10, 20
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
+    view = data
+    prng = rng()
+    s = initialize(defn, view, prng)
+    # Pickle
+    bstr = pickle.dumps(s)
+    s2 = pickle.loads(bstr)
+    assert s2.__class__ == s.__class__
+
+    # cPickle
+    bstr = cPickle.dumps(s)
+    s2 = cPickle.loads(bstr)
+    assert s2.__class__ == s.__class__
+
 
 
 def test_pyldavis_data():
@@ -88,21 +121,74 @@ def test_alpha_numeric():
 
 
 def test_explicit():
-    # explicit initialization doesn't work yet
-    return
-    # N, V = 5, 100
-    # defn = model_definition(N, V)
-    # data = toy_dataset(defn)
-    # prng = rng()
+    """Test that we can explicitly initialize state by specifying
+    table and dish assignments
+    """
+    prng = rng()
+    N, V = 3, 7
+    defn = model_definition(N, V)
+    data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
 
-    # table_assignments = [
-    #     np.random.randint(low=0, high=10, size=len(d)) for d in data]
+    table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
+    dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
 
-    # dish_assignments = [
-    #     np.random.randint(low=0, high=len(t), size=len(d))
-    #     for t, d in zip(table_assignments, data)]
+    s = initialize(defn, data,
+                   table_assignments=table_assignments,
+                   dish_assignments=dish_assignments)
+    assert_equals(s.nentities(), len(data))
+    assert len(s.dish_assignments()) == len(dish_assignments)
+    assert len(s.table_assignments()) == len(table_assignments)
+    for da1, da2 in zip(s.dish_assignments(), dish_assignments):
+        assert da1 == da2
+    for ta1, ta2 in zip(s.table_assignments(), table_assignments):
+        assert ta1 == ta2
 
-    # s = initialize(defn, data, prng,
-    #                table_assignments=table_assignments,
-    #                dish_assignments=dish_assignments)
-    # assert_equals(s.nentities(), len(data))
+
+def test_explicit_exceptions():
+    """ValueError should be rasied for bad assignments
+    """
+    prng = rng()
+    N, V = 3, 7
+    defn = model_definition(N, V)
+    data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
+
+    # We should get an error if we leave out a dish assignment for a given table
+    table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
+    dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2]]
+
+    assert_raises(ValueError,
+                  initialize,
+                  defn, data,
+                  table_assignments=table_assignments,
+                  dish_assignments=dish_assignments)
+
+    # We should get an error if we leave out a table assignment for a given word
+    table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3]]
+    dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
+
+    assert_raises(ValueError,
+                  initialize,
+                  defn, data,
+                  table_assignments=table_assignments,
+                  dish_assignments=dish_assignments)
+
+
+def test_explicit_inception():
+    """Initialize a new state using assignments from old
+
+    Helps ensure that our assignment validation code is correct
+    """
+    prng = rng()
+    N, V = 3, 7
+    defn = model_definition(N, V)
+    data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
+
+    table_assignments = [[1, 2, 1, 2], [1, 1, 1], [3, 3, 3, 1]]
+    dish_assignments = [[0, 1, 2], [0, 3], [0, 1, 2, 1]]
+
+    s = initialize(defn, data,
+                   table_assignments=table_assignments,
+                   dish_assignments=dish_assignments)
+    s2 = initialize(defn, data,
+                    table_assignments=s.table_assignments(),
+                    dish_assignments=s.dish_assignments())
