@@ -354,15 +354,15 @@ def initialize(model_definition defn, data, r=None, **kwargs):
     """Initialize state to a random, valid point in the state space
 
     You should specify either dish_assignments and table_assignments ("explicit assignment")
-    OR initial_dishes and random state `r` ("random assignment"). The hyperparameters
-    can be specified or will default to the indicated values.
+    OR initial_dishes and random state `r` ("random assignment"), OR simply the random state.
+    The hyperparameters can be specified or will default to the indicated values.
 
     Parameters
     ----------
     defn : model definition object
     data : a list of list of serializable objects (i.e. 'documents')
     r : random state (required if specifying initial_dishes
-    initial_dishes: maximum number of dishes (topics) for random state initialization
+    initial_dishes: maximum number of dishes (topics) for random state initialization (default: 10)
     vocab_hp : parameter on symmetric Dirichlet prior over topic distributions ("beta") (default: 0.5)
     dish_hps : dict specifying concentration parameters on base ("alpha") (default: 0.1)
         and second-level ("gamma") Dirichlet processes (default: 0.1)
