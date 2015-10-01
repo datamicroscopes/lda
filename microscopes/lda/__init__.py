@@ -2,7 +2,7 @@ import os
 
 # NOTE: _version_base must be of the form
 # _version_base = '...', since setup.py depends on it
-_version_base = '0.4.1'
+_version_base = '0.4.2'
 
 try:
     # read git hash from file

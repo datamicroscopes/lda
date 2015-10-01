@@ -2,14 +2,19 @@
 
 ## [Unreleased]
 ### Added
-- Add `active_dishes` method to state
 
 ### Changed
 
 ### Fixed
-- Bug where too many dishes are created when deserializing
 
 ### Removed
+
+## [0.4.2]
+### Added
+- Add `active_dishes` method to state
+
+### Fixed
+- Bug where too many dishes are created when deserializing
 
 ## [0.4.1]
 ### Added
