@@ -156,8 +156,6 @@ public:
 
     inline std::vector<size_t> dishes() const { return dishes_; }
 
-    inline std::vector<size_t> tables(size_t eid) { return using_t[eid]; }
-
     inline size_t nentities() const { return x_ji.size(); }
 
     inline size_t ntopics() const { return dishes_.size() - 1; }
