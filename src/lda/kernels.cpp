@@ -130,5 +130,36 @@ lda_crp_gibbs(microscopes::lda::state &state, common::rng_t &rng)
     }
 }
 
+namespace lda_hyperparameters {
+
+void
+sample_gamma(microscopes::lda::state &state, common::rng_t &rng, float a, float b){
+    float eta = distributions::sample_beta(rng, state.gamma_ + 1, state.ntables());
+    float log_eta = distributions::fast_log(eta);
+    float part = state.ntables() * (b - log_eta) / (a + state.ntopics() - 1);
+    float pie = 1.0 / (1.0 + part);
+    int u = distributions::sample_bernoulli(rng, pie);
+    float shape = a + state.ntopics() - 1 + u;
+    float scale = 1.0 / (b - log_eta);
+    state.gamma_ = distributions::sample_gamma(rng, shape, scale);
+}
+
+void
+sample_alpha(microscopes::lda::state &state, common::rng_t &rng, float a, float b){
+    float qs = 0;
+    float qw = 0;
+    for(size_t eid=0; eid < state.nentities(); ++eid){
+        float p = state.nterms(eid) / (state.nterms(eid) + state.alpha_);
+        qs += distributions::sample_bernoulli(rng, p);
+        qw += distributions::sample_beta(rng, state.alpha_ + 1, state.nterms(eid));
+    }
+    float shape = a + state.ntables() - qs;
+    float scale = 1.0 / (b - qw);
+    state.alpha_ = distributions::sample_gamma(rng, shape, scale);
+}
+
+} // lda_hyperparameters
+
+
 } // namespace kernels
 } // namespace microscopes
