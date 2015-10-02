@@ -4,7 +4,7 @@
 from microscopes.common import validator
 from microscopes.common.rng import rng
 from microscopes.lda.kernels import lda_crp_gibbs
-from microscopes.lda.kernels import lda_sample_dispersion
+from microscopes.lda.kernels import sample_gamma, sample_alpha
 
 
 class runner(object):
@@ -37,4 +37,5 @@ class runner(object):
 
         for _ in xrange(niters):
             lda_crp_gibbs(self._latent, r)
-            lda_sample_dispersion(self._latent, r)
+            sample_gamma(self._latent, r, 5, 0.1)
+            sample_alpha(self._latent, r, 5, 0.1)
