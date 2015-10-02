@@ -16,6 +16,9 @@ def lda_crp_gibbs(state s, rng r):
 def lda_sample_dispersion(state s, rng r):
     # Sample Dirichlet process disperson parameters according to
     # Gregor Heinrich's scheme seen here: http://bit.ly/1baZ3zf
+    cdef float eta, bloge, pie, u, shape, scale, qs, qw
+    cdef float aalpha, balpha, abeta, bbeta, bgamma, agamma
+    cdef int K, num_samples, T
     T = sum([len(s.tables(eid)) - 1 for eid in range(s.nentities())])
 
     # Hyper-hyper params copied from Heinrich: http://bit.ly/1gyiIuE
