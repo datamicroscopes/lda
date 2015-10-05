@@ -118,9 +118,6 @@ public:
     leave_from_dish(size_t j, size_t t);
 
     void
-    validate_n_k_values();
-
-    void
     seat_at_dish(size_t j, size_t t, size_t k_new);
 
     void
