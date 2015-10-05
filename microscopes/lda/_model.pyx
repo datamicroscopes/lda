@@ -201,9 +201,9 @@ cdef class state:
         flat, indices = utils.ragged_array_to_row_major_form(self._data)
         proto_lda.docs.extend(flat)
         proto_lda.doc_index.extend(indices)
-        proto_lda.alpha = self.dish_hps['alpha']
-        proto_lda.beta = self.vocab_hp
-        proto_lda.gamma = self.dish_hps['gamma']
+        proto_lda.alpha = self.alpha
+        proto_lda.beta = self.beta
+        proto_lda.gamma = self.gamma
         flat, indices = utils.ragged_array_to_row_major_form(self.table_assignments())
         proto_lda.table_assignment.extend(flat)
         proto_lda.table_assignment_index.extend(indices)

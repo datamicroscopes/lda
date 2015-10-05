@@ -6,6 +6,7 @@
 ### Changed
 
 ### Fixed
+- Correctly serialize hyperparameters
 
 ### Removed
 
