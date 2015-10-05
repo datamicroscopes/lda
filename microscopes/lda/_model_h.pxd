@@ -20,6 +20,8 @@ cdef extern from "microscopes/lda/model.hpp" namespace "microscopes::lda":
         size_t ntopics()
         size_t nwords()
         size_t nterms(size_t) except +
+        float num_words_at_dish(size_t)
+        float num_words_at_dish(size_t, size_t)
 
         string serialize() except +
         vector[vector[size_t]] assignments()

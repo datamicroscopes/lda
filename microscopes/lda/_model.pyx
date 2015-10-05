@@ -147,6 +147,19 @@ cdef class state:
         """
         return self._thisptr.get()[0].table_assignments()
 
+    def tables(self, size_t eid):
+        return self._thisptr.get()[0].tables(eid)
+
+    def n_k(self, size_t tid):
+        """Number of words assigned to each dish plus beta * V
+        """
+        return self._thisptr.get()[0].num_words_at_dish(tid)
+
+    def n_kv(self, size_t tid, size_t word_id):
+        """Number of times a given word is assigned to each dish plus beta
+        """
+        return self._thisptr.get()[0].num_words_at_dish(tid, word_id)
+
     @deprecated
     def document_distribution(self):
         return self.topic_distribution_by_document()
