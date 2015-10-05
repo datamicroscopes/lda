@@ -80,9 +80,9 @@ namespace lda_util {
             map = std::map<T, J>();
         }
 
-        J get(T t) {
+        J get(T t) const {
             if(map.count(t) > 0){
-                return map[t];
+                return map.at(t);
             }
             else{
                 return default_value;
