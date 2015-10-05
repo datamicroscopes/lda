@@ -2,6 +2,7 @@
 import numpy as np
 
 from scipy import stats
+from scipy.special import digamma
 
 
 def lda_crp_gibbs(state s, rng r):
@@ -24,3 +25,38 @@ def sample_alpha(state s, rng r, float a, float b):
     # Gregor Heinrich's scheme seen here: http://bit.ly/1baZ3zf
     # Follow (Teh+06)
     c_sample_alpha(s._thisptr.get()[0], r._thisptr[0], a, b)
+
+def sample_beta(state s, rng r, float a, float b, int num_iterations=1000):
+    # Blindly follow Heinrich's methodology: http://www.arbylon.net/projects/IldaGibbs.java (line 679)
+
+    i = 0
+    alpha = s.beta
+    alpha0 = 0
+    prec = 1 ** -5
+    for _ in range(num_iterations):
+        print "a", alpha
+        summk = 0
+        summ = 0
+        for tid in s.active_topics():
+            summ += digamma(s.n_k(tid))
+            assert not np.isnan(summ)
+            for word_id in range(s.nwords()):
+                summk += digamma(s.n_kv(tid, word_id))
+                assert not np.isnan(summk)
+        summ -= s.ntopics() * digamma(s.nwords() * alpha)
+        assert not np.isnan(summ)
+        summk -= s.nentities() * s.ntopics() * digamma(alpha)
+        assert not np.isnan(summk)
+        print "a", a, "alpha", alpha, "sumk", summk, "b", b, "summ", summ
+        print "(a - 1 + alpha * summk) / (b + s.ntopics() * summ)", (a - 1 + alpha * summk) / (b + s.ntopics() * summ)
+        alpha = (a - 1 + alpha * summk) / (b + s.ntopics() * summ)
+        print "alpha", alpha, "np.isnan(alpha)", np.isnan(alpha)
+        assert not np.isnan(alpha)
+        if abs(alpha - alpha0) < prec:
+            break
+        else:
+            alpha0 = alpha
+
+        if i == num_iterations - 1:
+            raise Exception("sample_beta did not converge.")
+    s.beta = alpha
