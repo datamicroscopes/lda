@@ -57,13 +57,13 @@ cdef class state:
         validator.validate_kwargs(kwargs, valid_kwargs)
 
         # Save and validate hyperparameters
-        self.dish_hps = kwargs.get('dish_hps', None)
-        if self.dish_hps is None:
-            self.dish_hps = {'alpha': 0.1, 'gamma': 0.1}
-        validator.validate_kwargs(self.dish_hps, ('alpha', 'gamma',))
+        dish_hps = kwargs.get('dish_hps', None)
+        if dish_hps is None:
+            dish_hps = {'alpha': 0.1, 'gamma': 0.1}
+        validator.validate_kwargs(dish_hps, ('alpha', 'gamma',))
 
-        self.vocab_hp = kwargs.get('vocab_hp', 0.5)
-        validator.validate_positive(self.vocab_hp)
+        vocab_hp = kwargs.get('vocab_hp', 0.5)
+        validator.validate_positive(vocab_hp)
 
         # Get initial dishes or assigments
         dishes_and_tables = _get_dishes_and_tables(kwargs, data)
@@ -71,9 +71,9 @@ cdef class state:
         if 'initial_dishes' in dishes_and_tables:
             self._thisptr = c_initialize(
                 defn=defn._thisptr.get()[0],
-                alpha=self.dish_hps['alpha'],
-                beta=self.vocab_hp,
-                gamma=self.dish_hps['gamma'],
+                alpha=dish_hps['alpha'],
+                beta=vocab_hp,
+                gamma=dish_hps['gamma'],
                 initial_dishes=dishes_and_tables['initial_dishes'],
                 docs=data,
                 rng=(<rng> kwargs['r']  )._thisptr[0])
@@ -82,9 +82,9 @@ cdef class state:
 
             self._thisptr = c_initialize_explicit(
                 defn=defn._thisptr.get()[0],
-                alpha=self.dish_hps['alpha'],
-                beta=self.vocab_hp,
-                gamma=self.dish_hps['gamma'],
+                alpha=dish_hps['alpha'],
+                beta=vocab_hp,
+                gamma=dish_hps['gamma'],
                 dish_assignments=dishes_and_tables['dish_assignments'],
                 table_assignments=dishes_and_tables['table_assignments'],
                 docs=data)
@@ -306,7 +306,7 @@ cdef class state:
             PZS_new = [[d[word] for d in word_dist]
                         for word in doc]
             PZS_new = np.array(PZS_new)
-            PZS_new *= (PZS.sum(axis=0) - PZS + self.vocab_hp)
+            PZS_new *= (PZS.sum(axis=0) - PZS + self.beta)
             PZS_new /= PZS_new.sum(axis=1)[:, np.newaxis] # vector to single column matrix
             PZS = PZS_new
             if np.abs(PZS_new - PZS).sum() < tol:
