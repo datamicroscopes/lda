@@ -167,6 +167,10 @@ public:
 
     inline int ntables() const { return std::accumulate(m_k.begin()+1, m_k.end(), 0); }
 
+    inline float num_words_at_dish(size_t tid, size_t word_id) const { return n_kv[tid].get(word_id); }
+
+    inline float num_words_at_dish(size_t tid) const { return n_k.get(tid); }
+
 };
 
 }
