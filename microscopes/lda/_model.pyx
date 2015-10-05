@@ -92,6 +92,18 @@ cdef class state:
             raise NotImplementedError(("Specify either: (1) initial_dishes or"
                 "(2) table_assignments and dish_assignments."))
 
+    property gamma:
+        def __get__(self): return self._thisptr.get().gamma_
+        def __set__(self, gamma): self._thisptr.get().gamma_ = gamma
+
+    property alpha:
+        def __get__(self): return self._thisptr.get().alpha_
+        def __set__(self, alpha): self._thisptr.get().alpha_ = alpha
+
+    property beta:
+        def __get__(self): return self._thisptr.get().beta_
+        def __set__(self, beta): self._thisptr.get().beta_ = beta
+
     def perplexity(self):
         return self._thisptr.get().perplexity()
 
