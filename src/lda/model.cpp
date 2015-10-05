@@ -224,25 +224,6 @@ microscopes::lda::state::leave_from_dish(size_t j, size_t t) {
 }
 
 void
-microscopes::lda::state::validate_n_k_values() {
-    return;
-    std::map<size_t, std::tuple<float, float>> values;
-    for (auto k : dishes_) {
-        float n_kv_sum = 0;
-        for (size_t v = 0; v < V; v++) {
-            n_kv_sum += n_kv[k].get(v);
-        }
-        values[k] = std::tuple<float, float>(n_kv_sum, n_k.get(k));
-    }
-    for (auto kv : values) {
-        if (kv.first == 0) continue;
-        MICROSCOPES_CHECK(std::abs((std::get<0>(kv.second) - std::get<1>(kv.second))) < 0.01,
-                          "n_kv doesn't match n_k");
-    }
-}
-
-
-void
 microscopes::lda::state::seat_at_dish(size_t j, size_t t, size_t k_new) {
     m_k[k_new] += 1;
 
