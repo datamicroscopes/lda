@@ -100,6 +100,10 @@ cdef class state:
         def __get__(self): return self._thisptr.get().alpha_
         def __set__(self, alpha): self._thisptr.get().alpha_ = alpha
 
+    property beta:
+        def __get__(self): return self._thisptr.get().beta_
+        def __set__(self, beta): self._thisptr.get().beta_ = beta
+
     def perplexity(self):
         return self._thisptr.get().perplexity()
 
