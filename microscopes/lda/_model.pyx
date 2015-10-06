@@ -125,7 +125,7 @@ cdef class state:
     def active_topics(self):
         """Get indices of active topics
         """
-        dishes = self._thisptr.get().dishes()
+        dishes = list(self._thisptr.get().dishes())
         dishes.remove(0) # remove dummy topic
         return dishes
 
