@@ -34,24 +34,16 @@ def sample_beta(state s, rng r, float a, float b, int num_iterations=1000):
     alpha0 = 0
     prec = 1 ** -5
     for _ in range(num_iterations):
-        print "a", alpha
         summk = 0
         summ = 0
         for tid in s.active_topics():
             summ += digamma(s.n_k(tid))
-            assert not np.isnan(summ)
             for word_id in range(s.nwords()):
                 summk += digamma(s.n_kv(tid, word_id))
-                assert not np.isnan(summk)
         summ -= s.ntopics() * digamma(s.nwords() * alpha)
-        assert not np.isnan(summ)
-        summk -= s.nentities() * s.ntopics() * digamma(alpha)
+        summk -= s.ntopics() * s.nwords() * digamma(alpha)
         assert not np.isnan(summk)
-        print "a", a, "alpha", alpha, "sumk", summk, "b", b, "summ", summ
-        print "(a - 1 + alpha * summk) / (b + s.ntopics() * summ)", (a - 1 + alpha * summk) / (b + s.ntopics() * summ)
         alpha = (a - 1 + alpha * summk) / (b + s.ntopics() * summ)
-        print "alpha", alpha, "np.isnan(alpha)", np.isnan(alpha)
-        assert not np.isnan(alpha)
         if abs(alpha - alpha0) < prec:
             break
         else:
