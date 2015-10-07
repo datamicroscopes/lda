@@ -210,6 +210,9 @@ cdef class state:
     def serialize(self):
         """Serialize state object as a string
         """
+        if not self._can_serialize():
+            print self._vocab
+            raise ValueError("Can only serialize model if all words are strings.")
         proto_lda = LdaModelState()
         flat, indices = utils.ragged_array_to_row_major_form(self._data)
         proto_lda.docs.extend(flat)
@@ -223,7 +226,11 @@ cdef class state:
         flat, indices = utils.ragged_array_to_row_major_form(self.dish_assignments())
         proto_lda.dish_assignment.extend(flat)
         proto_lda.dish_assignment_index.extend(indices)
+        proto_lda.vocab.extend([word for _, word in sorted(self._vocab.items())])
         return proto_lda.SerializeToString()
+
+    def _can_serialize(self):
+        return all(isinstance(word, str) for word in self._vocab.values())
 
     def __reduce__(self):
         return (_reconstruct_state, (self._defn, self.serialize()))
