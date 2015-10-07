@@ -34,6 +34,9 @@ def test_serialize_simple():
     m = s.serialize()
     s2 = deserialize(defn, m)
     assert s2.__class__ == s.__class__
+    assert all(word in "abcdef"
+               for wd in s2.word_distribution_by_topic()
+               for word in wd.keys())
 
 
 def test_serialize_pickle():
