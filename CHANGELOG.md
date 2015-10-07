@@ -6,7 +6,18 @@
 ### Changed
 
 ### Fixed
+
+### Removed
+
+## [0.4.3]
+### Added
+
+### Changed
+
+### Fixed
 - Correctly serialize hyperparameters
+- Serialize and deserialize vocabulary
+- Prediction doesn't require random number generator
 
 ### Removed
 
