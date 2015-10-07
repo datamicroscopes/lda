@@ -7,7 +7,7 @@ from microscopes.lda.definition import model_definition
 from microscopes.lda.model import initialize, deserialize
 from microscopes.lda.testutil import toy_dataset
 
-from nose.tools import assert_equals, assert_true
+from nose.tools import assert_equals, assert_true, raises
 from nose.tools import assert_almost_equals, assert_raises
 
 
@@ -51,6 +51,15 @@ def test_serialize_pickle():
     s2 = cPickle.loads(bstr)
     assert s2.__class__ == s.__class__
 
+
+@raises(ValueError)
+def test_cant_serialize():
+    N, V = 10, 20
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
+    prng = rng()
+    s = initialize(defn, data, prng)
+    s.serialize()
 
 
 def test_pyldavis_data():
