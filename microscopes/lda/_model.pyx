@@ -308,7 +308,7 @@ cdef class state:
             (1 - weight) * np.log(phi_kw / p_w)
 
 
-    def predict(self, data, prng, max_iter=20, tol=1e-16):
+    def predict(self, data, prng=None, max_iter=20, tol=1e-16):
         """Predict topic distributions for documents
 
         Based on ariddell's implementation of the iterated pseudo-counts
@@ -329,9 +329,9 @@ cdef class state:
         """
         if not isinstance(data[0], list):
             data = [data]
-        return [self._predict_single(doc, prng, max_iter, tol) for doc in data]
+        return [self._predict_single(doc, max_iter, tol) for doc in data]
 
-    def _predict_single(self, doc, prng, max_iter, tol):
+    def _predict_single(self, doc, max_iter, tol):
         PZS = np.zeros((len(doc), self.ntopics()))
         word_dist = self.word_distribution_by_topic()
         for iteration in range(max_iter + 1): # +1 is for initialization
