@@ -27,24 +27,20 @@ def test_simple():
 
 
 def test_serialize_simple():
-    N, V = 10, 20
-    defn = model_definition(N, V)
-    data = toy_dataset(defn)
-    view = data
+    docs = [list('abcd'), list('cdef')]
+    defn = model_definition(len(docs), v=6)
     prng = rng()
-    s = initialize(defn, view, prng)
+    s = initialize(defn, docs, prng)
     m = s.serialize()
     s2 = deserialize(defn, m)
     assert s2.__class__ == s.__class__
 
 
 def test_serialize_pickle():
-    N, V = 10, 20
-    defn = model_definition(N, V)
-    data = toy_dataset(defn)
-    view = data
+    docs = [list('abcd'), list('cdef')]
+    defn = model_definition(len(docs), v=6)
     prng = rng()
-    s = initialize(defn, view, prng)
+    s = initialize(defn, docs, prng)
     # Pickle
     bstr = pickle.dumps(s)
     s2 = pickle.loads(bstr)
