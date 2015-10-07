@@ -211,7 +211,6 @@ cdef class state:
         """Serialize state object as a string
         """
         if not self._can_serialize():
-            print self._vocab
             raise ValueError("Can only serialize model if all words are strings.")
         proto_lda = LdaModelState()
         flat, indices = utils.ragged_array_to_row_major_form(self._data)
