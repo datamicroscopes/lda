@@ -385,8 +385,9 @@ def initialize(model_definition defn, data, r=None, **kwargs):
     """Initialize state to a random, valid point in the state space
 
     You should specify either dish_assignments and table_assignments ("explicit assignment")
-    OR initial_dishes and random state `r` ("random assignment"), OR simply the random state.
-    The hyperparameters can be specified or will default to the indicated values.
+    along with the vocab_lookup OR initial_dishes and random state `r`
+    ("random assignment"), OR simply the random state. The hyperparameters can be
+    specified or will default to the indicated values.
 
     Parameters
     ----------
@@ -403,6 +404,7 @@ def initialize(model_definition defn, data, r=None, **kwargs):
         Outer length should be the the same as `data`. Inner lists maps
         unique tables for each document to dish indices. Thus
         `len(dish_assignments[i]) == max(table_assignments[i]) + 1`
+    vocab_lookup : dict mapping word index values (in data) to actual terms
 
     Example table and dish assignments:
 
@@ -415,7 +417,14 @@ def initialize(model_definition defn, data, r=None, **kwargs):
     """
     if r is not None:
         kwargs['r'] = r
-    numeric_docs, vocab_lookup = _initialize_data(data)
+    if 'vocab_lookup' in kwargs:
+        vocab_lookup = kwargs['vocab_lookup']
+        del kwargs['vocab_lookup']
+        if not all(isinstance(word, (int, long)) for doc in data for word in doc):
+            raise ValueError("Docs must be numeric when vocab_lookup is specified")
+        numeric_docs = data
+    else:
+        numeric_docs, vocab_lookup = _initialize_data(data)
     validator.validate_len(vocab_lookup, defn.v, "vocab_lookup")
     return state(defn=defn, data=numeric_docs, vocab=vocab_lookup, **kwargs)
 
@@ -452,9 +461,11 @@ def deserialize(model_definition defn, bytes):
     alpha = m.alpha
     beta = m.beta
     gamma = m.gamma
+    vocab = {i: word for i, word in enumerate(m.vocab)}
     s = initialize(defn, docs,
                    table_assignments=table_assignments,
                    dish_assignments=dish_assignments,
+                   vocab_lookup=vocab,
                    dish_hps={'alpha': alpha, 'gamma': gamma}, vocab_hp=beta)
     return s
 
