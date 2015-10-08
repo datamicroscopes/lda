@@ -37,6 +37,9 @@ def test_serialize_simple():
     assert all(word in "abcdef"
                for wd in s2.word_distribution_by_topic()
                for word in wd.keys())
+    assert all(isinstance(word, str)
+               for wd in s2.word_distribution_by_topic()
+               for word in wd.keys())
 
 
 def test_serialize_pickle():
