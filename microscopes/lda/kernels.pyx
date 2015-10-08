@@ -42,8 +42,8 @@ def sample_beta(state s, rng r, float a, float b, int num_iterations=1000):
                 summk += digamma(s.n_kv(tid, word_id))
         summ -= s.ntopics() * digamma(s.nwords() * alpha)
         summk -= s.ntopics() * s.nwords() * digamma(alpha)
-        assert not np.isnan(summk)
-        alpha = (a - 1 + alpha * summk) / (b + s.ntopics() * summ)
+
+        alpha = (a - 1 + alpha * summk) / (b + s.nwords() * summ)
         if abs(alpha - alpha0) < prec:
             break
         else:
