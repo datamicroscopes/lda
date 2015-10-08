@@ -93,7 +93,6 @@ def test_explicit():
     """Test that we can explicitly initialize state by specifying
     table and dish assignments
     """
-    prng = rng()
     N, V = 3, 7
     defn = model_definition(N, V)
     data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
@@ -116,7 +115,6 @@ def test_explicit():
 def test_explicit_exceptions():
     """ValueError should be rasied for bad assignments
     """
-    prng = rng()
     N, V = 3, 7
     defn = model_definition(N, V)
     data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
@@ -147,7 +145,6 @@ def test_explicit_inception():
 
     Helps ensure that our assignment validation code is correct
     """
-    prng = rng()
     N, V = 3, 7
     defn = model_definition(N, V)
     data = [[0, 1, 2, 3], [0, 1, 4], [0, 1, 5, 6]]
