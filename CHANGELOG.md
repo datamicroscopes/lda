@@ -6,10 +6,11 @@
 ### Changed
 
 ### Fixed
+- Deserialized words are strings instead of unicode
 
 ### Removed
 
-## [0.4.3]
+## [0.4.3] 2015-10-07
 ### Added
 
 ### Changed
@@ -21,7 +22,7 @@
 
 ### Removed
 
-## [0.4.2]
+## [0.4.2] - 2015-10-01
 ### Added
 - Add `active_dishes` method to state
 
@@ -29,7 +30,7 @@
 - Bug where too many dishes are created when deserializing
 - Bug fixed where dishes_ is constructed incorrectly when dish ids aren't contiguous
 
-## [0.4.1]
+## [0.4.1] - 2015-09-30
 ### Added
 
 ### Changed
