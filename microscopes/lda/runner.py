@@ -63,6 +63,3 @@ class runner(object):
                     sample_beta(self._latent, r, config['a'], config['b'])
                 else:
                     assert False, "should not be reach"
-            lda_crp_gibbs(self._latent, r)
-            sample_gamma(self._latent, r, 5, 0.1)
-            sample_alpha(self._latent, r, 5, 0.1)
