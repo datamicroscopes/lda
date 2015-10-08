@@ -461,7 +461,7 @@ def deserialize(model_definition defn, bytes):
     alpha = m.alpha
     beta = m.beta
     gamma = m.gamma
-    vocab = {i: word for i, word in enumerate(m.vocab)}
+    vocab = {i: str(word) for i, word in enumerate(m.vocab)}
     s = initialize(defn, docs,
                    table_assignments=table_assignments,
                    dish_assignments=dish_assignments,
