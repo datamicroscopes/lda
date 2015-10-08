@@ -26,48 +26,6 @@ def test_simple():
     assert_equals(s.nentities(), len(data))
 
 
-def test_serialize_simple():
-    docs = [list('abcd'), list('cdef')]
-    defn = model_definition(len(docs), v=6)
-    prng = rng()
-    s = initialize(defn, docs, prng)
-    m = s.serialize()
-    s2 = deserialize(defn, m)
-    assert s2.__class__ == s.__class__
-    assert all(word in "abcdef"
-               for wd in s2.word_distribution_by_topic()
-               for word in wd.keys())
-    assert all(isinstance(word, str)
-               for wd in s2.word_distribution_by_topic()
-               for word in wd.keys())
-
-
-def test_serialize_pickle():
-    docs = [list('abcd'), list('cdef')]
-    defn = model_definition(len(docs), v=6)
-    prng = rng()
-    s = initialize(defn, docs, prng)
-    # Pickle
-    bstr = pickle.dumps(s)
-    s2 = pickle.loads(bstr)
-    assert s2.__class__ == s.__class__
-
-    # cPickle
-    bstr = cPickle.dumps(s)
-    s2 = cPickle.loads(bstr)
-    assert s2.__class__ == s.__class__
-
-
-@raises(ValueError)
-def test_cant_serialize():
-    N, V = 10, 20
-    defn = model_definition(N, V)
-    data = toy_dataset(defn)
-    prng = rng()
-    s = initialize(defn, data, prng)
-    s.serialize()
-
-
 def test_pyldavis_data():
     docs = [list('abcd'), list('cdef')]
     defn = model_definition(len(docs), v=6)
@@ -203,3 +161,45 @@ def test_explicit_inception():
     s2 = initialize(defn, data,
                     table_assignments=s.table_assignments(),
                     dish_assignments=s.dish_assignments())
+
+
+def test_serialize_simple():
+    docs = [list('abcd'), list('cdef')]
+    defn = model_definition(len(docs), v=6)
+    prng = rng()
+    s = initialize(defn, docs, prng)
+    m = s.serialize()
+    s2 = deserialize(defn, m)
+    assert s2.__class__ == s.__class__
+    assert all(word in "abcdef"
+               for wd in s2.word_distribution_by_topic()
+               for word in wd.keys())
+    assert all(isinstance(word, str)
+               for wd in s2.word_distribution_by_topic()
+               for word in wd.keys())
+
+
+def test_serialize_pickle():
+    docs = [list('abcd'), list('cdef')]
+    defn = model_definition(len(docs), v=6)
+    prng = rng()
+    s = initialize(defn, docs, prng)
+    # Pickle
+    bstr = pickle.dumps(s)
+    s2 = pickle.loads(bstr)
+    assert s2.__class__ == s.__class__
+
+    # cPickle
+    bstr = cPickle.dumps(s)
+    s2 = cPickle.loads(bstr)
+    assert s2.__class__ == s.__class__
+
+
+@raises(ValueError)
+def test_cant_serialize():
+    N, V = 10, 20
+    defn = model_definition(N, V)
+    data = toy_dataset(defn)
+    prng = rng()
+    s = initialize(defn, data, prng)
+    s.serialize()
