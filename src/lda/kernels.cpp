@@ -151,7 +151,7 @@ sample_alpha(microscopes::lda::state &state, common::rng_t &rng, float a, float 
     for(size_t eid=0; eid < state.nentities(); ++eid){
         float p = state.nterms(eid) / (state.nterms(eid) + state.alpha_);
         qs += distributions::sample_bernoulli(rng, p);
-        qw += distributions::sample_beta(rng, state.alpha_ + 1, state.nterms(eid));
+        qw += distributions::fast_log(distributions::sample_beta(rng, state.alpha_ + 1, state.nterms(eid)));
     }
     float shape = a + state.ntables() - qs;
     float scale = 1.0 / (b - qw);
