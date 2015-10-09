@@ -126,4 +126,4 @@ class runner(object):
                 elif name == 'direct_vocab_hp':
                     raise NotImplementedError('direct_vocab_hp not yet implemented')
                 else:
-                    assert False, "should not be reach"
+                    raise ValueError("Bad kernel specification {}".format(name))
