@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 ### Added
+- Samplers for alpha and gamma hyper parameters
+- Ability to specify kernels for runner
 
 ### Changed
 
