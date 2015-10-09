@@ -14,19 +14,21 @@ def lda_crp_gibbs(state s, rng r):
     """
     c_lda_crp_gibbs(s._thisptr.get()[0], r._thisptr[0])
 
-def sample_gamma(state s, rng r, float a, float b):
+def sample_gamma(state s, rng r, float a, float b, niters=10):
     """Sample Dirichlet process disperson parameter gamma according to
     Gregor Heinrich's scheme seen here: http://bit.ly/1baZ3zf
     Follow (Escobar+West95) with n = T
     """
-    c_sample_gamma(s._thisptr.get()[0], r._thisptr[0], a, b)
+    for _ in range(niters):
+        c_sample_gamma(s._thisptr.get()[0], r._thisptr[0], a, b)
 
-def sample_alpha(state s, rng r, float a, float b):
+def sample_alpha(state s, rng r, float a, float b, int niters=10):
     """Sample Dirichlet process disperson parameter gamma according to
     Gregor Heinrich's scheme seen here: http://bit.ly/1baZ3zf.
     Follows (Teh+06).
     """
-    c_sample_alpha(s._thisptr.get()[0], r._thisptr[0], a, b)
+    for _ in range(niters):
+        c_sample_alpha(s._thisptr.get()[0], r._thisptr[0], a, b)
 
 def sample_beta(state s, rng r, float a, float b, int num_iterations=1000):
     """Blindly follow Heinrich's methodology:
