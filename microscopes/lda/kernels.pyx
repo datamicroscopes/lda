@@ -1,8 +1,5 @@
 # cython: embedsignature=True
 
-from scipy.special import digamma
-
-
 def lda_crp_gibbs(state s, rng r):
     """Gibbs transition kernel for LDA state object. Modifies
     state object in place.
@@ -32,7 +29,7 @@ def sample_beta(state s, rng r, float a, float b, int num_iterations=1000):
     """Blindly follow Heinrich's methodology:
     http://www.arbylon.net/projects/IldaGibbs.java (line 679)
     """
-
+    raise NotImplementedError
     i = 0
     alpha = s.beta
     alpha0 = 0
