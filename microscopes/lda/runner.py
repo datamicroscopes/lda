@@ -53,6 +53,22 @@ def second_dp_hp_kernel_config(defn, hp1=5, hp2=0.1):
     return [('direct_second_dp_hp', {'hp1': hp1, 'hp2': hp2})]
 
 
+def direct_vocab_hp_kernel_config(defn, hp1=5, hp2=0.1):
+    """Sample the Dirichlet distribution parameter (beta)
+    using the method of Minka (2003).
+
+    Current implementation is based on that of Gregor Heinrich
+    available here http://bit.ly/1FWlQwP and here http://bit.ly/1JX14bd.
+
+    Minka (2003) is available here:
+        http://www.robots.ox.ac.uk/~vgg/share/words/papers/minka-dirichlet.pdf
+    Heinrich says his method is based on equation 55.
+    ----------
+    defn : LDA model definition
+    """
+    return ['direct_vocab_hp']
+
+
 class runner(object):
     """The LDA runner
 
@@ -108,5 +124,7 @@ class runner(object):
                     print "sample alpha"
                     sample_alpha(self._latent, r, config['hp1'], config['hp2'])
                     print self._latent.alpha
+                elif name == 'direct_vocab_hp':
+                    raise NotImplementedError('direct_vocab_hp not yet implemented')
                 else:
                     assert False, "should not be reach"
