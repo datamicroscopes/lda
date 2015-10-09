@@ -66,6 +66,8 @@ def direct_vocab_hp_kernel_config(defn, hp1=5, hp2=0.1):
     ----------
     defn : LDA model definition
     """
+
+    raise NotImplementedError('direct_vocab_hp not yet implemented')
     return ['direct_vocab_hp']
 
 
