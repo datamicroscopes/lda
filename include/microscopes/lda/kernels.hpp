@@ -29,5 +29,15 @@ sampling_k(microscopes::lda::state &state, size_t j, size_t t, common::rng_t &rn
 extern void
 lda_crp_gibbs(microscopes::lda::state &state, common::rng_t &rng);
 
+namespace lda_hyperparameters {
+
+extern void
+sample_gamma(microscopes::lda::state &state, common::rng_t &rng, float a, float b);
+
+void
+sample_alpha(microscopes::lda::state &state, common::rng_t &rng, float a, float b);
+
+} // lda_hyperparameters
+
 } // namespace kernels
 } // namespace microscopes
