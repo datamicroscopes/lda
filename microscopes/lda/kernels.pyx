@@ -1,6 +1,6 @@
 # cython: embedsignature=True
 
-from scipy import digamma
+from scipy.special import digamma
 
 def lda_crp_gibbs(state s, rng r):
     """Gibbs transition kernel for LDA state object. Modifies
