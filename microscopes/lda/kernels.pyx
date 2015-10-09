@@ -1,5 +1,4 @@
 # cython: embedsignature=True
-import numpy as np
 
 from scipy.special import digamma
 
