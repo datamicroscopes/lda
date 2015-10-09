@@ -16,7 +16,7 @@ before_install:
   - conda update --yes conda
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
-  - conda create -n build --yes python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython pip scikit-learn
+  - conda create -n build --yes python=$TRAVIS_PYTHON_VERSION numpy=1.8 scipy nose cython pip scikit-learn
   - source activate build
   - conda install --yes -c distributions distributions
   - conda install --yes -c datamicroscopes eigen3
