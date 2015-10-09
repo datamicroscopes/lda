@@ -118,12 +118,9 @@ class runner(object):
                 if name == 'crf':
                     lda_crp_gibbs(self._latent, r)
                 elif name == 'direct_base_dp_hp':
-                    print "sample gamma"
                     sample_gamma(self._latent, r, config['hp1'], config['hp2'])
                 elif name == 'direct_second_dp_hp':
-                    print "sample alpha"
                     sample_alpha(self._latent, r, config['hp1'], config['hp2'])
-                    print self._latent.alpha
                 elif name == 'direct_vocab_hp':
                     raise NotImplementedError('direct_vocab_hp not yet implemented')
                 else:
