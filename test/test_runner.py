@@ -52,7 +52,7 @@ def test_runner_base_dp_valid():
     kernels = ['crf'] + \
         runner.base_dp_hp_kernel_config(defn)
     r = runner.runner(defn, data, latent, kernels)
-    r.run(prng, 100)
+    r.run(prng, 10)
     assert_almost_equals(latent.beta, old_beta)
     assert_almost_equals(latent.alpha, old_alpha)
     assert latent.gamma > 0
@@ -69,7 +69,7 @@ def test_runner_second_dp_valid():
     kernels = ['crf'] + \
         runner.second_dp_hp_kernel_config(defn)
     r = runner.runner(defn, data, latent, kernels)
-    r.run(prng, 100)
+    r.run(prng, 10)
     assert_almost_equals(latent.beta, old_beta)
     assert_almost_equals(latent.gamma, old_gamma)
     assert latent.alpha > 0
