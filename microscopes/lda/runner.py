@@ -3,8 +3,54 @@
 
 from microscopes.common import validator
 from microscopes.common.rng import rng
+from microscopes.lda.definition import model_definition
 from microscopes.lda.kernels import lda_crp_gibbs
 from microscopes.lda.kernels import sample_gamma, sample_alpha, sample_beta
+
+
+def _validate_definition(defn):
+    if not isinstance(defn, model_definition):
+        raise ValueError("bad defn given")
+    return defn
+
+
+def crf_kernel_config(defn):
+    """Creates a default kernel configuration for sampling the dish assignment
+    using the "Posterior sampling in the Chinese restaurant franchise" Gibbs
+    sampler from Teh et al (2005)
+
+    Parameters
+    ----------
+    defn : LDA model definition
+    """
+    return ['crf']
+
+
+def base_dp_hp_kernel_config(defn, hp1=5, hp2=.1):
+    """Sample the base level Dirichlet process parameter (gamma)
+    using the method of Escobar and West (1995) with n = T.
+
+    Parameters
+    ----------
+    defn : LDA model definition
+    """
+    return [('direct_base_dp_hp', {'hp1': hp1, 'hp2': hp2})]
+
+
+def second_dp_hp_kernel_config(defn, hp1=5, hp2=0.1):
+    """Sample the second level Dirichlet process parameter (alpha)
+    using the method of Teh et al (2005).
+
+    Current implementation is based on that of Gregor Heinrich
+    available at http://bit.ly/1LkdBdX.
+
+    Teh (2005) is available here:
+        http://www.cs.berkeley.edu/~jordan/papers/hdp.pdf
+    Heinrich says his method is based on equations 47-49
+    ----------
+    defn : LDA model definition
+    """
+    return [('direct_second_dp_hp', {'hp1': hp1, 'hp2': hp2})]
 
 
 class runner(object):
@@ -55,11 +101,12 @@ class runner(object):
             for name, config in self._kernel_config:
                 if name == 'crf':
                     lda_crp_gibbs(self._latent, r)
-                elif name == 'direct_second_dp_hp':
-                    sample_gamma(self._latent, r, config['a'], config['b'])
                 elif name == 'direct_base_dp_hp':
-                    sample_alpha(self._latent, r, config['a'], config['b'])
-                elif name == 'direct_vocab_hp':
-                    sample_beta(self._latent, r, config['a'], config['b'])
+                    print "sample gamma"
+                    sample_gamma(self._latent, r, config['hp1'], config['hp2'])
+                elif name == 'direct_second_dp_hp':
+                    print "sample alpha"
+                    sample_alpha(self._latent, r, config['hp1'], config['hp2'])
+                    print self._latent.alpha
                 else:
                     assert False, "should not be reach"
